@@ -111,6 +111,7 @@ public:
 
 template <>
 class Ret<T> final {
+public:
 	Ret() noexcept = default;
 
 	Ret(const Ret<T>&) noexcept = default;
@@ -178,9 +179,9 @@ public:
 
 	Ret(const Ret<Val, Errors...>& v) = delete;
 
-	template <class... Args,
-	class = typename helpers::Enable_Ret_ValErrors_MoveConstructorFor_Ret_ValErrors<boost::mpl::set<Args...>, errors>::type::type>
-	Ret(Ret<Val, Args...>&& v) noexcept;
+	template <class OVal, class... OErrors,
+	class = typename helpers::Enable_Ret_ValErrors_MoveConstructorFor_Ret_ValErrors<OVal, boost::mpl::set<OErrors...>, Val, errors>::type::type>
+	Ret(Ret<OVal, OErrors...>&& v) noexcept;
 
 	Ret<Val, Errors...>& operator=(const Val& v);
 	Ret<Val, Errors...>& operator=(Val&& v) noexcept(std::is_nothrow_move_assignable<Val>::value);
@@ -229,8 +230,8 @@ Ret<Val, Errors...>::Ret(Err&& v) noexcept(std::is_nothrow_move_constructible<Er
 	v(std::move(v)) {printf("move constr Err\n");}
 
 template <class Val, class... Errors>
-template <class... Args, class>
-Ret<Val, Errors...>::Ret(Ret<Val, Args...>&& v) noexcept :
+template <class OVal, class... OErrors, class>
+Ret<Val, Errors...>::Ret(Ret<OVal, OErrors...>&& v) noexcept :
 	v(std::move(unsafe_access_to_internal_data(v))) {printf("move constr Ret\n");}
 
 template <class Val, class... Errors>

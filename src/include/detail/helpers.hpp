@@ -51,9 +51,10 @@ struct Enable_Ret_ValErrors_MoveConstructorFor_Err {
 	using type = std::enable_if<value>;
 };
 
-template <class Args, class Errors>
+template <class OVal, class OErrors, class Val, class Errors>
 struct Enable_Ret_ValErrors_MoveConstructorFor_Ret_ValErrors {
-	static const bool value = is_difference_empty<Args, Errors>::value;
+	static const bool value = std::is_convertible<OVal, Val>::value &&
+			is_difference_empty<OErrors, Errors>::value;
 	using type = std::enable_if<value>;
 };
 

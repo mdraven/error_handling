@@ -122,6 +122,7 @@ public:
 // Ret для универсума T
 template <>
 class Ret<T> final {
+public:
     Ret() noexcept = default;
 
     // (*) Любой Val создаёт T; сам Val не участвует, поэтому noexcept безусловный
@@ -189,6 +190,8 @@ public:
                                        этот метод "= default" а значит не попадаем в какую-то(я не помню
                                        какую) категорию в c++. Это плохо. Надо вынести этот тип в отдельный
                                        метод.
+                                       Кстати, необязательно чтобы Val у обоих совпадал: если можно неявно
+                                       привести тип, то OK.
                                     */
 
     Ret<Args...>& operator=(const Val& v); /* Присваивать Val можно, так как параметр Val у Ret есть всегда.
@@ -231,8 +234,7 @@ boost::any& unsafe_access_to_internal_data(Ret<Val, Errors...>& v) {
 
 // Пока что if_err надо сделать другом Ret<Args...> (но не Ret<Val>!)
 template <class Err, class UnOp, class... Args>
-auto if_err(Ret<Args...>&&/* тут универсальная ссылка! но нам нужно
-                             именно перемещение, так что надо написать enable_if */
+auto if_err(Ret<Args...>&&/* тут не универсальная ссылка! */
             err,
             UnOp  /* унарный оператор.
                      тут подразумевается, что он принимает Err&&(не универсальную ссылку!)
