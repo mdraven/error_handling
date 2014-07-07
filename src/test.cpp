@@ -11,6 +11,7 @@
 
 struct ErrA {};
 struct ErrB {};
+struct ErrC {};
 
 int main(int argc, char **argv) {
 	std::string str("hello");
@@ -24,5 +25,8 @@ int main(int argc, char **argv) {
 
 	error_handling::Ret<std::string, ErrA> ret4(std::move(erra));
 //	error_handling::Ret<std::string, ErrA> ret5(std::move(errb)); // ERR
+
+	error_handling::Ret<std::string, ErrA, ErrB> ret6{error_handling::Ret<std::string, ErrA>()};
+//	error_handling::Ret<std::string, ErrA, ErrB> ret7{error_handling::Ret<std::string, ErrA, ErrC>()}; // ERR
 }
 

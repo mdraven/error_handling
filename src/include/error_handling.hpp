@@ -8,6 +8,8 @@
 #ifndef ERROR_HANDLING_HPP_
 #define ERROR_HANDLING_HPP_
 
+#include "detail/helpers.hpp"
+
 #include <boost/any.hpp>
 #include <boost/mpl/set.hpp>
 #include <boost/mpl/remove.hpp>
@@ -81,33 +83,12 @@ Ret<Val>::operator const Val&() const noexcept {
 	return v;
 }
 
-namespace helper {
-
-template <class Seq, class Elem>
-struct enable_if_contains {
-	using type = std::enable_if<boost::mpl::contains<Seq, Elem>::value>;
-};
-
-template <class Seq1, class Seq2>
-struct difference {
-	using type = typename boost::mpl::remove_if<Seq1, boost::mpl::contains<Seq2, boost::mpl::_>>::type;
-};
-
-template <class Seq1, class Seq2>
-struct enable_if_difference {
-	using type = typename std::enable_if<boost::mpl::empty<typename difference<Seq1, Seq2>::type>::value>::type;
-};
-
-template <class T>
-struct enable_if_not_universal_ref {
-	using type = typename std::enable_if<!std::is_lvalue_reference<T>::value>;
-};
-
-} /* namespace helper */
-
 template <class Val, class... Errors>
 class Ret<Val, Errors...> final {
     boost::any v;
+
+    template <class Val_, class... Errors_>
+    friend boost::any& unsafe_access_to_internal_data(Ret<Val_, Errors_...>&);
 
     using errors = boost::mpl::set<Errors...>;
 public:
@@ -116,36 +97,36 @@ public:
     Ret(const Val& v);
     Ret(Val&& v) noexcept(std::is_nothrow_move_constructible<Val>::value);
 
-    template <class Err, class = typename helper::enable_if_contains<errors, Err>::type::type>
+    template <class Err,
+    class = typename helpers::Enable_Ret_ValErrors_CopyConstructorFor_Err<errors, Err>::type::type>
     Ret(const Err& v);
 
+
     template <class Err,
-    class = typename helper::enable_if_not_universal_ref<Err>::type::type,
-    class = typename helper::enable_if_contains<errors, Err>::type::type>
+    class = typename helpers::Enable_Ret_ValErrors_MoveConstructorFor_Err<errors, Err>::type::type>
     Ret(Err&& v) noexcept(std::is_nothrow_move_constructible<Err>::value);
 
     Ret(const Ret<Val, Errors...>& v) = delete;
 
     template <class... Args,
-    class args = boost::mpl::set<Args...>,
-    class = typename helper::enable_if_difference<args, errors>::type>
+    class = typename helpers::Enable_Ret_ValErrors_MoveConstructorFor_Ret_ValErrors<boost::mpl::set<Args...>, errors>::type::type>
     Ret(Ret<Val, Args...>&& v) noexcept;
 
     Ret<Val, Errors...>& operator=(const Val& v);
     Ret<Val, Errors...>& operator=(Val&& v) noexcept(std::is_nothrow_move_assignable<Val>::value);
 
-    template <class Err, class = typename helper::enable_if_contains<errors, Err>::type>
-    Ret<Val, Errors...>& operator=(const Err& v);
+//    template <class Err, class = typename helpers::enable_if_contains<errors, Err>::type>
+//    Ret<Val, Errors...>& operator=(const Err& v);
 
-    template <class Err, class = typename helper::enable_if_contains<errors, Err>::type>
-    Ret<Val, Errors...>& operator=(Err&& v) noexcept(std::is_nothrow_move_assignable<Err>::value);
+//    template <class Err, class = typename helpers::enable_if_contains<errors, Err>::type>
+//    Ret<Val, Errors...>& operator=(Err&& v) noexcept(std::is_nothrow_move_assignable<Err>::value);
 
     Ret<Val, Errors...>& operator=(const Ret<Val, Errors...>& v) = delete;
 
-    template <class... Args,
-    class args = boost::mpl::set<Args...>,
-    class = typename helper::enable_if_difference<args, errors>::type>
-    Ret<Val, Errors...>& operator=(Ret<Val, Args...>&& v) noexcept;
+//    template <class... Args,
+//    class args = boost::mpl::set<Args...>,
+//    class = typename helpers::enable_if_difference<args, errors>::type>
+//    Ret<Val, Errors...>& operator=(Ret<Val, Args...>&& v) noexcept;
 
     /* операторов приведения типа(например к Val или ErrN) -- нет: если тип в v не совпал, то
        мы можем только бросить исключение, но эта библиотека не кидает >своих< исключений(возможно только в
@@ -172,14 +153,24 @@ template <class Err, class>
 Ret<Val, Errors...>::Ret(const Err& v) : v(v) {printf("copy Err\n");}
 
 template <class Val, class... Errors>
-template <class Err, class, class>
+template <class Err, class>
 Ret<Val, Errors...>::Ret(Err&& v) noexcept(std::is_nothrow_move_constructible<Err>::value) :
 	v(std::move(v)) {printf("move Err\n");}
+
+template <class Val, class... Errors>
+template <class... Args, class>
+Ret<Val, Errors...>::Ret(Ret<Val, Args...>&& v) noexcept :
+	v(std::move(unsafe_access_to_internal_data(v))) {printf("move Ret\n");}
 
 template <class Val, class... Errors>
 Ret<Val, Errors...>::~Ret() {
 	if(!v.empty())
 		throw "Kaboom!";
+}
+
+template <class Val, class... Errors>
+boost::any& unsafe_access_to_internal_data(Ret<Val, Errors...>& v) {
+	return v.v;
 }
 
 } /* namespace error_handling */
