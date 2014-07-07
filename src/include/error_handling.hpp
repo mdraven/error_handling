@@ -164,7 +164,10 @@ class Ret<Val, Errors...> final {
 	template <class Val_, class... Errors_>
 	friend boost::any& unsafe_access_to_internal_data(Ret<Val_, Errors_...>&);
 
-	using errors = h::set<Errors...>;
+	template<class... OErrors>
+	using Typelist = typename h::BuildTypelist<OErrors...>::type;
+
+	using errors = Typelist<Errors...>;
 public:
 	Ret();
 
@@ -182,7 +185,7 @@ public:
 	Ret(const Ret<Val, Errors...>& v) = delete;
 
 	template <class OVal, class... OErrors,
-	class = typename h::Enable_Ret_ValErrors_MoveConstructorFor_Ret_ValErrors<OVal, h::set<OErrors...>, Val, errors>::type::type>
+	class = typename h::Enable_Ret_ValErrors_MoveConstructorFor_Ret_ValErrors<OVal, Typelist<OErrors...>, Val, errors>::type::type>
 	Ret(Ret<OVal, OErrors...>&& v) noexcept;
 
 	Ret<Val, Errors...>& operator=(const Val& v);
@@ -199,7 +202,7 @@ public:
 	Ret<Val, Errors...>& operator=(const Ret<Val, Errors...>& v) = delete;
 
 	template <class OVal, class... OErrors,
-	class = typename h::Enable_Ret_ValErrors_MoveAssignFor_Ret_ValErrors<OVal, h::set<OErrors...>, Val, errors>::type::type>
+	class = typename h::Enable_Ret_ValErrors_MoveAssignFor_Ret_ValErrors<OVal, Typelist<OErrors...>, Val, errors>::type::type>
 	Ret<Val, Errors...>& operator=(Ret<OVal, OErrors...>&& v) noexcept;
 
 	/* операторов приведения типа(например к Val или ErrN) -- нет: если тип в v не совпал, то
@@ -286,6 +289,7 @@ boost::any& unsafe_access_to_internal_data(Ret<Val, Errors...>& v) {
 	return v.v;
 }
 
+#if 0
 template <class Err, class UnOp, class Val, class... Errors>
 auto if_err(Ret<Val, Errors...>&& v, UnOp op) -> typename h::BuildRet<Ret, Val, typename h::remove<h::set<Errors...>, Err>::type>::type {
     if(unsafe_access_to_internal_data(v).type == typeid(Err)) {
@@ -298,6 +302,7 @@ auto if_err(Ret<Val, Errors...>&& v, UnOp op) -> typename h::BuildRet<Ret, Val, 
     }
     return std::move(unsafe_access_to_internal_data(v));
 }
+#endif
 
 } /* namespace error_handling */
 

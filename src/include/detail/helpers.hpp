@@ -8,33 +8,39 @@
 #ifndef HELPERS_HPP_
 #define HELPERS_HPP_
 
-#include <boost/mpl/set.hpp>
-#include <boost/mpl/remove.hpp>
-#include <boost/mpl/remove_if.hpp>
-#include <boost/mpl/contains.hpp>
-#include <boost/mpl/empty.hpp>
-#include <boost/mpl/front.hpp>
+#include <loki/Typelist.h>
+#include <type_traits>
 
 namespace error_handling {
 
 namespace helpers {
 
-using boost::mpl::set;
-using boost::mpl::remove;
+namespace l = Loki::TL;
 
-template <class Seq, class Elem>
+template <class Typelist, class Elem>
 struct is_contains {
-	static const bool value = boost::mpl::contains<Seq, Elem>::value;
+	static const bool value = l::IndexOf<Typelist, Elem>::value != -1;
 };
 
-template <class Seq1, class Seq2>
+template <class Typelist1, class Typelist2>
 struct difference {
-	using type = typename boost::mpl::remove_if<Seq1, boost::mpl::contains<Seq2, boost::mpl::_>>::type;
+	template <bool is_end, class T1, class T2>
+	struct dispatcher {
+		using type = typename l::EraseAll<T1, typename T2::Head>::Result;
+	};
+
+	template <class T1, class T2>
+	struct dispatcher<false, T1, T2> {
+		using type = typename difference<typename l::EraseAll<Typelist1, typename Typelist2::Head>::Result, typename Typelist2::Tail>::type;
+	};
+
+	static const bool is_end = l::Length<Typelist2>::value == 1;
+	using type = typename dispatcher<is_end, Typelist1, Typelist2>::type;
 };
 
 template <class Seq1, class Seq2>
 struct is_difference_empty {
-	static const bool value = boost::mpl::empty<typename difference<Seq1, Seq2>::type>::value;
+	static const bool value = l::Length<typename difference<Seq1, Seq2>::type>::value == 0;
 };
 
 template <class T>
@@ -82,6 +88,17 @@ struct Enable_Ret_ValErrors_MoveAssignFor_Ret_ValErrors {
 	using type = std::enable_if<value>;
 };
 
+template <class Head, class... Elems>
+struct BuildTypelist {
+	using type = Loki::Typelist<Head, typename BuildTypelist<Elems...>::type>;
+};
+
+template <class Head>
+struct BuildTypelist<Head> {
+	using type = Loki::Typelist<Head, Loki::NullType>;
+};
+
+#if 0
 template <class Seq, template <class...> class Builder, class... Acc>
 class MPLSetToVariadic {
 	using head = typename boost::mpl::front<Seq>::type;
@@ -106,7 +123,7 @@ public:
 			Builder<>,
 			MPLSetToVariadic<Errors, Builder>>::type;
 };
-
+#endif
 
 } /* namespace helpers */
 
