@@ -100,6 +100,62 @@ public:
     ~Ret() = default; // ничего необычного
 }
 
+// Ret для пустого типа N
+template <>
+class Ret<N> final {
+public:
+    Ret() noexcept = default;
+
+    Ret(const Ret<N>&) noexcept = default;
+    Ret(Ret<N>&&) noexcept = default;
+
+    Ret<N>& operator=(const Ret<N>&) noexcept = default;
+    Ret<N>& operator=(Ret<N>&&) noexcept = default;
+
+    /* операторов сравнения у N -- нет */
+
+    /* извлечь N нельзя */
+
+    ~Ret() noexcept = default;
+};
+
+// Ret для универсума T
+template <>
+class Ret<T> final {
+    Ret() noexcept = default;
+
+    // (*) Любой Val создаёт T; сам Val не участвует, поэтому noexcept безусловный
+
+    template <class Val> // (*)
+    Ret(const Val& v) noexcept;
+
+    template <class Val> // (*)
+    Ret(Val&& v) noexcept;
+
+    template <class Val> // (*)
+    Ret(const Ret<Val>& v) noexcept = default;
+
+    template <class Val> // (*)
+    Ret(Ret<Val>&& v) noexcept = default;
+
+    template <class Val> // (*)
+    Ret<T>& operator=(const Val& v) noexcept;
+
+    template <class Val> // (*)
+    Ret<T>& operator=(Val&& v) noexcept;
+
+    template <class Val> // (*)
+    Ret<T>& operator=(const Ret<Val>& v) noexcept = default;
+
+    template <class Val> // (*)
+    Ret<T>& operator=(Ret<Val>&& v) noexcept = default;
+
+    /* У T нет операторов сравнения, он вездесущь */
+
+    ~Ret() = default; // ничего не делает
+};
+
+
 template <class... Args> /* В Args вначале идут ошибки Err0, Err1, ..., потом Val.
                             Далее Err0, ... буду обозначать ErrN.
                          */
@@ -281,7 +337,7 @@ Ret<A, B, C, Val> func() {
 
 Ret<B, C, Val> checkA(Ret<A, B, C, Val>&& v) {
     Ret<B, C, Val> ret = if_err<A>(std::move(v), [](A&& a) {/* обработка */});
-    
+
 #if 0
     // Ret<...,Val> в деструкторе пишет, что не всё проверено и валит программу.
     // Ret<Val> отрабатывает нормально. => нужно всё перемещать
@@ -312,7 +368,7 @@ Ret<B, C, Val> checkA(Ret<A, B, C, Val>&& v) {
 
     //! Ret<Val> v = Ret<N>(); // ошибка: в N нет значения
     Ret<Val, A> v = Ret<N, A>(); // OK: есть ещё A
-    
+
 #endif
 
     return ret;
