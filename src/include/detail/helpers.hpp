@@ -13,12 +13,14 @@
 #include <boost/mpl/remove_if.hpp>
 #include <boost/mpl/contains.hpp>
 #include <boost/mpl/empty.hpp>
+#include <boost/mpl/front.hpp>
 
 namespace error_handling {
 
 namespace helpers {
 
 using boost::mpl::set;
+using boost::mpl::remove;
 
 template <class Seq, class Elem>
 struct is_contains {
@@ -79,6 +81,32 @@ struct Enable_Ret_ValErrors_MoveAssignFor_Ret_ValErrors {
 			is_difference_empty<OErrors, Errors>::value;
 	using type = std::enable_if<value>;
 };
+
+template <class Seq, template <class...> class Builder, class... Acc>
+class MPLSetToVariadic {
+	using head = typename boost::mpl::front<Seq>::type;
+	using tail = typename boost::mpl::remove<Seq, head>::type;
+	static const bool is_tail_empty = boost::mpl::empty<tail>::value;
+public:
+	using type = typename std::conditional<!is_tail_empty,
+			MPLSetToVariadic<tail, Builder, Acc..., head>,
+			Builder<Acc..., head>>::type;
+};
+
+template <template <class...> class Ret, class Val, class Errors>
+class BuildRet {
+	template <class... OErrors>
+	struct Builder {
+		using type = Ret<Val, OErrors...>;
+	};
+
+	static const bool is_errors_empty = boost::mpl::empty<Errors>::value;
+public:
+	using type = typename std::conditional<is_errors_empty,
+			Builder<>,
+			MPLSetToVariadic<Errors, Builder>>::type;
+};
+
 
 } /* namespace helpers */
 

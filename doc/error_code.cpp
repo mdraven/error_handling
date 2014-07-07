@@ -233,6 +233,7 @@ boost::any& unsafe_access_to_internal_data(Ret<Val, Errors...>& v) {
 
 
 // Пока что if_err надо сделать другом Ret<Args...> (но не Ret<Val>!)
+//      Сейчас можно не делать другом, есть unsafe_access_to_internal_data.
 template <class Err, class UnOp, class... Args>
 auto if_err(Ret<Args...>&&/* тут не универсальная ссылка! */
             err,

@@ -286,6 +286,19 @@ boost::any& unsafe_access_to_internal_data(Ret<Val, Errors...>& v) {
 	return v.v;
 }
 
+template <class Err, class UnOp, class Val, class... Errors>
+auto if_err(Ret<Val, Errors...>&& v, UnOp op) -> typename h::BuildRet<Ret, Val, typename h::remove<h::set<Errors...>, Err>::type>::type {
+    if(unsafe_access_to_internal_data(v).type == typeid(Err)) {
+        // если func возвращает Ret<...>, то: return func(std::move(err.v));
+        // если func возвращает что-то другое, то ошибка компиляции(зарезервирую bool для себя ^_^)
+        /* если func возвращает void: func(std::move(err.v)); return Ret<Val>();
+           (такое поведения для типов Val != Void нужно потому, что из лямбды могут кидать
+           исключение или делать exit(). И если разрешить не писать типы только для Val == Void,
+           то тип придётся писать и в случаях когда мы не выходим из лямбды нормально, а это неудобно) */
+    }
+    return std::move(unsafe_access_to_internal_data(v));
+}
+
 } /* namespace error_handling */
 
 #endif /* ERROR_HANDLING_HPP_ */
