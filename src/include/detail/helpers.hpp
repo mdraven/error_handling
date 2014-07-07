@@ -40,18 +40,40 @@ struct is_not_universal_ref {
 
 template <class Errors, class Err>
 struct Enable_Ret_ValErrors_CopyConstructorFor_Err {
-	using type = typename std::enable_if<is_contains<Errors, Err>::value>;
+	static const bool value = is_contains<Errors, Err>::value;
+	using type = std::enable_if<value>;
 };
 
 template <class Errors, class Err>
 struct Enable_Ret_ValErrors_MoveConstructorFor_Err {
-	using type = typename std::enable_if<is_not_universal_ref<Err>::value &&
-			is_contains<Errors, Err>::value>;
+	static const bool value = is_not_universal_ref<Err>::value &&
+			is_contains<Errors, Err>::value;
+	using type = std::enable_if<value>;
 };
 
 template <class Args, class Errors>
 struct Enable_Ret_ValErrors_MoveConstructorFor_Ret_ValErrors {
-	using type = typename std::enable_if<is_difference_empty<Args, Errors>::value>;
+	static const bool value = is_difference_empty<Args, Errors>::value;
+	using type = std::enable_if<value>;
+};
+
+template <class Errors, class Err>
+struct Enable_Ret_ValErrors_CopyAssignFor_Err {
+	static const bool value = is_contains<Errors, Err>::value;
+	using type = std::enable_if<value>;
+};
+
+template <class Errors, class Err>
+struct Enable_Ret_ValErrors_MoveAssignFor_Err {
+	static const bool value = is_not_universal_ref<Err>::value &&
+			is_contains<Errors, Err>::value;
+	using type = std::enable_if<value>;
+};
+
+template <class Args, class Errors>
+struct Enable_Ret_ValErrors_MoveAssignFor_Ret_ValErrors {
+	static const bool value = is_difference_empty<Args, Errors>::value;
+	using type = std::enable_if<value>;
 };
 
 } /* namespace helpers */

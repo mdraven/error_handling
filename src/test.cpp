@@ -28,5 +28,9 @@ int main(int argc, char **argv) {
 
 	error_handling::Ret<std::string, ErrA, ErrB> ret6{error_handling::Ret<std::string, ErrA>()};
 //	error_handling::Ret<std::string, ErrA, ErrB> ret7{error_handling::Ret<std::string, ErrA, ErrC>()}; // ERR
+
+	ret6 = error_handling::Ret<std::string, ErrB>();
+//	ret6 = error_handling::Ret<std::string, ErrC>(); // ERR
+
 }
 

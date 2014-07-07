@@ -101,7 +101,6 @@ public:
     class = typename helpers::Enable_Ret_ValErrors_CopyConstructorFor_Err<errors, Err>::type::type>
     Ret(const Err& v);
 
-
     template <class Err,
     class = typename helpers::Enable_Ret_ValErrors_MoveConstructorFor_Err<errors, Err>::type::type>
     Ret(Err&& v) noexcept(std::is_nothrow_move_constructible<Err>::value);
@@ -115,18 +114,19 @@ public:
     Ret<Val, Errors...>& operator=(const Val& v);
     Ret<Val, Errors...>& operator=(Val&& v) noexcept(std::is_nothrow_move_assignable<Val>::value);
 
-//    template <class Err, class = typename helpers::enable_if_contains<errors, Err>::type>
-//    Ret<Val, Errors...>& operator=(const Err& v);
+    template <class Err,
+    class = typename helpers::Enable_Ret_ValErrors_CopyAssignFor_Err<errors, Err>::type::type>
+    Ret<Val, Errors...>& operator=(const Err& v);
 
-//    template <class Err, class = typename helpers::enable_if_contains<errors, Err>::type>
-//    Ret<Val, Errors...>& operator=(Err&& v) noexcept(std::is_nothrow_move_assignable<Err>::value);
+    template <class Err,
+    class = typename helpers::Enable_Ret_ValErrors_MoveAssignFor_Err<errors, Err>::type::type>
+    Ret<Val, Errors...>& operator=(Err&& v) noexcept(std::is_nothrow_move_assignable<Err>::value);
 
     Ret<Val, Errors...>& operator=(const Ret<Val, Errors...>& v) = delete;
 
-//    template <class... Args,
-//    class args = boost::mpl::set<Args...>,
-//    class = typename helpers::enable_if_difference<args, errors>::type>
-//    Ret<Val, Errors...>& operator=(Ret<Val, Args...>&& v) noexcept;
+    template <class... Args,
+    class = typename helpers::Enable_Ret_ValErrors_MoveAssignFor_Ret_ValErrors<boost::mpl::set<Args...>, errors>::type::type>
+    Ret<Val, Errors...>& operator=(Ret<Val, Args...>&& v) noexcept;
 
     /* операторов приведения типа(например к Val или ErrN) -- нет: если тип в v не совпал, то
        мы можем только бросить исключение, но эта библиотека не кидает >своих< исключений(возможно только в
@@ -150,17 +150,56 @@ Ret<Val, Errors...>::Ret(Val&& v) noexcept(std::is_nothrow_move_constructible<Va
 
 template <class Val, class... Errors>
 template <class Err, class>
-Ret<Val, Errors...>::Ret(const Err& v) : v(v) {printf("copy Err\n");}
+Ret<Val, Errors...>::Ret(const Err& v) : v(v) {printf("copy constr Err\n");}
 
 template <class Val, class... Errors>
 template <class Err, class>
 Ret<Val, Errors...>::Ret(Err&& v) noexcept(std::is_nothrow_move_constructible<Err>::value) :
-	v(std::move(v)) {printf("move Err\n");}
+	v(std::move(v)) {printf("move constr Err\n");}
 
 template <class Val, class... Errors>
 template <class... Args, class>
 Ret<Val, Errors...>::Ret(Ret<Val, Args...>&& v) noexcept :
-	v(std::move(unsafe_access_to_internal_data(v))) {printf("move Ret\n");}
+	v(std::move(unsafe_access_to_internal_data(v))) {printf("move constr Ret\n");}
+
+template <class Val, class... Errors>
+Ret<Val, Errors...>&
+Ret<Val, Errors...>::operator=(const Val& v) {
+	this->v = v.v;
+	return *this;
+}
+
+template <class Val, class... Errors>
+Ret<Val, Errors...>&
+Ret<Val, Errors...>::operator=(Val&& v) noexcept(std::is_nothrow_move_assignable<Val>::value) {
+	this->v = std::move(v);
+	return *this;
+}
+
+template <class Val, class... Errors>
+template <class Err, class>
+Ret<Val, Errors...>&
+Ret<Val, Errors...>::operator=(const Err& v) {
+	this->v = v.v;
+	return *this;
+}
+
+template <class Val, class... Errors>
+template <class Err, class>
+Ret<Val, Errors...>&
+Ret<Val, Errors...>::operator=(Err&& v) noexcept(std::is_nothrow_move_assignable<Err>::value) {
+	this->v = std::move(v);
+	return *this;
+}
+
+template <class Val, class... Errors>
+template <class... Args, class>
+Ret<Val, Errors...>&
+Ret<Val, Errors...>::operator=(Ret<Val, Args...>&& v) noexcept {
+	printf("move assign Ret\n");
+	this->v = std::move(unsafe_access_to_internal_data(v));
+	return *this;
+}
 
 template <class Val, class... Errors>
 Ret<Val, Errors...>::~Ret() {
