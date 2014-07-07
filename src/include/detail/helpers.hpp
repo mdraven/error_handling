@@ -18,6 +18,8 @@ namespace error_handling {
 
 namespace helpers {
 
+using boost::mpl::set;
+
 template <class Seq, class Elem>
 struct is_contains {
 	static const bool value = boost::mpl::contains<Seq, Elem>::value;
@@ -71,9 +73,10 @@ struct Enable_Ret_ValErrors_MoveAssignFor_Err {
 	using type = std::enable_if<value>;
 };
 
-template <class Args, class Errors>
+template <class OVal, class OErrors, class Val, class Errors>
 struct Enable_Ret_ValErrors_MoveAssignFor_Ret_ValErrors {
-	static const bool value = is_difference_empty<Args, Errors>::value;
+	static const bool value = std::is_convertible<OVal, Val>::value &&
+			is_difference_empty<OErrors, Errors>::value;
 	using type = std::enable_if<value>;
 };
 

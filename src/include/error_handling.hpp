@@ -22,6 +22,8 @@
 
 namespace error_handling {
 
+namespace h = error_handling::helpers;
+
 struct V {};
 struct T {};
 
@@ -162,7 +164,7 @@ class Ret<Val, Errors...> final {
 	template <class Val_, class... Errors_>
 	friend boost::any& unsafe_access_to_internal_data(Ret<Val_, Errors_...>&);
 
-	using errors = boost::mpl::set<Errors...>;
+	using errors = h::set<Errors...>;
 public:
 	Ret();
 
@@ -170,35 +172,35 @@ public:
 	Ret(Val&& v) noexcept(std::is_nothrow_move_constructible<Val>::value);
 
 	template <class Err,
-	class = typename helpers::Enable_Ret_ValErrors_CopyConstructorFor_Err<errors, Err>::type::type>
+	class = typename h::Enable_Ret_ValErrors_CopyConstructorFor_Err<errors, Err>::type::type>
 	Ret(const Err& v);
 
 	template <class Err,
-	class = typename helpers::Enable_Ret_ValErrors_MoveConstructorFor_Err<errors, Err>::type::type>
+	class = typename h::Enable_Ret_ValErrors_MoveConstructorFor_Err<errors, Err>::type::type>
 	Ret(Err&& v) noexcept(std::is_nothrow_move_constructible<Err>::value);
 
 	Ret(const Ret<Val, Errors...>& v) = delete;
 
 	template <class OVal, class... OErrors,
-	class = typename helpers::Enable_Ret_ValErrors_MoveConstructorFor_Ret_ValErrors<OVal, boost::mpl::set<OErrors...>, Val, errors>::type::type>
+	class = typename h::Enable_Ret_ValErrors_MoveConstructorFor_Ret_ValErrors<OVal, h::set<OErrors...>, Val, errors>::type::type>
 	Ret(Ret<OVal, OErrors...>&& v) noexcept;
 
 	Ret<Val, Errors...>& operator=(const Val& v);
 	Ret<Val, Errors...>& operator=(Val&& v) noexcept(std::is_nothrow_move_assignable<Val>::value);
 
 	template <class Err,
-	class = typename helpers::Enable_Ret_ValErrors_CopyAssignFor_Err<errors, Err>::type::type>
+	class = typename h::Enable_Ret_ValErrors_CopyAssignFor_Err<errors, Err>::type::type>
 	Ret<Val, Errors...>& operator=(const Err& v);
 
 	template <class Err,
-	class = typename helpers::Enable_Ret_ValErrors_MoveAssignFor_Err<errors, Err>::type::type>
+	class = typename h::Enable_Ret_ValErrors_MoveAssignFor_Err<errors, Err>::type::type>
 	Ret<Val, Errors...>& operator=(Err&& v) noexcept(std::is_nothrow_move_assignable<Err>::value);
 
 	Ret<Val, Errors...>& operator=(const Ret<Val, Errors...>& v) = delete;
 
-	template <class... Args,
-	class = typename helpers::Enable_Ret_ValErrors_MoveAssignFor_Ret_ValErrors<boost::mpl::set<Args...>, errors>::type::type>
-	Ret<Val, Errors...>& operator=(Ret<Val, Args...>&& v) noexcept;
+	template <class OVal, class... OErrors,
+	class = typename h::Enable_Ret_ValErrors_MoveAssignFor_Ret_ValErrors<OVal, h::set<OErrors...>, Val, errors>::type::type>
+	Ret<Val, Errors...>& operator=(Ret<OVal, OErrors...>&& v) noexcept;
 
 	/* операторов приведения типа(например к Val или ErrN) -- нет: если тип в v не совпал, то
       мы можем только бросить исключение, но эта библиотека не кидает >своих< исключений(возможно только в
@@ -265,9 +267,9 @@ Ret<Val, Errors...>::operator=(Err&& v) noexcept(std::is_nothrow_move_assignable
 }
 
 template <class Val, class... Errors>
-template <class... Args, class>
+template <class OVal, class... OErrors, class>
 Ret<Val, Errors...>&
-Ret<Val, Errors...>::operator=(Ret<Val, Args...>&& v) noexcept {
+Ret<Val, Errors...>::operator=(Ret<OVal, OErrors...>&& v) noexcept {
 	printf("move assign Ret\n");
 	this->v = std::move(unsafe_access_to_internal_data(v));
 	return *this;

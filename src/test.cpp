@@ -43,5 +43,11 @@ int main(int argc, char **argv) {
 
 	Ret<Base, ErrA> ret10{Ret<Derived, ErrA>()};
 //	Ret<Derived, ErrA> ret11{Ret<Base, ErrA>()}; // ERR
+
+	ret10 = Ret<Derived, ErrA>();
+/*	Ret<Derived, ErrA> ret12;
+	ret12 = Ret<Bas, ErrA>(); */ //ERR
+
+
 }
 
