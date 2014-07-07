@@ -17,6 +17,8 @@ namespace helpers {
 
 namespace l = Loki::TL;
 
+using l::EraseAll;
+
 template <class Typelist, class Elem>
 struct is_contains {
 	static const bool value = l::IndexOf<Typelist, Elem>::value != -1;
@@ -98,16 +100,19 @@ struct BuildTypelist<Head> {
 	using type = Loki::Typelist<Head, Loki::NullType>;
 };
 
-#if 0
-template <class Seq, template <class...> class Builder, class... Acc>
-class MPLSetToVariadic {
-	using head = typename boost::mpl::front<Seq>::type;
-	using tail = typename boost::mpl::remove<Seq, head>::type;
-	static const bool is_tail_empty = boost::mpl::empty<tail>::value;
+template<class... Elems>
+using Typelist = typename BuildTypelist<Elems...>::type;
+
+
+template <class Typelist, template <class...> class Builder, class... Acc>
+class TypelistToVariadic {
+	using head = typename Typelist::Head;
+	using tail = typename Typelist::Tail;
+	static const bool is_tail_empty = l::Length<tail>::value == 0;
 public:
 	using type = typename std::conditional<!is_tail_empty,
-			MPLSetToVariadic<tail, Builder, Acc..., head>,
-			Builder<Acc..., head>>::type;
+			TypelistToVariadic<tail, Builder, Acc..., head>,
+			Builder<Acc..., head>>::type::type;
 };
 
 template <template <class...> class Ret, class Val, class Errors>
@@ -117,13 +122,12 @@ class BuildRet {
 		using type = Ret<Val, OErrors...>;
 	};
 
-	static const bool is_errors_empty = boost::mpl::empty<Errors>::value;
+	static const bool is_errors_empty = l::Length<Errors>::value == 0;
 public:
 	using type = typename std::conditional<is_errors_empty,
 			Builder<>,
-			MPLSetToVariadic<Errors, Builder>>::type;
+			TypelistToVariadic<Errors, Builder>>::type::type;
 };
-#endif
 
 } /* namespace helpers */
 

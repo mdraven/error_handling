@@ -27,7 +27,7 @@ struct Derived : public Base {};
 
 int main(int argc, char **argv) {
 	using error_handling::Ret;
-//	using error_handling::if_err;
+	using error_handling::if_err;
 	using error_handling::T;
 
 	std::string str("hello");
@@ -58,8 +58,8 @@ int main(int argc, char **argv) {
 /*	Ret<Derived, ErrA> ret12;
 	ret12 = Ret<Base, ErrA>(); */ //ERR
 
-//	auto x = if_err<ErrB>(std::move(ret6), [](){});
-//	auto x = typename error_handling::helpers::BuildRet<Ret, int, error_handling::h::set<int, float>>::type();
-//	typename boost::mpl::reverse_remove<boost::mpl::set<int, float>, int, boost::mpl::back_inserter<boost::mpl::set0<> >>::type x;
+	Ret<std::string, ErrA> ret13 = if_err<ErrB>(std::move(ret6), [](){});
+//	typename error_handling::helpers::BuildRet<Ret, int, error_handling::h::Typelist<int, float, char, ErrA, ErrB>>::type x = 10;
+
 }
 
