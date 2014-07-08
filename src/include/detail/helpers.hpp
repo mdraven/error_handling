@@ -8,44 +8,29 @@
 #ifndef HELPERS_HPP_
 #define HELPERS_HPP_
 
-#include "typelist.hpp"
+#include "set.hpp"
 
-#include <loki/Typelist.h>
 #include <type_traits>
 
 namespace error_handling {
 
 namespace helpers {
 
-namespace l = Loki::TL;
-namespace t = error_handling::typelist;
+namespace s = error_handling::set;
 
-using l::EraseAll;
-
-template <class Typelist, class Elem>
+template <class Seq, class Elem>
 struct is_contains {
-	static const bool value = l::IndexOf<Typelist, Elem>::value != -1;
+	static const bool value = s::contains<Seq, Elem>::value;
 };
 
-template <class Typelist1, class Typelist2>
+template <class Seq1, class Seq2>
 struct difference {
-	template <bool is_end, class T1, class T2>
-	struct dispatcher {
-		using type = typename l::EraseAll<T1, typename T2::Head>::Result;
-	};
-
-	template <class T1, class T2>
-	struct dispatcher<false, T1, T2> {
-		using type = typename difference<typename l::EraseAll<Typelist1, typename Typelist2::Head>::Result, typename Typelist2::Tail>::type;
-	};
-
-	static const bool is_end = l::Length<Typelist2>::value == 1;
-	using type = typename dispatcher<is_end, Typelist1, Typelist2>::type;
+	using type = typename s::remove_if<Seq1, s::contains<Seq2, s::_>, s::SetInserter>::type;
 };
 
 template <class Seq1, class Seq2>
 struct is_difference_empty {
-	static const bool value = l::Length<typename difference<Seq1, Seq2>::type>::value == 0;
+	static const bool value = s::empty<typename difference<Seq1, Seq2>::type>::value;
 };
 
 template <class T>
@@ -60,11 +45,11 @@ class BuildRet {
 		using type = Ret<Val, OErrors...>;
 	};
 
-	static const bool is_errors_empty = l::Length<Errors>::value == 0;
+	static const bool is_errors_empty = s::empty<Errors>::value;
 public:
-	using type = typename std::conditional<is_errors_empty,
+	using type = typename s::SeqToVariadic<Errors, Builder>::type::type;/*typename std::conditional<is_errors_empty,
 			Builder<>,
-			t::TypelistToVariadic<Errors, Builder>>::type::type;
+			s::SeqToVariadic<Errors, Builder>>::type::type;*/
 };
 
 } /* namespace helpers */

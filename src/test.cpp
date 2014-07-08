@@ -13,6 +13,9 @@
 #include <boost/mpl/reverse.hpp>
 #include <boost/mpl/back_inserter.hpp>
 #include <boost/mpl/vector.hpp>
+#include <boost/mpl/set.hpp>
+#include <boost/mpl/insert.hpp>
+#include <boost/mpl/advance.hpp>
 #include <boost/mpl/erase_key.hpp>
 #include <boost/mpl/size.hpp>
 #include <boost/mpl/unique.hpp>
@@ -27,6 +30,7 @@ struct Base {};
 struct Derived : public Base {};
 
 int main(int argc, char **argv) {
+
 	using error_handling::Ret;
 	using error_handling::if_err;
 	using error_handling::T;
@@ -63,7 +67,12 @@ int main(int argc, char **argv) {
 	Ret<std::string, ErrA> ret14 = if_err<ErrB>(std::move(ret13), [](){}); // TODO: должен не компилироваться, а он компилируется
 	Ret<std::string> ret15 = if_err<ErrA>(std::move(ret13), [](){});
 
-//	typename error_handling::helpers::BuildRet<Ret, int, error_handling::h::Typelist<int, float, char, ErrA, ErrB>>::type x = 10;
 
+	//	typename error_handling::helpers::BuildRet<Ret, int, error_handling::h::Typelist<int, float, char, ErrA, ErrB>>::type x = 10;
+//	using namespace boost::mpl;
+//	typedef set<ErrA, ErrB, ErrC, ErrB> t1;
+//	typedef begin<t1>::type t2;
+//	typedef advance<t2, int_<3>>::type::type t3;
+//	t3 x = 10;
 }
 

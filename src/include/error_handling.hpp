@@ -9,8 +9,8 @@
 #define ERROR_HANDLING_HPP_
 
 #include "detail/helpers.hpp"
+#include "detail/set.hpp"
 #include "detail/class_enables.hpp"
-#include "detail/typelist.hpp"
 
 #include <boost/any.hpp>
 #include <boost/mpl/set.hpp>
@@ -26,7 +26,7 @@ namespace error_handling {
 
 namespace h = error_handling::helpers;
 namespace c = error_handling::class_enables;
-namespace t = error_handling::typelist;
+namespace s = error_handling::set;
 
 struct V {};
 struct T {};
@@ -172,7 +172,7 @@ class Ret<Val, Errors...> final {
 	template <class OVal, class... OErrors>
 	friend boost::any& unsafe_access_to_internal_data(Ret<OVal, OErrors...>&);
 
-	using errors = t::Typelist<Errors...>;
+	using errors = s::set<Errors...>;
 public:
 	Ret();
 
@@ -190,7 +190,7 @@ public:
 	Ret(const Ret<Val, Errors...>& v) = delete;
 
 	template <class OVal, class... OErrors,
-	class = typename c::Enable_Ret_ValErrors_MoveConstructorFor_Ret_ValErrors<OVal, t::Typelist<OErrors...>, Val, errors>::type::type>
+	class = typename c::Enable_Ret_ValErrors_MoveConstructorFor_Ret_ValErrors<OVal, s::set<OErrors...>, Val, errors>::type::type>
 	Ret(Ret<OVal, OErrors...>&& v) noexcept;
 
 	Ret<Val, Errors...>& operator=(const Val& v);
@@ -207,7 +207,7 @@ public:
 	Ret<Val, Errors...>& operator=(const Ret<Val, Errors...>& v) = delete;
 
 	template <class OVal, class... OErrors,
-	class = typename c::Enable_Ret_ValErrors_MoveAssignFor_Ret_ValErrors<OVal, t::Typelist<OErrors...>, Val, errors>::type::type>
+	class = typename c::Enable_Ret_ValErrors_MoveAssignFor_Ret_ValErrors<OVal, s::set<OErrors...>, Val, errors>::type::type>
 	Ret<Val, Errors...>& operator=(Ret<OVal, OErrors...>&& v) noexcept;
 
 	/* операторов приведения типа(например к Val или ErrN) -- нет: если тип в v не совпал, то
@@ -300,7 +300,7 @@ Val& unsafe_access_to_internal_data(Ret<Val>& v) {
 }
 
 template <class Err, class UnOp, class Val, class... Errors>
-typename h::BuildRet<Ret, Val, typename h::EraseAll<t::Typelist<Errors...>, Err>::Result>::type
+typename h::BuildRet<Ret, Val, typename s::remove<s::set<Errors...>, Err, s::SetInserter>::type>::type
 if_err(Ret<Val, Errors...>&& v, UnOp op) {
     if(unsafe_access_to_internal_data(v).type() == typeid(Err)) {
         // если func возвращает Ret<...>, то: return func(std::move(err.v));
@@ -311,9 +311,9 @@ if_err(Ret<Val, Errors...>&& v, UnOp op) {
            то тип придётся писать и в случаях когда мы не выходим из лямбды нормально, а это неудобно) */
     }
 
-    typename h::BuildRet<Ret, Val, typename h::EraseAll<t::Typelist<Errors...>, Err>::Result>::type ret;
-    unsafe_access_to_internal_data(ret) = std::move(unsafe_access_to_internal_data(v));
-    return ret;
+//    typename h::BuildRet<Ret, Val, typename h::EraseAll<t::Typelist<Errors...>, Err>::Result>::type ret;
+//    unsafe_access_to_internal_data(ret) = std::move(unsafe_access_to_internal_data(v));
+//    return ret;
 }
 
 } /* namespace error_handling */
