@@ -8,6 +8,9 @@
 #ifndef HELPERSFORIFERR_IMPL_HPP_
 #define HELPERSFORIFERR_IMPL_HPP_
 
+#include <error_handling/detail/Any.hpp>
+#include <error_handling/detail/Set.hpp>
+#include <error_handling/detail/impl/BuildRet.hpp>
 #include <error_handling/detail/IfErr.hpp>
 
 namespace error_handling {
