@@ -46,6 +46,10 @@ class Ret;
 template <class Val>
 class Ret<Val> final {
 	Val v{};
+
+	template <class OVal>
+	friend OVal& unsafe_access_to_internal_data(Ret<OVal>&);
+
 public:
 	Ret() = default;
 
@@ -165,8 +169,8 @@ template <class Val, class... Errors>
 class Ret<Val, Errors...> final {
 	boost::any v;
 
-	template <class Val_, class... Errors_>
-	friend boost::any& unsafe_access_to_internal_data(Ret<Val_, Errors_...>&);
+	template <class OVal, class... OErrors>
+	friend boost::any& unsafe_access_to_internal_data(Ret<OVal, OErrors...>&);
 
 	using errors = t::Typelist<Errors...>;
 public:
@@ -287,6 +291,11 @@ Ret<Val, Errors...>::~Ret() {
 
 template <class Val, class... Errors>
 boost::any& unsafe_access_to_internal_data(Ret<Val, Errors...>& v) {
+	return v.v;
+}
+
+template <class Val>
+Val& unsafe_access_to_internal_data(Ret<Val>& v) {
 	return v.v;
 }
 

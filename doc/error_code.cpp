@@ -231,6 +231,12 @@ boost::any& unsafe_access_to_internal_data(Ret<Val, Errors...>& v) {
 	return v.v;
 }
 
+// unsafe для Ret<Val>(он возвращает не any)
+template <class Val>
+Val& unsafe_access_to_internal_data(Ret<Val>& v) {
+	return v.v;
+}
+
 
 // Пока что if_err надо сделать другом Ret<Args...> (но не Ret<Val>!)
 //      Сейчас можно не делать другом, есть unsafe_access_to_internal_data.

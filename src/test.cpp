@@ -17,6 +17,7 @@
 #include <boost/mpl/size.hpp>
 #include <boost/mpl/unique.hpp>
 #include <boost/mpl/sort.hpp>
+// delete ^
 
 struct ErrA {};
 struct ErrB {};
@@ -59,6 +60,9 @@ int main(int argc, char **argv) {
 	ret12 = Ret<Base, ErrA>(); */ //ERR
 
 	Ret<std::string, ErrA> ret13 = if_err<ErrB>(std::move(ret6), [](){});
+	Ret<std::string, ErrA> ret14 = if_err<ErrB>(std::move(ret13), [](){}); // TODO: должен не компилироваться, а он компилируется
+	Ret<std::string> ret15 = if_err<ErrA>(std::move(ret13), [](){});
+
 //	typename error_handling::helpers::BuildRet<Ret, int, error_handling::h::Typelist<int, float, char, ErrA, ErrB>>::type x = 10;
 
 }
