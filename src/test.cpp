@@ -8,6 +8,7 @@
 #include "include/error_handling.hpp"
 
 #include <string>
+#include <iostream>
 
 // TODO: delete
 #include <boost/mpl/reverse.hpp>
@@ -61,10 +62,12 @@ int main(int argc, char **argv) {
 	ret10 = Ret<Derived, ErrA>();
 //	Ret<Derived, ErrA> ret12; ret12 = Ret<Base, ErrA>();  //ERR
 
-	Ret<std::string, ErrA> ret13 = if_err<ErrB>(std::move(ret6), [](){});
-//	Ret<std::string, ErrA> ret14 = if_err<ErrB>(std::move(ret13), [](){}); // ERR
-	Ret<std::string> ret15 = if_err<ErrA>(std::move(ret13), [](){});
+	Ret<std::string, ErrA, ErrB> ret13{std::string("hello")};
+	Ret<std::string, ErrA> ret14 = if_err<ErrB>(std::move(ret13), [](){});
+//	Ret<std::string, ErrA> ret15 = if_err<ErrB>(std::move(ret14), [](){}); // ERR
+	Ret<std::string> ret16 = if_err<ErrA>(std::move(ret14), [](){});
 
+	std::cout << static_cast<std::string>(ret16) << std::endl;
 
 	//	typename error_handling::helpers::BuildRet<Ret, int, error_handling::h::Typelist<int, float, char, ErrA, ErrB>>::type x = 10;
 }
