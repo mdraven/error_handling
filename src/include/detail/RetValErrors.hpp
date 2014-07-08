@@ -18,6 +18,8 @@ namespace error_handling {
 
 namespace detail {
 
+namespace erve = error_handling::detail::enables_for_ret_valerrors;
+
 template <class Val, class... Errors>
 class Ret<Val, Errors...> final {
 	boost::any v;
@@ -33,34 +35,34 @@ public:
 	Ret(Val&& v) noexcept(std::is_nothrow_move_constructible<Val>::value);
 
 	template <class Err,
-	class = typename Enable_Ret_ValErrors_CopyConstructorFor_Err<errors, Err>::type::type>
+	class = typename erve::EnableCopyConstructorFor_Err<errors, Err>::type::type>
 	Ret(const Err& v);
 
 	template <class Err,
-	class = typename Enable_Ret_ValErrors_MoveConstructorFor_Err<errors, Err>::type::type>
+	class = typename erve::EnableMoveConstructorFor_Err<errors, Err>::type::type>
 	Ret(Err&& v) noexcept(std::is_nothrow_move_constructible<Err>::value);
 
 	Ret(const Ret<Val, Errors...>& v) = delete;
 
 	template <class OVal, class... OErrors,
-	class = typename Enable_Ret_ValErrors_MoveConstructorFor_Ret_ValErrors<OVal, Set<OErrors...>, Val, errors>::type::type>
+	class = typename erve::EnableMoveConstructorFor_Ret_ValErrors<OVal, Set<OErrors...>, Val, errors>::type::type>
 	Ret(Ret<OVal, OErrors...>&& v) noexcept;
 
 	Ret<Val, Errors...>& operator=(const Val& v);
 	Ret<Val, Errors...>& operator=(Val&& v) noexcept(std::is_nothrow_move_assignable<Val>::value);
 
 	template <class Err,
-	class = typename Enable_Ret_ValErrors_CopyAssignFor_Err<errors, Err>::type::type>
+	class = typename erve::EnableCopyAssignFor_Err<errors, Err>::type::type>
 	Ret<Val, Errors...>& operator=(const Err& v);
 
 	template <class Err,
-	class = typename Enable_Ret_ValErrors_MoveAssignFor_Err<errors, Err>::type::type>
+	class = typename erve::EnableMoveAssignFor_Err<errors, Err>::type::type>
 	Ret<Val, Errors...>& operator=(Err&& v) noexcept(std::is_nothrow_move_assignable<Err>::value);
 
 	Ret<Val, Errors...>& operator=(const Ret<Val, Errors...>& v) = delete;
 
 	template <class OVal, class... OErrors,
-	class = typename Enable_Ret_ValErrors_MoveAssignFor_Ret_ValErrors<OVal, Set<OErrors...>, Val, errors>::type::type>
+	class = typename erve::EnableMoveAssignFor_Ret_ValErrors<OVal, Set<OErrors...>, Val, errors>::type::type>
 	Ret<Val, Errors...>& operator=(Ret<OVal, OErrors...>&& v) noexcept;
 
 	/* операторов приведения типа(например к Val или ErrN) -- нет: если тип в v не совпал, то
