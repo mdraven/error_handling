@@ -22,6 +22,7 @@ if_err(Ret<Val, Errors...>&& v, UnOp op) {
 	hfif::ConstraintsFor_ValErrors<Err, UnOp, Val, Errors...>();
 
     if(unsafe_access_to_internal_data(v).type() == typeid(Err)) {
+    	hfif::CallHandler::call<Val, Errors...>(op, std::move(unsafe_any_cast<Err>(unsafe_access_to_internal_data(v))));
         // если func возвращает Ret<...>, то: return func(std::move(err.v));
         // если func возвращает что-то другое, то ошибка компиляции(зарезервирую bool для себя ^_^)
         /* если func возвращает void: func(std::move(err.v)); return Ret<Val>();

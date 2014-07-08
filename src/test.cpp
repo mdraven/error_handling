@@ -50,11 +50,11 @@ int main(int argc, char **argv) {
 //	Ret<Derived, ErrA> ret12; ret12 = Ret<Base, ErrA>();  //ERR
 
 	Ret<std::string, ErrA, ErrB> ret13{std::string("hello")};
-	Ret<std::string, ErrA> ret14 = if_err<ErrB>(std::move(ret13), [](){});
+	Ret<std::string, ErrA> ret14 = if_err<ErrB>(std::move(ret13), [](ErrB&&){});
 //	Ret<std::string, ErrA> ret15 = if_err<ErrB>(std::move(ret14), [](){}); // ERR
-	Ret<std::string> ret16 = if_err<ErrA>(std::move(ret14), [](){});
+	Ret<std::string> ret16 = if_err<ErrA>(std::move(ret14), []() -> int { return 1; });
 
-	std::cout << ret16.data() << std::endl;
+//	std::cout << ret16.data() << std::endl;
 
 	//	typename error_handling::helpers::BuildRet<Ret, int, error_handling::h::Typelist<int, float, char, ErrA, ErrB>>::type x = 10;
 }

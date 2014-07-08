@@ -13,6 +13,9 @@
 #include <error_handling/detail/impl/BuildRet.hpp>
 #include <error_handling/detail/IfErr.hpp>
 
+// TODO: delete
+#include <type_traits>
+
 namespace error_handling {
 
 namespace detail {
@@ -49,7 +52,17 @@ class AssignHelper {
 };
 
 class CallHandler {
+	template <class Err, class UnOp, class Val, class... Errors>
+	friend
+	typename RetTypeFor_ValErrors<Err, Val, Errors...>::type
+	error_handling::detail::if_err(Ret<Val, Errors...>&& v, UnOp op);
 
+	template <class Val, class... Errors, class Err, class UnOp,
+	class = typename std::enable_if<std::is_void<typename std::result_of<UnOp(Err)>::type>::value>::type> //decltype(UnOp(std::declval<Err>()))>::value
+	static Ret<Val, Errors...> call(UnOp op, Err&& err) {
+		op(std::move(err));
+		return Val();
+	}
 };
 
 } /* namespace helpers_for_if_err */
