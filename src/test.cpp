@@ -10,19 +10,6 @@
 #include <string>
 #include <iostream>
 
-// TODO: delete
-#include <boost/mpl/reverse.hpp>
-#include <boost/mpl/back_inserter.hpp>
-#include <boost/mpl/vector.hpp>
-#include <boost/mpl/set.hpp>
-#include <boost/mpl/insert.hpp>
-#include <boost/mpl/advance.hpp>
-#include <boost/mpl/erase_key.hpp>
-#include <boost/mpl/size.hpp>
-#include <boost/mpl/unique.hpp>
-#include <boost/mpl/sort.hpp>
-// delete ^
-
 struct ErrA {};
 struct ErrB {};
 struct ErrC {};

@@ -9,6 +9,8 @@
 #define SET_HPP_
 
 #include <boost/mpl/set.hpp>
+#include <boost/mpl/empty.hpp>
+#include <boost/mpl/size.hpp>
 #include <boost/mpl/insert.hpp>
 #include <boost/mpl/advance.hpp>
 #include <boost/mpl/contains.hpp>
