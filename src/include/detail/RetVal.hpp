@@ -9,6 +9,7 @@
 #define RETVAL_HPP_
 
 #include "Ret.hpp"
+#include "unsafe_access_to_internal_data.hpp"
 
 #include <type_traits>
 #include <utility>
@@ -77,11 +78,6 @@ Ret<Val>::operator Val&() noexcept {
 template <class Val>
 Ret<Val>::operator const Val&() const noexcept {
 	return v;
-}
-
-template <class Val>
-Val& unsafe_access_to_internal_data(Ret<Val>& v) {
-	return v.v;
 }
 
 } /* namespace detail */

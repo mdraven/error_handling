@@ -67,10 +67,5 @@ int main(int argc, char **argv) {
 
 
 	//	typename error_handling::helpers::BuildRet<Ret, int, error_handling::h::Typelist<int, float, char, ErrA, ErrB>>::type x = 10;
-//	using namespace boost::mpl;
-//	typedef set<ErrA, ErrB, ErrC, ErrB> t1;
-//	typedef begin<t1>::type t2;
-//	typedef advance<t2, int_<3>>::type::type t3;
-//	t3 x = 10;
 }
 

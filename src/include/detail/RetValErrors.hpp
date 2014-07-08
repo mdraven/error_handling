@@ -11,6 +11,7 @@
 #include "Ret.hpp"
 #include "Set.hpp"
 #include "EnablesForRetValErrors.hpp"
+#include "unsafe_access_to_internal_data.hpp"
 
 #include <boost/any.hpp>
 
@@ -144,14 +145,8 @@ Ret<Val, Errors...>::~Ret() {
 		printf("Unchecked Ret: %s\n", typeid(Ret<Val, Errors...>).name());
 }
 
-template <class Val, class... Errors>
-boost::any& unsafe_access_to_internal_data(Ret<Val, Errors...>& v) {
-	return v.v;
-}
-
 } /* namespace detail */
 
 } /* namespace error_handling */
-
 
 #endif /* RETVALERRORS_HPP_ */
