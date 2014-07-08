@@ -10,6 +10,7 @@
 
 #include "Set.hpp"
 #include "BuildRet.hpp"
+#include "Any.hpp"
 
 namespace error_handling {
 
@@ -35,7 +36,7 @@ class AssignHelper {
 
 	template <class Val, class OVal, class... OErrors>
 	static void assign(Ret<Val>& v, Ret<OVal, OErrors...>&& ov) {
-		unsafe_access_to_internal_data(v) = std::move(boost::any_cast<Val>(unsafe_access_to_internal_data(ov)));
+		unsafe_access_to_internal_data(v) = std::move(unsafe_any_cast<Val>(unsafe_access_to_internal_data(ov)));
 	}
 
 	template <class Val, class Err, class... Errors, class OVal, class... OErrors>
