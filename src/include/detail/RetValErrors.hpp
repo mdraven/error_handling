@@ -12,8 +12,7 @@
 #include "Set.hpp"
 #include "EnablesForRetValErrors.hpp"
 #include "unsafe_access_to_internal_data.hpp"
-
-#include <boost/any.hpp>
+#include "Any.hpp"
 
 namespace error_handling {
 
@@ -23,10 +22,10 @@ namespace erve = error_handling::detail::enables_for_ret_valerrors;
 
 template <class Val, class Err, class... Errors>
 class Ret<Val, Err, Errors...> final {
-	boost::any v;
+	Any v;
 
 	template <class OVal, class OErr, class... OErrors>
-	friend boost::any& unsafe_access_to_internal_data(Ret<OVal, OErr, OErrors...>&);
+	friend Any& unsafe_access_to_internal_data(Ret<OVal, OErr, OErrors...>&);
 
 	using errors = Set<Err, Errors...>;
 public:

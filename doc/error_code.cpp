@@ -247,6 +247,12 @@ Val& unsafe_access_to_internal_data(Ret<Val>& v) {
 	return v.v;
 }
 
+// у boost::any нет незащищённого варианта, но у меня есть такие места
+// где защита не нужна. Буду использовать эту заглушку.
+template <class Val>
+Val unsafe_any_cast(Any& v) {
+	return boost::any_cast<Val>(v);
+}
 
 // Пока что if_err надо сделать другом Ret<Args...> (но не Ret<Val>!)
 //      Сейчас можно не делать другом, есть unsafe_access_to_internal_data.
