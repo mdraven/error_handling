@@ -58,7 +58,7 @@ class CallHandler {
 	error_handling::detail::if_err(Ret<Val, Errors...>&& v, UnOp op);
 
 	template <class Val, class... Errors, class Err, class UnOp,
-	class = typename std::enable_if<std::is_void<typename std::result_of<UnOp(Err)>::type>::value>::type> //decltype(UnOp(std::declval<Err>()))>::value
+	class = typename std::enable_if<std::is_void<typename std::result_of<UnOp(Err&&)>::type>::value>::type>
 	static Ret<Val, Errors...> call(UnOp op, Err&& err) {
 		op(std::move(err));
 		return Val();
