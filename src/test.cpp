@@ -30,7 +30,6 @@ struct Base {};
 struct Derived : public Base {};
 
 int main(int argc, char **argv) {
-
 	using error_handling::Ret;
 	using error_handling::if_err;
 	using error_handling::T;
