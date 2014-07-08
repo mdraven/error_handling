@@ -254,6 +254,37 @@ Val unsafe_any_cast(Any& v) {
 	return boost::any_cast<Val>(v);
 }
 
+// Помошник для if_err. Например нам надо присвоить Ret<Val> то что лежит в Ret<Val, Err>:
+// мы не сможем это сделать так как в Ret<Val, Err> лежит Any, а в Ret<Val> сам Val.
+//
+// Этот помошник берёт на себя работу по диспатчу присваиваний(легкое:
+// Ret<Val, ErrA> -> Ret<Val, ErrB>, и более сложное: Ret<Val, ErrA> -> Ret<Val>).
+//
+// Этот хелпер очень тонкий, он не знает особенностей Ret<...>, не нужно делать
+// тут проверки на возможность присвоить. Максимум что он делает -- это конвертирует
+// и решает: перемещать или копировать, больше ничего он не должен делать!
+//
+// Это очень опасный класс, он нарушает правила Ret<...>, поэтому он должен
+// быть другом ограниченного набора классов(идельно: только if_err). Если
+// сделать его публичным, то можно будет "не светить" unsafe_any_cast, а
+// использовать его.
+class AssignHelperForIfErr {
+	template <class Err, class UnOp, class Val, class... Errors>
+	friend
+	typename RetTypeFor_IfErrValErrors<Err, Val, Errors...>::type
+	if_err(Ret<Val, Errors...>&& v, UnOp op);
+
+	template <class Val, class OVal, class... OErrors>
+	static void assign(Ret<Val>& v, Ret<OVal, OErrors...>&& ov) {
+		unsafe_access_to_internal_data(v) = std::move(unsafe_any_cast<Val>(unsafe_access_to_internal_data(ov)));
+	}
+
+	template <class Val, class Err, class... Errors, class OVal, class... OErrors>
+	static void assign(Ret<Val, Err, Errors...>& v, Ret<OVal, OErrors...>&& ov) {
+		unsafe_access_to_internal_data(v) = std::move(unsafe_access_to_internal_data(ov));
+	}
+};
+
 // Пока что if_err надо сделать другом Ret<Args...> (но не Ret<Val>!)
 //      Сейчас можно не делать другом, есть unsafe_access_to_internal_data.
 template <class Err, class UnOp, class... Args>

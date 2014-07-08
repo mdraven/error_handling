@@ -28,7 +28,7 @@ class ConstraintsFor_IfErrValErrors {
 	static_assert(IsContains<Set<Errors...>, Err>::value, "`Err` isn't contains in `Errors...`");
 };
 
-class AssignHelper {
+class AssignHelperForIfErr {
 	template <class Err, class UnOp, class Val, class... Errors>
 	friend
 	typename RetTypeFor_IfErrValErrors<Err, Val, Errors...>::type
@@ -60,7 +60,7 @@ if_err(Ret<Val, Errors...>&& v, UnOp op) {
     }
 
 	typename RetTypeFor_IfErrValErrors<Err, Val, Errors...>::type ret;
-	AssignHelper::assign(ret, std::move(v));
+	AssignHelperForIfErr::assign(ret, std::move(v));
     return ret;
 }
 
