@@ -25,8 +25,8 @@ template <class Val, class... Errors>
 class Ret<Val, Errors...> final {
 	boost::any v;
 
-	template <class OVal, class... OErrors>
-	friend boost::any& unsafe_access_to_internal_data(Ret<OVal, OErrors...>&);
+	template <class OVal, class OErr, class... OErrors>
+	friend boost::any& unsafe_access_to_internal_data(Ret<OVal, OErr, OErrors...>&);
 
 	using errors = Set<Errors...>;
 public:

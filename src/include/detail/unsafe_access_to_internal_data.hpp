@@ -16,8 +16,8 @@ namespace error_handling {
 
 namespace detail {
 
-template <class Val, class... Errors>
-boost::any& unsafe_access_to_internal_data(Ret<Val, Errors...>& v) {
+template <class Val, class Err, class... Errors>
+boost::any& unsafe_access_to_internal_data(Ret<Val, Err, Errors...>& v) {
 	return v.v;
 }
 
