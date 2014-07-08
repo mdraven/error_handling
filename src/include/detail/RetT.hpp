@@ -27,34 +27,34 @@ public:
 	Ret<T>& operator=(Ret<T>&&) noexcept = default;
 
 	template <class Val>
-	Ret(const Val& v) noexcept {}
+	Ret(const Val&) noexcept {}
 
 	template <class Val>
-	Ret(Val&& v) noexcept {}
+	Ret(Val&&) noexcept {}
 
 	template <class Val>
-	Ret(const Ret<Val>& v) noexcept {}
+	Ret(const Ret<Val>&) noexcept {}
 
 	template <class Val>
-	Ret(Ret<Val>&& v) noexcept {}
+	Ret(Ret<Val>&&) noexcept {}
 
 	template <class Val>
-	Ret<T>& operator=(const Val& v) noexcept {
+	Ret<T>& operator=(const Val&) noexcept {
 		return *this;
 	}
 
 	template <class Val>
-	Ret<T>& operator=(Val&& v) noexcept {
+	Ret<T>& operator=(Val&&) noexcept {
 		return *this;
 	}
 
 	template <class Val>
-	Ret<T>& operator=(const Ret<Val>& v) noexcept {
+	Ret<T>& operator=(const Ret<Val>&) noexcept {
 		return *this;
 	}
 
 	template <class Val>
-	Ret<T>& operator=(Ret<Val>&& v) noexcept {
+	Ret<T>& operator=(Ret<Val>&&) noexcept {
 		return *this;
 	}
 
