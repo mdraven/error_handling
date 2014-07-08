@@ -67,7 +67,7 @@ int main(int argc, char **argv) {
 //	Ret<std::string, ErrA> ret15 = if_err<ErrB>(std::move(ret14), [](){}); // ERR
 	Ret<std::string> ret16 = if_err<ErrA>(std::move(ret14), [](){});
 
-	std::cout << static_cast<std::string>(ret16) << std::endl;
+	std::cout << ret16.data() << std::endl;
 
 	//	typename error_handling::helpers::BuildRet<Ret, int, error_handling::h::Typelist<int, float, char, ErrA, ErrB>>::type x = 10;
 }

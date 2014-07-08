@@ -43,6 +43,9 @@ public:
 	explicit operator Val&() noexcept;
 	explicit operator const Val&() const noexcept;
 
+	Val& data() noexcept;
+	const Val& data() const noexcept;
+
 	/* тут набор операторов сравнения, если они есть у Val.
       Все сравнения только с Val и Ret<Val>, никаких Ret<...,Val> */
 
@@ -77,6 +80,16 @@ Ret<Val>::operator Val&() noexcept {
 
 template <class Val>
 Ret<Val>::operator const Val&() const noexcept {
+	return v;
+}
+
+template <class Val>
+Val& Ret<Val>::data() noexcept {
+	return v;
+}
+
+template <class Val>
+const Val& Ret<Val>::data() const noexcept {
 	return v;
 }
 
