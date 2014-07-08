@@ -27,9 +27,9 @@ if_err(Ret<Val, Errors...>&& v, UnOp op) {
            то тип придётся писать и в случаях когда мы не выходим из лямбды нормально, а это неудобно) */
 //    }
 
-//    typename h::BuildRet<Ret, Val, typename Remove<set<Errors...>, Err>::type>::type ret;
+    typename BuildRet<Ret, Val, typename Remove<Set<Errors...>, Err>::type>::type ret;
 //    unsafe_access_to_internal_data(ret) = std::move(unsafe_access_to_internal_data(v));
-//    return ret;
+    return ret;
 }
 
 } /* namespace detail */

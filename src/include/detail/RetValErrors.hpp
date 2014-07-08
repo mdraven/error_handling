@@ -141,7 +141,7 @@ Ret<Val, Errors...>::operator=(Ret<OVal, OErrors...>&& v) noexcept {
 template <class Val, class... Errors>
 Ret<Val, Errors...>::~Ret() {
 	if(!v.empty())
-		printf("Boom\n");
+		printf("Unchecked Ret: %s\n", typeid(Ret<Val, Errors...>).name());
 }
 
 template <class Val, class... Errors>
