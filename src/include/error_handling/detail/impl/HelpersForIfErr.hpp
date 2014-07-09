@@ -10,6 +10,7 @@
 
 #include <error_handling/detail/Any.hpp>
 #include <error_handling/detail/Set.hpp>
+#include <error_handling/detail/HelpersForIfErr.hpp>
 #include <error_handling/detail/impl/BuildRet.hpp>
 #include <error_handling/detail/IfErr.hpp>
 #include <error_handling/detail/impl/RetTraits.hpp>
@@ -23,22 +24,22 @@ namespace detail {
 
 namespace helpers_for_if_err {
 
-template <class Err, class Val, class... Errors>
-class RetTypeFor_ValErrors {
-	using WithoutErr = typename Remove<Set<Errors...>, Err>::type;
+template <class... CErrors, class Val, class... Errors>
+class RetTypeFor_ValErrors<Wrapper<CErrors...>, Val, Errors...> {
+	using WithoutErr = typename Difference<Set<Errors...>, Set<CErrors...>>::type;
 public:
 	using type = typename BuildRet<Ret, Val, WithoutErr>::type;
 };
 
-template <class Err, class UnOp, class Val, class... Errors>
-class ConstraintsFor_ValErrors {
-	static_assert(IsContains<Set<Errors...>, Err>::value, "`Err` isn't contains in `Errors...`");
+template <class... CErrors, class UnOp, class Val, class... Errors>
+class ConstraintsFor_ValErrors<Wrapper<CErrors...>, UnOp, Val, Errors...> {
+	static_assert(IsDifferenceEmpty<Set<CErrors...>, Set<Errors...>>::value, "`CErrors...` isn't contains in `Errors...`");
 };
 
 class AssignHelper {
-	template <class Err, class UnOp, class Val, class... Errors>
+	template <class CErr, class... CErrors, class UnOp, class Val, class... Errors>
 	friend
-	typename RetTypeFor_ValErrors<Err, Val, Errors...>::type
+	typename RetTypeFor_ValErrors<hfif::Wrapper<CErr, CErrors...>, Val, Errors...>::type
 	error_handling::detail::if_err(Ret<Val, Errors...>&& v, UnOp op);
 
 	template <class Val, class OVal, class... OErrors>
@@ -53,9 +54,9 @@ class AssignHelper {
 };
 
 class CallHandler {
-	template <class Err, class UnOp, class Val, class... Errors>
+	template <class CErr, class... CErrors, class UnOp, class Val, class... Errors>
 	friend
-	typename RetTypeFor_ValErrors<Err, Val, Errors...>::type
+	typename RetTypeFor_ValErrors<hfif::Wrapper<CErr, CErrors...>, Val, Errors...>::type
 	error_handling::detail::if_err(Ret<Val, Errors...>&& v, UnOp op);
 
 	template <class Arg, class UnOp>
