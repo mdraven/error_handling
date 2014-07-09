@@ -58,6 +58,14 @@ public:
 		return *this;
 	}
 
+	explicit operator T() const noexcept {
+		return T();
+	}
+
+	T data() const noexcept {
+		return T();
+	}
+
 	~Ret() = default;
 };
 

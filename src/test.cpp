@@ -59,6 +59,7 @@ int main(int argc, char **argv) {
 	Ret<std::string, int> ret17{int(666)};
 	Ret<std::string> ret18 = if_err<int>(std::move(ret17), [](int&& i){ std::cout << i << std::endl; });
 
+//	if_err<ErrB>(std::move(ret13), [](ErrB&&) -> Ret<std::string, ErrA> {}); // TODO: надо проверить, что кидает ошибку
 
 	//	typename error_handling::helpers::BuildRet<Ret, int, error_handling::h::Typelist<int, float, char, ErrA, ErrB>>::type x = 10;
 }

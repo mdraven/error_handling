@@ -12,7 +12,32 @@ namespace error_handling {
 
 namespace detail {
 
-struct T {};
+struct T {
+	T() noexcept = default;
+	T(const T&) noexcept = default;
+	T(T&&) noexcept = default;
+
+	T& operator=(T&) noexcept = default;
+	T& operator=(T&&) noexcept = default;
+
+	template <class Val>
+	T(const Val&) noexcept {}
+
+	template <class Val>
+	T(Val&&) noexcept {}
+
+	template <class Val>
+	T& operator=(Val&) noexcept {
+		return *this;
+	}
+
+	template <class Val>
+	T& operator=(Val&&) noexcept {
+		return *this;
+	}
+
+	~T() = default;
+};
 
 } /* namespace detail */
 
