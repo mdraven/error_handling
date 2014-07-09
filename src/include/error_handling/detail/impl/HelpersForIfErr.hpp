@@ -39,10 +39,11 @@ class ConstraintsFor_ValErrors<Wrapper<CErrors...>, Wrapper<UnOp, UnOps...>, Val
 };
 
 class AssignHelper {
-	template <class CErr, class... CErrors, class UnOp, class... UnOps, class Val, class... Errors>
+	template <class Val, class... Errors,
+	class RetType>
 	friend
-	typename RetTypeFor_ValErrors<Wrapper<CErr, CErrors...>, Val, Errors...>::type
-	error_handling::detail::if_err(Ret<Val, Errors...>&& v, UnOp op, UnOps... ops);
+	RetType
+	error_handling::detail::if_err(Ret<Val, Errors...>&& v);
 
 	template <class Val, class OVal, class... OErrors>
 	static void assign(Ret<Val>& v, Ret<OVal, OErrors...>&& ov) {
@@ -56,9 +57,12 @@ class AssignHelper {
 };
 
 class CallHandler {
-	template <class CErr, class... CErrors, class UnOp, class... UnOps, class Val, class... Errors>
+	template <class CErr, class... CErrors,
+	class UnOp, class... UnOps,
+	class Val, class... Errors,
+	class RetType>
 	friend
-	typename RetTypeFor_ValErrors<Wrapper<CErr, CErrors...>, Val, Errors...>::type
+	RetType
 	error_handling::detail::if_err(Ret<Val, Errors...>&& v, UnOp op, UnOps... ops);
 
 	template <class Arg, class UnOp>
@@ -86,6 +90,10 @@ class CallHandler {
 	static Ret call(UnOp op, Err&& err, void* fake = nullptr) {
 		return op(std::move(err));
 	}
+};
+
+class SetBasedIfErr {
+
 };
 
 } /* namespace helpers_for_if_err */

@@ -13,6 +13,7 @@
 #include <boost/mpl/size.hpp>
 #include <boost/mpl/insert.hpp>
 #include <boost/mpl/advance.hpp>
+#include <boost/mpl/front.hpp>
 #include <boost/mpl/contains.hpp>
 #include <boost/mpl/fold.hpp>
 #include <boost/mpl/if.hpp>
@@ -43,9 +44,19 @@ struct IsEmpty {
 	static const bool value = m::empty<Seq>::value;
 };
 
+template <class Seq>
+struct Size {
+	static const size_t value = m::size<Seq>::value;
+};
+
 template <class Seq, template <class> class Pred>
 struct AccumulateToSet {
 	using type = typename m::fold<Seq, m::set<>, m::if_<Pred<m::_2>, m::insert<m::_1, m::_2>, m::_1>>::type;
+};
+
+template <class Seq>
+struct Front {
+	using type = typename m::front<Seq>::type;
 };
 
 template <class Seq, class Elem>
@@ -64,7 +75,7 @@ struct IsDifferenceEmpty {
 };
 
 template <class Seq, template <class...> class Builder>
-class SeqToVariadic {
+class SeqToVariadicType {
 	template <size_t i = m::size<Seq>::value, class... Acc>
 	struct Helper {
 		using Elem = typename m::advance<typename m::begin<Seq>::type, m::int_<i-1>>::type::type;
@@ -77,6 +88,28 @@ class SeqToVariadic {
 	};
 public:
 	using type = typename Helper<m::size<Seq>::value>::type;
+};
+
+template <class Seq, template <class...> class Builder>
+class SeqToVariadicCall {
+	template <size_t i = m::size<Seq>::value, class... Acc>
+	struct Helper :
+			Helper<i-1, Acc...,
+			typename m::advance<typename m::begin<Seq>::type, m::int_<i-1>>::type::type>::type {};
+
+	template <class... Acc>
+	struct Helper<0, Acc...> {
+		template <class... Args>
+		auto call(Args... args) -> decltype(Builder<Acc...>(args...)) {
+			return Builder<Acc...>(args...);
+		}
+	};
+public:
+	template <class... Args>
+	static
+	auto call(Args... args) -> decltype(Helper<m::size<Seq>::value>::call(args...)) {
+		return Helper<m::size<Seq>::value>::call(args...);
+	}
 };
 
 } /* namespace detail */

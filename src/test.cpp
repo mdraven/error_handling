@@ -38,6 +38,14 @@ struct Ops {
 };
 
 
+#include <vector>
+template <template <class...> class X>
+struct ZZ {
+	void func() {
+		X<int>();
+	}
+};
+
 int main(int argc, char **argv) {
 	using error_handling::Ret;
 	using error_handling::if_err;
@@ -88,6 +96,8 @@ int main(int argc, char **argv) {
 
 	Ret<std::string, ErrA, ErrB, ErrC> ret21{ErrB()};
 //	if_err<ErrA, ErrB, ErrC>(std::move(ret21), Ops());
+
+	ZZ<std::vector>().func();
 
 //	std::cout << IsUnOp<ErrA, Ops>::value << std::endl;
 //	std::cout << IsUnOp<ErrB, Ops>::value << std::endl;

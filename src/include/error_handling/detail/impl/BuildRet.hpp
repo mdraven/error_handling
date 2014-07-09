@@ -22,7 +22,7 @@ class BuildRet {
 		using type = Ret<Val, OErrors...>;
 	};
 public:
-	using type = typename SeqToVariadic<Errors, Builder>::type::type;
+	using type = typename SeqToVariadicType<Errors, Builder>::type::type;
 };
 
 } /* namespace detail */
