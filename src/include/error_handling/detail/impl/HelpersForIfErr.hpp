@@ -31,16 +31,16 @@ public:
 	using type = typename BuildRet<Ret, Val, WithoutErr>::type;
 };
 
-template <class... CErrors, class UnOp, class Val, class... Errors>
-class ConstraintsFor_ValErrors<Wrapper<CErrors...>, UnOp, Val, Errors...> {
+template <class... CErrors, class UnOp, class... UnOps, class Val, class... Errors>
+class ConstraintsFor_ValErrors<Wrapper<CErrors...>, hfif::Wrapper<UnOp, UnOps...>, Val, Errors...> {
 	static_assert(IsDifferenceEmpty<Set<CErrors...>, Set<Errors...>>::value, "`CErrors...` isn't contains in `Errors...`");
 };
 
 class AssignHelper {
-	template <class CErr, class... CErrors, class UnOp, class Val, class... Errors>
+	template <class CErr, class... CErrors, class UnOp, class... UnOps, class Val, class... Errors>
 	friend
-	typename RetTypeFor_ValErrors<hfif::Wrapper<CErr, CErrors...>, Val, Errors...>::type
-	error_handling::detail::if_err(Ret<Val, Errors...>&& v, UnOp op);
+	typename RetTypeFor_ValErrors<Wrapper<CErr, CErrors...>, Val, Errors...>::type
+	error_handling::detail::if_err(Ret<Val, Errors...>&& v, UnOp op, UnOps... ops);
 
 	template <class Val, class OVal, class... OErrors>
 	static void assign(Ret<Val>& v, Ret<OVal, OErrors...>&& ov) {
@@ -54,10 +54,10 @@ class AssignHelper {
 };
 
 class CallHandler {
-	template <class CErr, class... CErrors, class UnOp, class Val, class... Errors>
+	template <class CErr, class... CErrors, class UnOp, class... UnOps, class Val, class... Errors>
 	friend
-	typename RetTypeFor_ValErrors<hfif::Wrapper<CErr, CErrors...>, Val, Errors...>::type
-	error_handling::detail::if_err(Ret<Val, Errors...>&& v, UnOp op);
+	typename RetTypeFor_ValErrors<Wrapper<CErr, CErrors...>, Val, Errors...>::type
+	error_handling::detail::if_err(Ret<Val, Errors...>&& v, UnOp op, UnOps... ops);
 
 	template <class Arg, class UnOp>
 	struct EnableForReturnsVoid {

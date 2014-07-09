@@ -16,9 +16,9 @@ namespace detail {
 
 namespace hfif = error_handling::detail::helpers_for_if_err;
 
-template <class CErr, class... CErrors, class UnOp, class Val, class... Errors>
+template <class CErr, class... CErrors, class UnOp, class... UnOps, class Val, class... Errors>
 typename hfif::RetTypeFor_ValErrors<hfif::Wrapper<CErr, CErrors...>, Val, Errors...>::type
-if_err(Ret<Val, Errors...>&& v, UnOp op);
+if_err(Ret<Val, Errors...>&& v, UnOp op, UnOps... ops);
 
 } /* namespace detail */
 
