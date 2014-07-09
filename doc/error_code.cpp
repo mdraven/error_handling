@@ -438,8 +438,8 @@ struct ValOp;
 // Добавить типов ошибок. Если такие ошибки уже есть, то добавляются те которых нет.
 // Реализация не нужна так как используется только в decltype
 // Коммутативность не нужна, будет проще читать если Ret всегда слева, а ErOp всегда справа.
-template <class Val, class... Args, class... Errors>
-auto operator+(Ret<Val, Args...>, ErOp<Errors...>) -> Ret<Val, UNION(Args..., Errors...)>;
+template <class Val, class... Errors, class... OErrors>
+auto operator+(Ret<Val, Errors...>, ErOp<OErrors...>) -> Ret<Val, UNION(Errors..., OErrors...)>;
 
 // Убрать некоторые типы ошибок. Реализация не нужна. Ошибок времени компиляции -- нет.
 template <class Val, class... Args, class... Errors>
@@ -463,8 +463,13 @@ auto operator<=(Ret<Val, Args...>, ErOp<Errors...>) -> IN(Args..., Errors...);
 template <class Val, class... Errors, class OVal>
 auto operator<=(Ret<Val, Errors...>, ValOp<OVal>) -> bool;
 
-// Написать про подмешивания больших пулов ошибок
-
+/* Если у нас есть много ошибок(например из boost::asio), то
+   размер типа Ret<...> будет огромным и нам придётся кругом писать
+   usage XXX = Ret<...>, что не всегда наглядно.
+   С помощью операторов для обобщённого программирования можно решить
+   эту проблему: мы делаем usage AsioErrors = ErOp<тут ошибки>;,
+   а потом прибавляем их к Ret: decltype(Ret<Val, другие ошибки> + AsioErrors);
+*/
 
 // ------------------------- ПРИМЕР -------------------
 
