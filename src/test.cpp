@@ -17,6 +17,26 @@ struct ErrC {};
 struct Base {};
 struct Derived : public Base {};
 
+struct Ops {
+	error_handling::Ret<std::string, ErrB, ErrC>
+	operator()(ErrA&&) {
+		std::cout << "ErrA&&" << std::endl;
+		return std::string();
+	}
+
+	error_handling::Ret<std::string, ErrA, ErrC>
+	operator()(ErrB&&) {
+		std::cout << "ErrB&&" << std::endl;
+		return std::string();
+	}
+
+	error_handling::Ret<std::string, ErrA, ErrB>
+	operator()(ErrC&&) {
+		std::cout << "ErrC&&" << std::endl;
+		return std::string();
+	}
+};
+
 int main(int argc, char **argv) {
 	using error_handling::Ret;
 	using error_handling::if_err;
@@ -50,19 +70,22 @@ int main(int argc, char **argv) {
 //	Ret<Derived, ErrA> ret12; ret12 = Ret<Base, ErrA>();  //ERR
 
 	Ret<std::string, ErrA, ErrB> ret13{std::string("hello")};
-	Ret<std::string, ErrA> ret14 = if_err<ErrB>(std::move(ret13), [](ErrB&&){});
+	Ret<std::string, ErrA> ret14 = if_err<ErrB>(std::move(ret13), [](ErrB&&) { return; });
 //	Ret<std::string, ErrA> ret15 = if_err<ErrB>(std::move(ret14), [](){}); // ERR
-//	Ret<std::string> ret16 = if_err<ErrA>(std::move(ret14), []() -> int { return 1; }); // TODO: не ERR
+	Ret<std::string> ret16 = if_err<ErrA>(std::move(ret14), [](ErrA&&) { return; });
 
-//	std::cout << ret16.data() << std::endl;
+	std::cout << ret16.data() << std::endl;
 
 	Ret<std::string, int> ret17{int(666)};
-	Ret<std::string> ret18 = if_err<int>(std::move(ret17), [](int&& i){ std::cout << i << std::endl; });
+	Ret<std::string> ret18 = if_err<int>(std::move(ret17), [](int&& i){ std::cout << i << std::endl; return; });
 
 	Ret<std::string, ErrA, ErrB> ret19{std::string("hello")}; // N14error_handling6detail3RetIISs4ErrA4ErrBEEE
-	if_err<ErrB>(std::move(ret19), [](ErrB&&) -> Ret<std::string, ErrA> { }); // N14error_handling6detail3RetIISs4ErrAEEE
+	if_err<ErrB>(std::move(ret19), [](ErrB&&) -> Ret<std::string, ErrA> { return std::string(); }); // N14error_handling6detail3RetIISs4ErrAEEE
 
 	Ret<std::string, ErrA, ErrB> ret20{ErrB()};
 	if_err<ErrB>(std::move(ret20), [](ErrB&&) -> Ret<std::string, ErrA> { std::cout << "err_b" << std::endl; return std::string(); });
+
+	Ret<std::string, ErrA, ErrB, ErrC> ret21{ErrB()};
+	if_err<ErrA, ErrB, ErrC>(std::move(ret20), Ops());
 }
 
