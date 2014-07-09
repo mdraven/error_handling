@@ -38,6 +38,11 @@ struct Remove {
 	using type = typename m::remove<Set, Elem, SetInserter>::type;
 };
 
+template <class Seq>
+struct IsEmpty {
+	static const bool value = m::empty<Seq>::value;
+};
+
 template <class Seq, template <class> class Pred>
 struct AccumulateToSet {
 	using type = typename m::fold<Seq, m::set<>, m::if_<Pred<m::_2>, m::insert<m::_1, m::_2>, m::_1>>::type;

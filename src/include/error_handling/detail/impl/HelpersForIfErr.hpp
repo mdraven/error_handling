@@ -14,6 +14,7 @@
 #include <error_handling/detail/impl/BuildRet.hpp>
 #include <error_handling/detail/IfErr.hpp>
 #include <error_handling/detail/impl/RetTraits.hpp>
+#include <error_handling/detail/impl/UnOp.hpp>
 
 // TODO: delete
 #include <type_traits>
@@ -34,6 +35,7 @@ public:
 template <class... CErrors, class UnOp, class... UnOps, class Val, class... Errors>
 class ConstraintsFor_ValErrors<Wrapper<CErrors...>, Wrapper<UnOp, UnOps...>, Val, Errors...> {
 	static_assert(IsDifferenceEmpty<Set<CErrors...>, Set<Errors...>>::value, "`CErrors...` isn't contains in `Errors...`");
+	static_assert(!IsEmpty<typename UnOpArgSet<Set<CErrors...>, UnOp>::type>::value, "No one from `CError...` appropriate to `UnOp`");
 };
 
 class AssignHelper {
