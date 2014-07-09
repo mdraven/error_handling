@@ -59,8 +59,10 @@ int main(int argc, char **argv) {
 	Ret<std::string, int> ret17{int(666)};
 	Ret<std::string> ret18 = if_err<int>(std::move(ret17), [](int&& i){ std::cout << i << std::endl; });
 
-//	if_err<ErrB>(std::move(ret13), [](ErrB&&) -> Ret<std::string, ErrA> {}); // TODO: надо проверить, что кидает ошибку(в деструкторе)
+	Ret<std::string, ErrA, ErrB> ret19{std::string("hello")}; // N14error_handling6detail3RetIISs4ErrA4ErrBEEE
+	if_err<ErrB>(std::move(ret19), [](ErrB&&) -> Ret<std::string, ErrA> { }); // N14error_handling6detail3RetIISs4ErrAEEE
 
-//	typename error_handling::helpers::BuildRet<Ret, int, error_handling::h::Typelist<int, float, char, ErrA, ErrB>>::type x = 10;
+	Ret<std::string, ErrA, ErrB> ret20{ErrB()};
+	if_err<ErrB>(std::move(ret20), [](ErrB&&) -> Ret<std::string, ErrA> { std::cout << "err_b" << std::endl; return std::string(); });
 }
 

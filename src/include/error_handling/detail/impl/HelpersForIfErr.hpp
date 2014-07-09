@@ -12,6 +12,7 @@
 #include <error_handling/detail/Set.hpp>
 #include <error_handling/detail/impl/BuildRet.hpp>
 #include <error_handling/detail/IfErr.hpp>
+#include <error_handling/detail/impl/RetTraits.hpp>
 
 // TODO: delete
 #include <type_traits>
@@ -57,11 +58,25 @@ class CallHandler {
 	typename RetTypeFor_ValErrors<Err, Val, Errors...>::type
 	error_handling::detail::if_err(Ret<Val, Errors...>&& v, UnOp op);
 
+	template <class Arg, class UnOp>
+	class EnableForReturnsRet {
+		using ret_type = typename std::result_of<UnOp(Arg)>::type;
+	public:
+		static const bool value = IsRet<ret_type>::value;
+		using type = std::enable_if<value>;
+	};
+
 	template <class Val, class Ret, class Err, class UnOp,
 	class = typename std::enable_if<std::is_void<typename std::result_of<UnOp(Err&&)>::type>::value>::type>
 	static Ret call(UnOp op, Err&& err) {
 		op(std::move(err));
 		return Val();
+	}
+
+	template <class Val, class Ret, class Err, class UnOp,
+	class = typename EnableForReturnsRet<Err&&, UnOp>::type::type>
+	static Ret call(UnOp op, Err&& err, void* fake = nullptr) {
+		return op(std::move(err));
 	}
 };
 
