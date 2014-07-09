@@ -48,7 +48,7 @@ class AssignHelper {
 
 	template <class Val, class Err, class... Errors, class OVal, class... OErrors>
 	static void assign(Ret<Val, Err, Errors...>& v, Ret<OVal, OErrors...>&& ov) {
-		unsafe_access_to_internal_data(v) = std::move(unsafe_access_to_internal_data(ov));
+		AnyAssign::auto_move(unsafe_access_to_internal_data(v), unsafe_access_to_internal_data(ov));
 	}
 };
 
