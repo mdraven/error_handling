@@ -86,6 +86,6 @@ int main(int argc, char **argv) {
 	if_err<ErrB>(std::move(ret20), [](ErrB&&) -> Ret<std::string, ErrA> { std::cout << "err_b" << std::endl; return std::string(); });
 
 	Ret<std::string, ErrA, ErrB, ErrC> ret21{ErrB()};
-	if_err<ErrA, ErrB, ErrC>(std::move(ret20), Ops());
+//	if_err<ErrA, ErrB, ErrC>(std::move(ret20), Ops());
 }
 

@@ -59,6 +59,11 @@ class CallHandler {
 	error_handling::detail::if_err(Ret<Val, Errors...>&& v, UnOp op);
 
 	template <class Arg, class UnOp>
+	struct EnableForReturnsVoid {
+		using type = std::enable_if<std::is_void<typename std::result_of<UnOp(Arg)>::type>::value>;
+	};
+
+	template <class Arg, class UnOp>
 	class EnableForReturnsRet {
 		using ret_type = typename std::result_of<UnOp(Arg)>::type;
 	public:
@@ -67,7 +72,7 @@ class CallHandler {
 	};
 
 	template <class Val, class Ret, class Err, class UnOp,
-	class = typename std::enable_if<std::is_void<typename std::result_of<UnOp(Err&&)>::type>::value>::type>
+	class = typename EnableForReturnsVoid<Err&&, UnOp>::type::type>
 	static Ret call(UnOp op, Err&& err) {
 		op(std::move(err));
 		return Val();
