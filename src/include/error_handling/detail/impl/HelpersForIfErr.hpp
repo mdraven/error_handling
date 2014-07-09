@@ -32,7 +32,7 @@ public:
 };
 
 template <class... CErrors, class UnOp, class... UnOps, class Val, class... Errors>
-class ConstraintsFor_ValErrors<Wrapper<CErrors...>, hfif::Wrapper<UnOp, UnOps...>, Val, Errors...> {
+class ConstraintsFor_ValErrors<Wrapper<CErrors...>, Wrapper<UnOp, UnOps...>, Val, Errors...> {
 	static_assert(IsDifferenceEmpty<Set<CErrors...>, Set<Errors...>>::value, "`CErrors...` isn't contains in `Errors...`");
 };
 

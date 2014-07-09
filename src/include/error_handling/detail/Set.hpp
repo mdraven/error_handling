@@ -14,6 +14,8 @@
 #include <boost/mpl/insert.hpp>
 #include <boost/mpl/advance.hpp>
 #include <boost/mpl/contains.hpp>
+#include <boost/mpl/fold.hpp>
+#include <boost/mpl/if.hpp>
 #include <boost/mpl/remove.hpp>
 #include <boost/mpl/remove_if.hpp>
 
@@ -34,6 +36,11 @@ struct SetInserter {
 template <class Set, class Elem>
 struct Remove {
 	using type = typename m::remove<Set, Elem, SetInserter>::type;
+};
+
+template <class Seq, template <class> class Pred>
+struct AccumulateToSet {
+	using type = typename m::fold<Seq, m::set<>, m::if_<Pred<m::_2>, m::insert<m::_1, m::_2>, m::_1>>::type;
 };
 
 template <class Seq, class Elem>

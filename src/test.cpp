@@ -37,6 +37,7 @@ struct Ops {
 	}
 };
 
+
 int main(int argc, char **argv) {
 	using error_handling::Ret;
 	using error_handling::if_err;
@@ -86,6 +87,11 @@ int main(int argc, char **argv) {
 	if_err<ErrB>(std::move(ret20), [](ErrB&&) -> Ret<std::string, ErrA> { std::cout << "err_b" << std::endl; return std::string(); });
 
 	Ret<std::string, ErrA, ErrB, ErrC> ret21{ErrB()};
-//	if_err<ErrA, ErrB, ErrC>(std::move(ret20), Ops());
-}
+//	if_err<ErrA, ErrB, ErrC>(std::move(ret21), Ops());
 
+//	std::cout << IsUnOp<ErrA, Ops>::value << std::endl;
+//	std::cout << IsUnOp<ErrB, Ops>::value << std::endl;
+//	std::cout << IsUnOp<ErrC, Ops>::value << std::endl;
+//	std::cout << IsUnOp<Base, Ops>::value << std::endl;
+//	typename error_handling::detail::UnOpArgSet<error_handling::detail::Set<ErrA, Derived, ErrB, ErrC, Base>, Ops>::type x = 10;
+}

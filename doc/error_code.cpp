@@ -669,3 +669,28 @@ int main(int argc, char *argv[]) {
       ==32317==     in use at exit: 0 bytes in 0 blocks
       ==32317==   total heap usage: 26 allocs, 26 frees, 458 bytes allocated
 */
+
+
+// Принимает тип аргумента и унарный функтор. Возвращает true, если Arg подошёл,
+// иначе false;
+template <class Arg, class UnOp>
+class IsUnOp {
+	template <class OArg, class OUnOp, class = typename std::result_of<OUnOp(OArg)>::type>
+	static std::true_type helper(const OArg&);
+
+	template <class OArg, class OUnOp>
+	static std::false_type helper(...);
+
+public:
+	static const bool value = decltype(helper<Arg, UnOp>(std::declval<Arg>()))::value;
+};
+
+// Принимает последовательность(например Set) и унарный функтор.
+// Возвращает список типов, которые подошли.
+template <class Args, class UnOp>
+class UnOpArgSet {
+	template <class Arg>
+	using Pred = IsUnOp<Arg, UnOp>;
+public:
+	using type = typename AccumulateToSet<Args, Pred>::type;
+};
