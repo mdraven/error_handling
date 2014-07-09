@@ -22,10 +22,10 @@ namespace erve = error_handling::detail::enables_for_ret_valerrors;
 
 template <class Val, class Err, class... Errors>
 class Ret<Val, Err, Errors...> final {
-	Any v;
+	Any<Val, Err, Errors...> v;
 
 	template <class OVal, class OErr, class... OErrors>
-	friend Any& unsafe_access_to_internal_data(Ret<OVal, OErr, OErrors...>&);
+	friend Any<OVal, OErr, OErrors...>& unsafe_access_to_internal_data(Ret<OVal, OErr, OErrors...>&);
 
 	using errors = Set<Err, Errors...>;
 public:

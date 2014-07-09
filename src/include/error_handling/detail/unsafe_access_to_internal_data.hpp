@@ -16,7 +16,7 @@ namespace error_handling {
 namespace detail {
 
 template <class Val, class Err, class... Errors>
-Any& unsafe_access_to_internal_data(Ret<Val, Err, Errors...>& v) {
+Any<Val, Err, Errors...>& unsafe_access_to_internal_data(Ret<Val, Err, Errors...>& v) {
 	return v.v;
 }
 
