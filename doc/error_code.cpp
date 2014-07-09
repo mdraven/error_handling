@@ -584,5 +584,25 @@ int main(int argc, char *argv[]) {
 
    Функции на которые передают указатели -- статические методы класса:
       static void copy(void* from, void* to) {
-         *reinterpret_cast<Ret<Val,...>*>(from) = *reinterpret_cast<Ret<Val,...>*>(from);
+         *reinterpret_cast<Val*>(from) = *reinterpret_cast<OVal*>(from);
       }
+        что-то таких функций будет многовато и непонятно как получить все комбинации :(,
+        например int можно кастовать в double, а Derived к Base.
+              ОК, пока забросим.
+
+
+   Есть второй вариант, он медленнее первого :( -- метод перебора аргументов.
+   Итого или может быстрее, может медленнее boost::any или этот.
+
+   У нас есть хранилище на стеке, проверяем type_info со всеми имеющимися типами(в смысле Errors...), а как найдём,
+   то кастуем.
+   Можно реализовать поверх boost::variant.
+
+   template <class Type, class... Types, class Any, class OAny>
+   void auto_move(Any& any, OAny& oany) {
+	  if(oany.type() == typeid(Type))
+		  any = std::move(boost::get<Type>(oany));
+	  else
+		  auto_move<Types..., Any, OAny>(any, oany);
+   }
+   написал такую штуку для присваивания, но она не работает :(
