@@ -81,7 +81,7 @@ int main() {
 //	Ret<std::string, ErrA> ret15 = if_err<ErrB>(std::move(ret14), [](){}); // ERR
 	Ret<std::string, Set<>> ret16 = if_err<Set<ErrA>>(std::move(ret14), boost::fusion::make_list([](ErrA&&) { return; }));
 
-	std::cout << ret16.data() << std::endl;
+//	std::cout << ret16.data() << std::endl;
 
 	Ret<std::string, Set<int>> ret17{int(666)};
 	Ret<std::string, Set<>> ret18 = if_err<Set<int>>(std::move(ret17), boost::fusion::make_list([](int&& i) { std::cout << i << std::endl; return; }));
@@ -95,15 +95,16 @@ int main() {
 	Ret<std::string, Set<ErrA, ErrB, ErrC>> ret21{ErrB()};
 	if_err<Set<ErrA, ErrB, ErrC>>(std::move(ret21), boost::fusion::make_list(Ops()));
 
+	Ret<std::string, Set<ErrA, ErrB, ErrC>> ret22{ErrB()};
+//	Ret<std::string, Set<ErrC>> ret23 = if_err<Set<ErrA>>(std::move(ret22), boost::fusion::make_list([](ErrA&&) { return; })); // ERR
+
 //	std::cout << IsUnOp<ErrA, Ops>::value << std::endl;
 //	std::cout << IsUnOp<ErrB, Ops>::value << std::endl;
 //	std::cout << IsUnOp<ErrC, Ops>::value << std::endl;
 //	std::cout << IsUnOp<Base, Ops>::value << std::endl;
 //	typename error_handling::detail::UnOpArgSet<error_handling::detail::Set<ErrA, Derived, ErrB, ErrC, Base>, Ops>::type x = 10;
 
-//	using namespace boost::fusion;
-//	list<ErrA, ErrB, ErrC> l;
-//	front(l) = 10;
-	static_assert(std::is_same<typename boost::fusion::result_of::front<boost::fusion::list<>>::type,
-			boost::fusion::void_&>::value, "front<list<>> -> void_&");
+//	error_handling::detail::EnableIfNotUniversalRef<ErrA&&>::value;  // OK
+//	typename error_handling::detail::EnableIfNotUniversalRef<ErrA&&>::type xxx1;  // OK
+//	typename error_handling::detail::EnableIfNotUniversalRef<ErrA&&>::type::type xxx2; // compile-time ERR
 }

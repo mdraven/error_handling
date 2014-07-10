@@ -11,6 +11,7 @@
 #include "Ret.hpp"
 #include "Set.hpp"
 #include "EnablesForRetValErrors.hpp"
+#include "EnableIfNotUniversalRef.hpp"
 #include "unsafe_access_to_internal_data.hpp"
 #include "Any.hpp"
 
@@ -37,7 +38,7 @@ public:
 	Ret(const Err& v);
 
 	template <class Err,
-	class = typename erve::EnableMoveConstructorFor_Err<Errors, Err>::type::type>
+	class = typename EnableIfNotUniversalRef<Err>::type::type>
 	Ret(Err&& v) noexcept(std::is_nothrow_move_constructible<Err>::value);
 
 	Ret(const Ret<Val, Errors>& v) = delete;
@@ -91,6 +92,9 @@ template <class OErr, class>
 Ret<Val, Errors>::Ret(OErr&& v) noexcept(std::is_nothrow_move_constructible<OErr>::value) :
 	v(std::move(v)) {
 	printf("move constr Err\n");
+
+	static const bool is_known_error = IsContains<Errors, OErr>::value;
+	static_assert(is_known_error, "Unknown error type");
 }
 
 template <class Val, class Errors>

@@ -8,8 +8,6 @@
 #ifndef ENABLESFORRETVALERRORS_HPP_
 #define ENABLESFORRETVALERRORS_HPP_
 
-#include "helpers.hpp"
-
 namespace error_handling {
 
 namespace detail {
@@ -23,13 +21,6 @@ struct EnableCopyConstructorFor_Err {
 };
 
 template <class Errors, class Err>
-struct EnableMoveConstructorFor_Err {
-	static const bool value = is_not_universal_ref<Err>::value &&
-			IsContains<Errors, Err>::value;
-	using type = std::enable_if<value>;
-};
-
-template <class Errors, class Err>
 struct EnableCopyAssignFor_Err {
 	static const bool value = IsContains<Errors, Err>::value;
 	using type = std::enable_if<value>;
@@ -37,7 +28,7 @@ struct EnableCopyAssignFor_Err {
 
 template <class Errors, class Err>
 struct EnableMoveAssignFor_Err {
-	static const bool value = is_not_universal_ref<Err>::value &&
+	static const bool value = /*is_not_universal_ref<Err>::value*/ true &&
 			IsContains<Errors, Err>::value;
 	using type = std::enable_if<value>;
 };
