@@ -22,6 +22,37 @@ namespace error_handling {
 
 namespace detail {
 
+template <class CErrors, class Val, class Errors>
+class IfErrsRetType {
+	using WithoutErr = typename Difference<Errors, CErrors>::type;
+public:
+	using type = Ret<Val, WithoutErr>;
+};
+
+template <class CErrors,
+class Val, class Errors,
+class RetType = typename IfErrsRetType<CErrors, Val, Errors>::type,
+class UnOps>
+RetType
+if_err(Ret<Val, Errors>&& v, UnOps ops);
+
+class IfErrSeal {
+	template <class CErrors,
+	class Val, class Errors,
+	class RetType,
+	class UnOps>
+	friend
+	RetType
+	if_err(Ret<Val, Errors>&& v, UnOps ops);
+
+	template <class>
+	friend class IfErrImpl;
+
+	constexpr IfErrSeal() {}
+	constexpr IfErrSeal(const IfErrSeal&) {}
+	constexpr IfErrSeal(IfErrSeal&&) {}
+};
+
 template <class RetType>
 class IfErrImpl {
 	struct AssignHelper {
@@ -82,7 +113,7 @@ class IfErrImpl {
 			static
 			RetType
 			call(Ret<Val, Errors>&& v, UnOps ops) {
-				return IfErrImpl<RetType>::call<CErrors, Val, Errors>(std::move(v), ops);
+				return IfErrImpl<RetType>::call<CErrors, Val, Errors>(std::move(v), ops, IfErrSeal());
 			}
 		};
 
@@ -93,7 +124,7 @@ class IfErrImpl {
 			static
 			RetType
 			call(Ret<Val, Errors>&& v, UnOps ops) {
-				return IfErrImpl<RetType>::call<CErrors, Val, Errors>(std::move(v), boost::fusion::pop_front(ops));
+				return IfErrImpl<RetType>::call<CErrors, Val, Errors>(std::move(v), boost::fusion::pop_front(ops), IfErrSeal());
 			}
 		};
 	public:
@@ -145,28 +176,26 @@ public:
 	class Val, class Errors,
 	class UnOps>
 	static
-	RetType call(Ret<Val, Errors>&& v, UnOps ops) {
+	RetType call(Ret<Val, Errors>&& v, UnOps ops, const IfErrSeal) {
 		Constraints<CErrors, UnOps, Val, Errors>();
 
 		return WithUnOps<UnOps>::template call<CErrors>(std::move(v), ops);
 	}
 };
 
-template <class CErrors, class Val, class Errors>
-class IfErrsRetType {
-	using WithoutErr = typename Difference<Errors, CErrors>::type;
-public:
-	using type = Ret<Val, WithoutErr>;
-};
-
-
 template <class CErrors,
 class Val, class Errors,
-class RetType = typename IfErrsRetType<CErrors, Val, Errors>::type,
+class RetType,
 class UnOps>
 RetType
 if_err(Ret<Val, Errors>&& v, UnOps ops) {
-	return IfErrImpl<RetType>::template call<CErrors>(std::move(v), ops);
+	return IfErrImpl<RetType>::template call<CErrors>(std::move(v), ops, IfErrSeal());
+}
+
+void func() {
+//	IfErrImpl<Ret<int, Set<>>>::template call<Set<int>>(Ret<int, Set<int, std::string, char>>(), boost::fusion::make_list([](int){}), IfErrSeal());
+	IfErrSeal* p;
+//	IfErrImpl<Ret<int, Set<>>>::template call<Set<int>>(Ret<int, Set<int, std::string, char>>(), boost::fusion::make_list([](int){}), *p);
 }
 
 } /* namespace detail */
