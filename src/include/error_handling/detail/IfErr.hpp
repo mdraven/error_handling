@@ -76,11 +76,10 @@ class IfErrImpl {
 		template <bool it_can_be_reused, class>
 		struct ItCanBeReused {
 			template <class CErrors,
-			class Val, class Errors,
-			class OUnOps>
+			class Val, class Errors>
 			static
 			RetType
-			call(Ret<Val, Errors>&& v, OUnOps ops) {
+			call(Ret<Val, Errors>&& v, UnOps ops) {
 				return IfErrImpl<RetType>::call<CErrors, Val, Errors>(std::move(v), ops);
 			}
 		};
@@ -88,11 +87,10 @@ class IfErrImpl {
 		template <class Fake>
 		struct ItCanBeReused<false, Fake> {
 			template <class CErrors,
-			class Val, class Errors,
-			class OUnOps>
+			class Val, class Errors>
 			static
 			RetType
-			call(Ret<Val, Errors>&& v, OUnOps ops) {
+			call(Ret<Val, Errors>&& v, UnOps ops) {
 				return IfErrImpl<RetType>::call<CErrors, Val, Errors>(std::move(v), boost::fusion::pop_front(ops));
 			}
 		};
