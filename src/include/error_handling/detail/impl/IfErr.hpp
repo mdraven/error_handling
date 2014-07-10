@@ -58,6 +58,8 @@ class IfErrImpl {
 			template <class Val, class Err, class UnOp,
 			class = typename EnableForReturnsRet<Err&&, UnOp>::type::type>
 			static RetType call(UnOp op, Err&& err, void* fake = nullptr) {
+				static_assert(std::is_convertible<typename std::result_of<UnOp(Err&&)>::type,
+						RetType>::value, "Cannot convert from `UnOp(Err&&) to `RetType` : Maybe your error handler returns too common type?");
 				return op(std::move(err));
 			}
 		};
@@ -125,13 +127,18 @@ class IfErrImpl {
 		    return ret;
 		}
 	};
+
+	template <class CErrors, class UnOps, class Val, class Errors>
+	class Constraints {
+		static_assert(IsDifferenceEmpty<CErrors, Errors>::value, "`CErrors` isn't contains in `Errors`");
+	};
 public:
 	template <class CErrors,
 	class Val, class Errors,
 	class UnOps>
 	static
 	RetType call(Ret<Val, Errors>&& v, UnOps ops) {
-		hfif::ConstraintsFor_ValErrors<CErrors, UnOps, Val, Errors>();
+		Constraints<CErrors, UnOps, Val, Errors>();
 
 		static const bool cond = boost::fusion::result_of::empty<UnOps>::value;
 		return WithUnOps<!cond, void>::template call<CErrors>(std::move(v), ops);

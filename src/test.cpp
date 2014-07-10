@@ -24,19 +24,19 @@ struct Base {};
 struct Derived : public Base {};
 
 struct Ops {
-	error_handling::Ret<std::string, error_handling::Set<ErrB, ErrC>>
+	error_handling::Ret<std::string, error_handling::Set<>>
 	operator()(ErrA&&) {
 		std::cout << "ErrA&&" << std::endl;
 		return std::string();
 	}
 
-	error_handling::Ret<std::string, error_handling::Set<ErrA, ErrC>>
+	error_handling::Ret<std::string, error_handling::Set<>>
 	operator()(ErrB&&) {
 		std::cout << "ErrB&&" << std::endl;
 		return std::string();
 	}
 
-	error_handling::Ret<std::string, error_handling::Set<ErrA, ErrB>>
+	error_handling::Ret<std::string, error_handling::Set<>>
 	operator()(ErrC&&) {
 		std::cout << "ErrC&&" << std::endl;
 		return std::string();
@@ -93,7 +93,7 @@ int main() {
 	if_err<Set<ErrB>>(std::move(ret20), boost::fusion::make_list([](ErrB&&) -> Ret<std::string, Set<ErrA>> { std::cout << "err_b" << std::endl; return std::string(); }));
 
 	Ret<std::string, Set<ErrA, ErrB, ErrC>> ret21{ErrB()};
-//	if_err<ErrA, ErrB, ErrC>(std::move(ret21), boost::fusion::make_list(Ops()));
+	if_err<Set<ErrA, ErrB, ErrC>>(std::move(ret21), boost::fusion::make_list(Ops()));
 
 //	std::cout << IsUnOp<ErrA, Ops>::value << std::endl;
 //	std::cout << IsUnOp<ErrB, Ops>::value << std::endl;

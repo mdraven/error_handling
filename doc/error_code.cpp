@@ -564,6 +564,8 @@ int main(int argc, char *argv[]) {
 
    Варианты со стеком отпадают: у меня можно присваивать приводимые значения, а значит должен
    быть динамический размер у хранилища. Так что или куча, или комбинированный вариант.
+      Нет, не отпадают: там или указатель или слайсинг, те нет проблем. Просто нужно что-то
+      вроде static_cast.
 
    Как я это вижу:
 
@@ -662,12 +664,55 @@ int main(int argc, char *argv[]) {
    Пусть будут: boost::any, 2-й и 5-й.
       Я передумал: сравнение при каждом присваивании -- это плохо; уж пусть лучше куча.
       Так что boost::any и 3-й вариант.
+        Ниже очень не плохой вариант.
 
 
       9-jul-2014  boost::any
       ==32317== HEAP SUMMARY:
       ==32317==     in use at exit: 0 bytes in 0 blocks
       ==32317==   total heap usage: 26 allocs, 26 frees, 458 bytes allocated
+
+
+   Можно внутри Any хранить указатели на методы:
+   template <class Args>
+   class Any {
+     Union<Args> u;
+     type_info *ti;
+     DesturctorPtr* destr;
+     CopyConstr* copy_constr;
+     MoveConstr* move_constr;
+     CopyAssign* assign_constr;
+     MoveAssign* move_assign;
+     EqOper* eq; // == и прочие операторы сравнения
+   }
+   В указателях на методы хранятся адреса на методы того что лежит в u и
+   на тип которого указывает ti.
+   Если какого-то метода нет, то там nullptr.
+   Операторы сравнения для Any работают так: вначале сравнивается ti, если он
+   совпадает, то тогда сравниваются с помощью методов по указателям.
+
+   Информация по указателям для одного и того же типа всегда одинаковая и поэтому
+   пересчитывать её нет смысла. Неплохо было бы, чтобы следующий метод работал:
+   template <void Type>
+   class Info {
+      struct Internal {
+        type_info *ti;
+        DesturctorPtr* destr;
+        CopyConstr* copy_constr;
+        MoveConstr* move_constr;
+        CopyAssign* assign_constr;
+        MoveAssign* move_assign;
+        EqOper* eq;
+
+        Internal() { тут всё заполняется }
+      };
+   public:
+      static Internal i;
+   };
+   Тогда можно будет генерировать всё в compile-time, а в Any хранить только указатель на
+   текущий Info.i и Union;
+   По-моему очень крутой метод, наверное что-то такое используют в boost::variant;
+
 */
 
 
