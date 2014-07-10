@@ -8,15 +8,19 @@
 #ifndef IFERR_IMPL_HPP_
 #define IFERR_IMPL_HPP_
 
-#include <error_handling/detail/IfErr.hpp>
-#include <error_handling/detail/impl/HelpersForIfErr.hpp>
 #include <error_handling/detail/Set.hpp>
+#include <error_handling/detail/impl/RetTraits.hpp>
+#include <error_handling/detail/impl/UnOp.hpp>
+
+// TODO: delete
+#include <boost/fusion/container.hpp>
+#include <boost/fusion/algorithm.hpp>
+#include <boost/fusion/include/front.hpp>
+// ^^^^
 
 namespace error_handling {
 
 namespace detail {
-
-namespace hfif = error_handling::detail::helpers_for_if_err;
 
 template <class RetType>
 class IfErrImpl {
@@ -34,7 +38,7 @@ class IfErrImpl {
 
 	template <bool with_unops, class>
 	class WithUnOps {
-		struct CallHandler {
+		class CallHandler {
 			template <class Arg, class UnOp>
 			struct EnableForReturnsVoid {
 				using type = std::enable_if<std::is_void<typename std::result_of<UnOp(Arg)>::type>::value>;
@@ -48,6 +52,12 @@ class IfErrImpl {
 				using type = std::enable_if<value>;
 			};
 
+			template <class Arg, class UnOp>
+			struct ConstraintsForReturnsRet {
+				static_assert(std::is_convertible<typename std::result_of<UnOp(Arg&&)>::type,
+						RetType>::value, "Cannot convert from `UnOp(Arg&&) to `RetType`: Maybe your error handler returns too common type?");
+			};
+		public:
 			template <class Val, class Err, class UnOp,
 			class = typename EnableForReturnsVoid<Err&&, UnOp>::type::type>
 			static RetType call(UnOp op, Err&& err) {
@@ -58,8 +68,7 @@ class IfErrImpl {
 			template <class Val, class Err, class UnOp,
 			class = typename EnableForReturnsRet<Err&&, UnOp>::type::type>
 			static RetType call(UnOp op, Err&& err, void* fake = nullptr) {
-				static_assert(std::is_convertible<typename std::result_of<UnOp(Err&&)>::type,
-						RetType>::value, "Cannot convert from `UnOp(Err&&) to `RetType` : Maybe your error handler returns too common type?");
+				ConstraintsForReturnsRet<Err, UnOp>();
 				return op(std::move(err));
 			}
 		};
@@ -145,11 +154,18 @@ public:
 	}
 };
 
+template <class CErrors, class Val, class Errors>
+class IfErrsRetType {
+	using WithoutErr = typename Difference<Errors, CErrors>::type;
+public:
+	using type = Ret<Val, WithoutErr>;
+};
 
 
 template <class CErrors,
 class Val, class Errors,
-class RetType, class UnOps>
+class RetType = typename IfErrsRetType<CErrors, Val, Errors>::type,
+class UnOps>
 RetType
 if_err(Ret<Val, Errors>&& v, UnOps ops) {
 	return IfErrImpl<RetType>::template call<CErrors>(std::move(v), ops);
