@@ -98,6 +98,14 @@ int main() {
 	Ret<std::string, Set<ErrA, ErrB, ErrC>> ret22{ErrB()};
 //	Ret<std::string, Set<ErrC>> ret23 = if_err<Set<ErrA>>(std::move(ret22), boost::fusion::make_list([](ErrA&&) { return; })); // ERR
 
+	Ret<std::string, Set<ErrA, ErrB, ErrC>> ret24{ErrB()};
+	if_err<Set<ErrA, ErrB, ErrC>>(std::move(ret24), boost::fusion::make_list([](ErrB&&) {return;},
+			[](ErrC&&) {return;}, [](ErrA&&) {return;}));
+
+//	Ret<std::string, Set<ErrA, ErrB, ErrC>> ret25{ErrB()};
+//	if_err<Set<ErrA, ErrB, ErrC>>(std::move(ret25), boost::fusion::make_list([](ErrB&&) {return;},
+//			[](ErrC&&) {return;})); // ERR
+
 //	std::cout << IsUnOp<ErrA, Ops>::value << std::endl;
 //	std::cout << IsUnOp<ErrB, Ops>::value << std::endl;
 //	std::cout << IsUnOp<ErrC, Ops>::value << std::endl;
