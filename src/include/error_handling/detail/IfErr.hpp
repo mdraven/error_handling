@@ -105,7 +105,7 @@ class IfErrImpl {
 			using UnOp = typename boost::fusion::result_of::front<UnOps>::type;
 
 			static_assert(!IsEmpty<typename UnOpArgSet<CErrors, UnOp>::type>::value,
-					"No one from `CError` appropriate to `UnOp`");
+					"No one from `CError` appropriate to `UnOp`: Check an error handler's argument type.");
 
 			using CallArgs = typename UnOpArgSet<CErrors, UnOp>::type;
 			using CallArg = typename Front<CallArgs>::type;
@@ -127,8 +127,8 @@ class IfErrImpl {
 		class Val, class Errors>
 		static
 		RetType
-		call(Ret<Val, Errors>&& v, ...) {
-			static_assert(IsEmpty<CErrors>::value, "`CErrors` is not empty");
+		call(Ret<Val, Errors>&& v, UnOps) {
+			static_assert(IsEmpty<CErrors>::value, "`CErrors` is not empty: Not enough error handlers.");
 
 			RetType ret;
 			AssignHelper::assign(ret, std::move(v));
@@ -138,7 +138,7 @@ class IfErrImpl {
 
 	template <class CErrors, class UnOps, class Val, class Errors>
 	class Constraints {
-		static_assert(IsDifferenceEmpty<CErrors, Errors>::value, "`CErrors` isn't contains in `Errors`");
+		static_assert(IsDifferenceEmpty<CErrors, Errors>::value, "`CErrors` isn't contains in `Errors`: Check if_err template's argument.");
 	};
 public:
 	template <class CErrors,
