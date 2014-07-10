@@ -34,6 +34,34 @@ class IfErrImpl {
 
 	template <bool with_unops, class>
 	class WithUnOps {
+		struct CallHandler {
+			template <class Arg, class UnOp>
+			struct EnableForReturnsVoid {
+				using type = std::enable_if<std::is_void<typename std::result_of<UnOp(Arg)>::type>::value>;
+			};
+
+			template <class Arg, class UnOp>
+			class EnableForReturnsRet {
+				using ret_type = typename std::result_of<UnOp(Arg)>::type;
+			public:
+				static const bool value = IsRet<ret_type>::value;
+				using type = std::enable_if<value>;
+			};
+
+			template <class Val, class Err, class UnOp,
+			class = typename EnableForReturnsVoid<Err&&, UnOp>::type::type>
+			static RetType call(UnOp op, Err&& err) {
+				op(std::move(err));
+				return Val();
+			}
+
+			template <class Val, class Err, class UnOp,
+			class = typename EnableForReturnsRet<Err&&, UnOp>::type::type>
+			static RetType call(UnOp op, Err&& err, void* fake = nullptr) {
+				return op(std::move(err));
+			}
+		};
+
 		template <bool it_can_be_reused, class>
 		struct ItCanBeReused {
 			template <class CErrors,
@@ -74,7 +102,7 @@ class IfErrImpl {
 			using NewErrors = typename Remove<CErrors, CallArg>::type;
 
 			if(unsafe_access_to_internal_data(v).type() == typeid(CallArg)) {
-				return hfif::CallHandler::call<Val, RetType>(boost::fusion::front(ops),
+				return CallHandler::template call<Val>(boost::fusion::front(ops),
 						std::move(unsafe_any_cast<CallArg>(unsafe_access_to_internal_data(v))));
 			}
 
