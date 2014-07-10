@@ -12,7 +12,7 @@
 #include "detail/RetT.hpp"
 #include "detail/RetVal.hpp"
 #include "detail/RetValErrors.hpp"
-#include <error_handling/detail/impl/IfErr.hpp>
+#include <error_handling/detail/IfErr.hpp>
 #include <error_handling/detail/Set.hpp>
 #include "detail/T.hpp"
 #include "detail/N.hpp"

@@ -5,12 +5,12 @@
  *      Author: mdraven
  */
 
-#ifndef IFERR_IMPL_HPP_
-#define IFERR_IMPL_HPP_
+#ifndef IFERR_HPP_
+#define IFERR_HPP_
 
 #include <error_handling/detail/Set.hpp>
-#include <error_handling/detail/impl/RetTraits.hpp>
-#include <error_handling/detail/impl/UnOp.hpp>
+#include <error_handling/detail/RetTraits.hpp>
+#include <error_handling/detail/UnOp.hpp>
 
 // TODO: delete
 #include <boost/fusion/container.hpp>
@@ -175,4 +175,4 @@ if_err(Ret<Val, Errors>&& v, UnOps ops) {
 
 } /* namespace error_handling */
 
-#endif /* IFERR_IMPL_HPP_ */
+#endif /* IFERR_HPP_ */

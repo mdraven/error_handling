@@ -5,8 +5,8 @@
  *      Author: mdraven
  */
 
-#ifndef UNOP_IMPL_HPP_
-#define UNOP_IMPL_HPP_
+#ifndef UNOP_HPP_
+#define UNOP_HPP_
 
 #include <error_handling/detail/Set.hpp>
 
@@ -38,4 +38,4 @@ public:
 
 } /* namespace error_handling */
 
-#endif /* UNOP_IMPL_HPP_ */
+#endif /* UNOP_HPP_ */

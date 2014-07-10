@@ -5,8 +5,8 @@
  *      Author: mdraven
  */
 
-#ifndef RETTRAITS_IMPL_HPP_
-#define RETTRAITS_IMPL_HPP_
+#ifndef RETTRAITS_HPP_
+#define RETTRAITS_HPP_
 
 #include <error_handling/detail/Ret.hpp>
 #include <error_handling/detail/Set.hpp>
@@ -46,4 +46,4 @@ public:
 } /* namespace error_handling */
 
 
-#endif /* RETTRAITS_IMPL_HPP_ */
+#endif /* RETTRAITS_HPP_ */
