@@ -86,7 +86,7 @@ struct N {  // Такой тип нельзя создать (TODO: может �
    Если код ошибки уже получен, то мы можем вызвать эту функцию и переконвертировать
    из старого формата в новый. Мы вызываем эту функцию(и другие)
    из функции Ret<Val, ErrA, ..., ErrD, ErrE> func(); -- как видно ошибки и значения
-   сложились(N можно присвоить Val, Ret тоже присваивается).   
+   сложились(N можно присвоить Val, Ret тоже присваивается).
 */
 
 struct A; /* Класс/структура ошибки. Наследовать ни от чего не обязательно, обычный класс.
@@ -274,20 +274,20 @@ public:
 // только я ^_^
 template <class Val, class... Errors>
 boost::any& unsafe_access_to_internal_data(Ret<Val, Errors...>& v) {
-	return v.v;
+    return v.v;
 }
 
 // unsafe для Ret<Val>(он возвращает не any)
 template <class Val>
 Val& unsafe_access_to_internal_data(Ret<Val>& v) {
-	return v.v;
+    return v.v;
 }
 
 // у boost::any нет незащищённого варианта, но у меня есть такие места
 // где защита не нужна. Буду использовать эту заглушку.
 template <class Val>
 Val unsafe_any_cast(Any& v) {
-	return boost::any_cast<Val>(v);
+    return boost::any_cast<Val>(v);
 }
 
 // Помошник для if_err. Например нам надо присвоить Ret<Val> то что лежит в Ret<Val, Err>:
@@ -305,20 +305,20 @@ Val unsafe_any_cast(Any& v) {
 // сделать его публичным, то можно будет "не светить" unsafe_any_cast, а
 // использовать его.
 class AssignHelperForIfErr {
-	template <class Err, class UnOp, class Val, class... Errors>
-	friend
-	typename RetTypeFor_IfErrValErrors<Err, Val, Errors...>::type
-	if_err(Ret<Val, Errors...>&& v, UnOp op);
+    template <class Err, class UnOp, class Val, class... Errors>
+    friend
+    typename RetTypeFor_IfErrValErrors<Err, Val, Errors...>::type
+    if_err(Ret<Val, Errors...>&& v, UnOp op);
 
-	template <class Val, class OVal, class... OErrors>
-	static void assign(Ret<Val>& v, Ret<OVal, OErrors...>&& ov) {
-		unsafe_access_to_internal_data(v) = std::move(unsafe_any_cast<Val>(unsafe_access_to_internal_data(ov)));
-	}
+    template <class Val, class OVal, class... OErrors>
+    static void assign(Ret<Val>& v, Ret<OVal, OErrors...>&& ov) {
+        unsafe_access_to_internal_data(v) = std::move(unsafe_any_cast<Val>(unsafe_access_to_internal_data(ov)));
+    }
 
-	template <class Val, class Err, class... Errors, class OVal, class... OErrors>
-	static void assign(Ret<Val, Err, Errors...>& v, Ret<OVal, OErrors...>&& ov) {
-		unsafe_access_to_internal_data(v) = std::move(unsafe_access_to_internal_data(ov));
-	}
+    template <class Val, class Err, class... Errors, class OVal, class... OErrors>
+    static void assign(Ret<Val, Err, Errors...>& v, Ret<OVal, OErrors...>&& ov) {
+        unsafe_access_to_internal_data(v) = std::move(unsafe_access_to_internal_data(ov));
+    }
 };
 
 // Пока что if_err надо сделать другом Ret<Args...> (но не Ret<Val>!)
@@ -580,7 +580,7 @@ int main(int argc, char *argv[]) {
       ....
    }
    (интресно, обязательно делать библиотеку или хедер прокатит и линкер всё склеит?).
-   
+
    read -- читать/писать.
 
    Если писать:
@@ -619,10 +619,10 @@ int main(int argc, char *argv[]) {
 
    template <class Type, class... Types, class Any, class OAny>
    void auto_move(Any& any, OAny& oany, Wrapper<Type, Types...>) {
-	  if(oany.type() == typeid(Type))
-		  any = std::move(boost::get<Type>(oany));
-	  else
-		  auto_move(any, oany, Wrapper<Types...>());
+      if(oany.type() == typeid(Type))
+          any = std::move(boost::get<Type>(oany));
+      else
+          auto_move(any, oany, Wrapper<Types...>());
    }
 
    template <class Any, class OAny>
@@ -720,24 +720,24 @@ int main(int argc, char *argv[]) {
 // иначе false;
 template <class Arg, class UnOp>
 class IsUnOp {
-	template <class OArg, class OUnOp, class = typename std::result_of<OUnOp(OArg)>::type>
-	static std::true_type helper(const OArg&);
+    template <class OArg, class OUnOp, class = typename std::result_of<OUnOp(OArg)>::type>
+    static std::true_type helper(const OArg&);
 
-	template <class OArg, class OUnOp>
-	static std::false_type helper(...);
+    template <class OArg, class OUnOp>
+    static std::false_type helper(...);
 
 public:
-	static const bool value = decltype(helper<Arg, UnOp>(std::declval<Arg>()))::value;
+    static const bool value = decltype(helper<Arg, UnOp>(std::declval<Arg>()))::value;
 };
 
 // Принимает последовательность(например Set) и унарный функтор.
 // Возвращает список типов, которые подошли.
 template <class Args, class UnOp>
 class UnOpArgSet {
-	template <class Arg>
-	using Pred = IsUnOp<Arg, UnOp>;
+    template <class Arg>
+    using Pred = IsUnOp<Arg, UnOp>;
 public:
-	using type = typename AccumulateToSet<Args, Pred>::type;
+    using type = typename AccumulateToSet<Args, Pred>::type;
 };
 
 
@@ -746,4 +746,49 @@ public:
    то с функциями проблемы.
    Так что пока делаю всё на сетах, а потом может быть сверху сделаю вариадики */
 
-// сделать UnOp на fusion vector
+
+/* О IfErrsSeal -- проблема в RetType в шаблоне if_err и IfErrsImpl. Его наличие
+     даёт кучу удобств -- не нужно нигде его писать в шаблонах; хоть он и сроден
+     глобальной переменной, но иммутабельность убирает этот минус.
+   Но есть другой минус, пользователь при вызове if_err или IfErrsImpl может
+     заменить RetType на более слабый и оно заработает! Чтобы предотвратить
+     эту опастность я убрал шаблонный параметр RetType у if_err и сделал
+     не очень красивый двойной вызов IfErrsRetType для if_err: один для
+     типа возврата, а другой я передаю в IfErrsImpl.
+   В IfErrsImpl убрать RetType нельзя потому что CErrors(это if_err<CErrors>)
+     меняется(из него удаляют элементы) и надо помнить старое значение CErrors.
+     Так как вывод RetType выглядит громоздко, то хранится не CErrors, а сразу RetType.
+   Теперь использовать IfErrsImpl может только if_err и он сам, но в то же время if_err не может
+     получить доступ к кишкам IfErrsImpl.
+
+   О реализации:
+     class IfErrsSeal {
+        template <class CErrors,
+        class Val, class Errors,
+        class RetType,
+        class UnOps>
+        friend
+        RetType
+        if_err(Ret<Val, Errors>&& v, UnOps ops);
+
+        template <class>
+        friend class IfErrsImpl;
+
+        constexpr IfErrsSeal() {}
+        constexpr IfErrsSeal(const IfErrsSeal&) {}
+        constexpr IfErrsSeal(IfErrsSeal&&) {}
+     };
+   Все конструкторы приватные. Первый -- чтобы нельзя было создать кому нельзя;
+     второй и третий -- для трюков с указателем. Операторы присваивания делать
+     приватными необязательно -- некуда присваивать(да и нет смысла присваивать, есть смысл
+     только в создании объекта).
+   Вход в IfErrsImpl:
+     RetType call(Ret<Val, Errors>&& v, UnOps ops, const IfErrsSeal);
+   IfErrsSeal принимается по значению! По ссылке и указателю нельзя, так как
+     никто не запрещал делать указатели. В случае передачи по значению срабатывает
+     приватный конструктор копирования.
+   Вот тест с указателем:
+     void func() {
+       IfErrsSeal* p;
+       IfErrsImpl<Ret<int, Set<>>>::template call<Set<int>>(Ret<int, Set<int, std::string, char>>(), boost::fusion::make_list([](int){}), *p);
+     }
