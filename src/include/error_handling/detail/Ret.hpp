@@ -8,16 +8,10 @@
 #ifndef RET_HPP_
 #define RET_HPP_
 
-namespace error_handling {
-
-namespace detail {
-
-template <class Val, class Errors>
-class Ret;
-
-} /* namespace detail */
-
-} /* namespace error_handling */
-
+#include <error_handling/detail/Ret/Ret.hpp>
+#include <error_handling/detail/Ret/RetN.hpp>
+#include <error_handling/detail/Ret/RetT.hpp>
+#include <error_handling/detail/Ret/RetVal.hpp>
+#include <error_handling/detail/Ret/RetValErrors.hpp>
 
 #endif /* RET_HPP_ */

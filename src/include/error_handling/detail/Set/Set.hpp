@@ -90,6 +90,23 @@ public:
 	using type = typename Helper<m::size<Seq>::value>::type;
 };
 
+template <class T>
+class IsSet {
+	template <class... Types>
+	struct Helper {
+		static const bool value = false;
+	};
+
+	template <class... Types>
+	struct Helper<Set<Types...>> {
+		static const bool value = true;
+	};
+
+public:
+	static const bool value = Helper<T>::value;
+};
+
+
 } /* namespace detail */
 
 } /* namespace error_handling */

@@ -8,11 +8,11 @@
 #ifndef RETVALERRORS_HPP_
 #define RETVALERRORS_HPP_
 
-#include "Ret.hpp"
-#include "Set.hpp"
-#include "EnableIfNotUniversalRef.hpp"
-#include "unsafe_access_to_internal_data.hpp"
-#include "Any.hpp"
+#include <error_handling/detail/Ret/Ret.hpp>
+#include <error_handling/detail/Set/Set.hpp>
+#include <error_handling/detail/EnableIfNotUniversalRef.hpp>
+#include <error_handling/detail/unsafe_access_to_internal_data.hpp>
+#include <error_handling/detail/Any.hpp>
 
 namespace error_handling {
 
@@ -20,6 +20,8 @@ namespace detail {
 
 template <class Val, class Errors>
 class Ret final {
+	static_assert(IsSet<Errors>::value, "Second template argument must be `Set` type.");
+
 	Any<Val, Errors> v;
 
 	template <class OVal, class OErrors>

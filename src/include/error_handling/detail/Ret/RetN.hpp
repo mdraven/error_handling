@@ -8,9 +8,9 @@
 #ifndef RETN_HPP_
 #define RETN_HPP_
 
-#include "Ret.hpp"
-#include "N.hpp"
-#include <error_handling/detail/Set.hpp>
+#include <error_handling/detail/Ret/Ret.hpp>
+#include <error_handling/detail/N.hpp>
+#include <error_handling/detail/Set/Set.hpp>
 
 namespace error_handling {
 

@@ -8,12 +8,9 @@
 #ifndef ERROR_HANDLING_HPP_
 #define ERROR_HANDLING_HPP_
 
-#include "detail/RetN.hpp"
-#include "detail/RetT.hpp"
-#include "detail/RetVal.hpp"
-#include "detail/RetValErrors.hpp"
+#include <error_handling/detail/Ret.hpp>
 #include <error_handling/detail/IfErr.hpp>
-#include <error_handling/detail/Set.hpp>
+#include <error_handling/detail/Set/Set.hpp>
 #include "detail/T.hpp"
 #include "detail/N.hpp"
 #include "detail/V.hpp"

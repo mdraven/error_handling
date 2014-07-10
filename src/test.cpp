@@ -14,6 +14,8 @@
 #include <boost/fusion/container.hpp>
 #include <boost/fusion/algorithm.hpp>
 #include <boost/fusion/include/front.hpp>
+
+#include <error_handling/detail/Set/Set.hpp>
 // ^^^^
 
 struct ErrA {};
@@ -47,6 +49,8 @@ int main() {
 	using error_handling::Ret;
 	using error_handling::if_err;
 	using error_handling::T;
+	using error_handling::N;
+	using error_handling::V;
 	using error_handling::Set;
 
 	std::string str("hello");
@@ -60,12 +64,11 @@ int main() {
 
 	Ret<std::string, Set<ErrA>> ret4(std::move(erra));
 //	Ret<std::string, ErrA> ret5(std::move(errb)); // ERR
-
 	Ret<std::string, Set<ErrA, ErrB>> ret6{Ret<std::string, Set<ErrA>>()};
 //	Ret<std::string, ErrA, ErrB> ret7{Ret<std::string, ErrA, ErrC>()}; // ERR
 
 	ret6 = Ret<std::string, Set<ErrB>>();
-//	ret6 = Ret<std::string, ErrC>(); // ERR
+//	ret6 = Ret<std::string, Set<ErrC>>(); // ERR
 
 //	Ret<N> ret8{Ret<std::string>()}; // ERR
 	Ret<T, Set<>> ret9{Ret<std::string, Set<>>()};
@@ -78,7 +81,7 @@ int main() {
 
 	Ret<std::string, Set<ErrA, ErrB>> ret13{std::string("hello")};
 	Ret<std::string, Set<ErrA>> ret14 = if_err<Set<ErrB>>(std::move(ret13), boost::fusion::make_list([](ErrB&&) { return; }));
-//	Ret<std::string, ErrA> ret15 = if_err<ErrB>(std::move(ret14), [](){}); // ERR
+//	Ret<std::string, ErrA> ret15 = if_err<Set<ErrB>>(std::move(ret14), boost::fusion::make_list([](){ return; })); // ERR
 	Ret<std::string, Set<>> ret16 = if_err<Set<ErrA>>(std::move(ret14), boost::fusion::make_list([](ErrA&&) { return; }));
 
 	std::cout << ret16.data() << std::endl;

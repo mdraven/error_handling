@@ -8,9 +8,9 @@
 #ifndef RETVAL_HPP_
 #define RETVAL_HPP_
 
-#include "Ret.hpp"
-#include "unsafe_access_to_internal_data.hpp"
-#include <error_handling/detail/Set.hpp>
+#include <error_handling/detail/Ret/Ret.hpp>
+#include <error_handling/detail/unsafe_access_to_internal_data.hpp>
+#include <error_handling/detail/Set/Set.hpp>
 
 #include <type_traits>
 #include <utility>

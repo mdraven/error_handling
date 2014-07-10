@@ -8,8 +8,8 @@
 #ifndef IFERR_HPP_
 #define IFERR_HPP_
 
-#include <error_handling/detail/Set.hpp>
-#include <error_handling/detail/RetTraits.hpp>
+#include <error_handling/detail/Set/Set.hpp>
+#include <error_handling/detail/Ret/RetTraits.hpp>
 #include <error_handling/detail/UnOp.hpp>
 
 // TODO: delete
