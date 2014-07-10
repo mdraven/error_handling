@@ -19,27 +19,25 @@ namespace error_handling {
 
 namespace detail {
 
-namespace erve = error_handling::detail::enables_for_ret_valerrors;
-
 template <class Val, class Errors>
 class Ret final {
 	Any<Val, Errors> v;
 
 	template <class OVal, class OErrors>
 	friend Any<OVal, OErrors>& unsafe_access_to_internal_data(Ret<OVal, OErrors>&);
+
 public:
 	Ret();
 
 	Ret(const Val& v);
 	Ret(Val&& v) noexcept(std::is_nothrow_move_constructible<Val>::value);
 
-	template <class Err,
-	class = typename erve::EnableCopyConstructorFor_Err<Errors, Err>::type::type>
-	Ret(const Err& v);
+	template <class OErr>
+	Ret(const OErr& v);
 
-	template <class Err,
-	class = typename EnableIfNotUniversalRef<Err>::type::type>
-	Ret(Err&& v) noexcept(std::is_nothrow_move_constructible<Err>::value);
+	template <class OErr,
+	class = typename EnableIfNotUniversalRef<OErr>::type::type>
+	Ret(OErr&& v) noexcept(std::is_nothrow_move_constructible<OErr>::value);
 
 	Ret(const Ret<Val, Errors>& v) = delete;
 
@@ -49,18 +47,16 @@ public:
 	Ret<Val, Errors>& operator=(const Val& v);
 	Ret<Val, Errors>& operator=(Val&& v) noexcept(std::is_nothrow_move_assignable<Val>::value);
 
-	template <class OErr,
-	class = typename erve::EnableCopyAssignFor_Err<Errors, OErr>::type::type>
+	template <class OErr>
 	Ret<Val, Errors>& operator=(const OErr& v);
 
 	template <class OErr,
-	class = typename erve::EnableMoveAssignFor_Err<Errors, OErr>::type::type>
+	class = typename EnableIfNotUniversalRef<OErr>::type::type>
 	Ret<Val, Errors>& operator=(OErr&& v) noexcept(std::is_nothrow_move_assignable<OErr>::value);
 
 	Ret<Val, Errors>& operator=(const Ret<Val, Errors>& v) = delete;
 
-	template <class OVal, class OErrors,
-	class = typename erve::EnableMoveAssignFor_Ret_ValErrors<OVal, OErrors, Val, Errors>::type::type>
+	template <class OVal, class OErrors>
 	Ret<Val, Errors>& operator=(Ret<OVal, OErrors>&& v) noexcept;
 
 	/* операторов приведения типа(например к Val или ErrN) -- нет: если тип в v не совпал, то
@@ -84,8 +80,13 @@ Ret<Val, Errors>::Ret(Val&& v) noexcept(std::is_nothrow_move_constructible<Val>:
 	v(std::move(v)) {}
 
 template <class Val, class Errors>
-template <class OErr, class>
-Ret<Val, Errors>::Ret(const OErr& v) : v(v) {printf("copy constr Err\n");}
+template <class OErr>
+Ret<Val, Errors>::Ret(const OErr& v) : v(v) {
+	printf("copy constr Err\n");
+
+	static const bool is_known_error = IsContains<Errors, OErr>::value;
+	static_assert(is_known_error, "Unknown error type");
+}
 
 template <class Val, class Errors>
 template <class OErr, class>
@@ -125,9 +126,13 @@ Ret<Val, Errors>::operator=(Val&& v) noexcept(std::is_nothrow_move_assignable<Va
 }
 
 template <class Val, class Errors>
-template <class OErr, class>
+template <class OErr>
 Ret<Val, Errors>&
 Ret<Val, Errors>::operator=(const OErr& v) {
+
+	static const bool is_known_error = IsContains<Errors, OErr>::value;
+	static_assert(is_known_error, "Unknown error type");
+
 	this->v = v.v;
 	return *this;
 }
@@ -136,14 +141,25 @@ template <class Val, class Errors>
 template <class OErr, class>
 Ret<Val, Errors>&
 Ret<Val, Errors>::operator=(OErr&& v) noexcept(std::is_nothrow_move_assignable<OErr>::value) {
+
+	static const bool is_known_error = IsContains<Errors, OErr>::value;
+	static_assert(is_known_error, "Unknown error type");
+
 	this->v = std::move(v);
 	return *this;
 }
 
 template <class Val, class Errors>
-template <class OVal, class OErrors, class>
+template <class OVal, class OErrors>
 Ret<Val, Errors>&
 Ret<Val, Errors>::operator=(Ret<OVal, OErrors>&& v) noexcept {
+	static const bool is_convertible_val = std::is_convertible<OVal, Val>::value;
+	static_assert(is_convertible_val, "Cannot convert `Val` type.");
+
+	static const bool is_more_weak = IsDifferenceEmpty<OErrors, Errors>::value;
+	static_assert(is_more_weak, "Assign to more strong type.");
+
+
 	printf("move assign Ret\n");
 	this->v = std::move(unsafe_access_to_internal_data(v));
 	return *this;
