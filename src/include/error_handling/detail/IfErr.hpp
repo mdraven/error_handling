@@ -40,16 +40,18 @@ class IfErrImpl {
 	class WithUnOps {
 		class CallHandler {
 			template <class Arg, class UnOp>
-			struct EnableForReturnsVoid {
-				using type = std::enable_if<std::is_void<typename std::result_of<UnOp(Arg)>::type>::value>;
+			class EnableForReturnsVoid {
+				static const bool is_ret_void = std::is_void<typename std::result_of<UnOp(Arg)>::type>::value;
+			public:
+				using type = std::enable_if<is_ret_void>;
 			};
 
 			template <class Arg, class UnOp>
 			class EnableForReturnsRet {
 				using ret_type = typename std::result_of<UnOp(Arg)>::type;
+				static const bool is_ret_ret = IsRet<ret_type>::value;
 			public:
-				static const bool value = IsRet<ret_type>::value;
-				using type = std::enable_if<value>;
+				using type = std::enable_if<is_ret_ret>;
 			};
 
 			template <class Arg, class UnOp>
