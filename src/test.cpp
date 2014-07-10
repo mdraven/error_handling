@@ -49,7 +49,6 @@ int main() {
 	using error_handling::T;
 	using error_handling::Set;
 
-#if 0
 	std::string str("hello");
 	Ret<std::string, Set<>> ret(std::move(str));
 
@@ -76,15 +75,13 @@ int main() {
 
 	ret10 = Ret<Derived, Set<ErrA>>();
 //	Ret<Derived, ErrA> ret12; ret12 = Ret<Base, ErrA>();  //ERR
-#endif
 
 	Ret<std::string, Set<ErrA, ErrB>> ret13{std::string("hello")};
 	Ret<std::string, Set<ErrA>> ret14 = if_err<Set<ErrB>>(std::move(ret13), boost::fusion::make_list([](ErrB&&) { return; }));
 //	Ret<std::string, ErrA> ret15 = if_err<ErrB>(std::move(ret14), [](){}); // ERR
 	Ret<std::string, Set<>> ret16 = if_err<Set<ErrA>>(std::move(ret14), boost::fusion::make_list([](ErrA&&) { return; }));
 
-#if 0
-//	std::cout << ret16.data() << std::endl;
+	std::cout << ret16.data() << std::endl;
 
 	Ret<std::string, Set<int>> ret17{int(666)};
 	Ret<std::string, Set<>> ret18 = if_err<Set<int>>(std::move(ret17), boost::fusion::make_list([](int&& i) { std::cout << i << std::endl; return; }));
@@ -108,7 +105,6 @@ int main() {
 //	Ret<std::string, Set<ErrA, ErrB, ErrC>> ret25{ErrB()};
 //	if_err<Set<ErrA, ErrB, ErrC>>(std::move(ret25), boost::fusion::make_list([](ErrB&&) {return;},
 //			[](ErrC&&) {return;})); // ERR
-#endif
 
 //	std::cout << IsUnOp<ErrA, Ops>::value << std::endl;
 //	std::cout << IsUnOp<ErrB, Ops>::value << std::endl;
