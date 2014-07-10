@@ -55,13 +55,13 @@ template <class RetType>
 class IfErrsImpl {
 	struct AssignHelper {
 		template <class Val, class OVal, class OErrors>
-		static void assign(Ret<Val, Set<>>& v, Ret<OVal, OErrors>&& ov) {printf("xxx %s\n", unsafe_access_to_internal_data(ov).type().name());
-			unsafe_access_to_internal_data(v) = std::move(unsafe_any_cast<OVal>(unsafe_access_to_internal_data(ov)));
+		static void assign(Ret<Val, Set<>>& v, Ret<OVal, OErrors>&& ov) {
+			unsafe_access_to_internal_data(v) = std::move(unsafe_cast<OVal>(unsafe_access_to_internal_data(ov)));
 		}
 
 		template <class Val, class Errors, class OVal, class OErrors>
 		static void assign(Ret<Val, Errors>& v, Ret<OVal, OErrors>&& ov) {
-			AnyAssign::auto_move(unsafe_access_to_internal_data(v), std::move(unsafe_access_to_internal_data(ov)));
+			unsafe_access_to_internal_data(v) = std::move(unsafe_access_to_internal_data(ov));
 		}
 	};
 
@@ -142,7 +142,7 @@ class IfErrsImpl {
 
 			if(unsafe_access_to_internal_data(v).type() == typeid(CallArg)) {
 				return CallHandler::template call<Val>(boost::fusion::front(ops),
-						std::move(unsafe_any_cast<CallArg>(unsafe_access_to_internal_data(v))));
+						std::move(unsafe_cast<CallArg>(unsafe_access_to_internal_data(v))));
 			}
 
 			return ItCanBeReused<(Size<CallArgs>::value > 1), void>::template call<NewErrors, Val, Errors>(std::move(v), ops);

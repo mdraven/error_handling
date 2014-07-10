@@ -63,7 +63,7 @@ public:
 	}
 
 	Ret<Val, Errors>& operator=(const Val& v) {
-		this->v = v.v;
+		this->v = v;
 		return *this;
 	}
 
@@ -77,7 +77,7 @@ public:
 		static const bool is_known_error = IsContains<Errors, OErr>::value;
 		static_assert(is_known_error, "Unknown error type");
 
-		this->v = v.v;
+		this->v = v;
 		return *this;
 	}
 
@@ -96,6 +96,7 @@ public:
 	template <class OVal, class OErrors>
 	Ret<Val, Errors>& operator=(Ret<OVal, OErrors>&& v) noexcept {
 		printf("move assign Ret\n");
+
 		this->v = std::move(unsafe_access_to_internal_data(v));
 		return *this;
 	}
