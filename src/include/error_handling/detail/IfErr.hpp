@@ -36,7 +36,7 @@ class IfErrImpl {
 		}
 	};
 
-	template <bool with_unops, class>
+	template <class UnOps, bool with_unops = !boost::fusion::result_of::empty<UnOps>::value>
 	class WithUnOps {
 		class CallHandler {
 			template <class Arg, class UnOp>
@@ -77,10 +77,10 @@ class IfErrImpl {
 		struct ItCanBeReused {
 			template <class CErrors,
 			class Val, class Errors,
-			class UnOps>
+			class OUnOps>
 			static
 			RetType
-			call(Ret<Val, Errors>&& v, UnOps ops) {
+			call(Ret<Val, Errors>&& v, OUnOps ops) {
 				return IfErrImpl<RetType>::call<CErrors, Val, Errors>(std::move(v), ops);
 			}
 		};
@@ -89,17 +89,16 @@ class IfErrImpl {
 		struct ItCanBeReused<false, Fake> {
 			template <class CErrors,
 			class Val, class Errors,
-			class UnOps>
+			class OUnOps>
 			static
 			RetType
-			call(Ret<Val, Errors>&& v, UnOps ops) {
+			call(Ret<Val, Errors>&& v, OUnOps ops) {
 				return IfErrImpl<RetType>::call<CErrors, Val, Errors>(std::move(v), boost::fusion::pop_front(ops));
 			}
 		};
 	public:
 		template <class CErrors,
-		class Val, class Errors,
-		class UnOps>
+		class Val, class Errors>
 		static
 		RetType
 		call(Ret<Val, Errors>&& v, UnOps ops) {
@@ -121,8 +120,8 @@ class IfErrImpl {
 		}
 	};
 
-	template <class Fake>
-	class WithUnOps<false, Fake> {
+	template <class UnOps>
+	class WithUnOps<UnOps, false> {
 	public:
 		template <class CErrors,
 		class Val, class Errors>
@@ -149,8 +148,7 @@ public:
 	RetType call(Ret<Val, Errors>&& v, UnOps ops) {
 		Constraints<CErrors, UnOps, Val, Errors>();
 
-		static const bool cond = boost::fusion::result_of::empty<UnOps>::value;
-		return WithUnOps<!cond, void>::template call<CErrors>(std::move(v), ops);
+		return WithUnOps<UnOps>::template call<CErrors>(std::move(v), ops);
 	}
 };
 
