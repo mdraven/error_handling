@@ -35,7 +35,7 @@ class UnOps>
 typename IfErrsRetType<CErrors, Val, Errors>::type
 if_err(Ret<Val, Errors>&& v, UnOps ops);
 
-class IfErrsSeal {
+class IfErrsSeal final {
 	template <class CErrors,
 	class Val, class Errors,
 	class UnOps>
