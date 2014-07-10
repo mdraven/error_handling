@@ -97,6 +97,12 @@ public:
 	Ret<Val, Errors>& operator=(Ret<OVal, OErrors>&& v) noexcept {
 		printf("move assign Ret\n");
 
+		static const bool is_convertible_val = std::is_convertible<OVal, Val>::value;
+		static_assert(is_convertible_val, "Cannot convert `Val` type.");
+
+		static const bool is_more_weak = IsDifferenceEmpty<OErrors, Errors>::value;
+		static_assert(is_more_weak, "Assign to more strong type.");
+
 		this->v = std::move(unsafe_access_to_internal_data(v));
 		return *this;
 	}
