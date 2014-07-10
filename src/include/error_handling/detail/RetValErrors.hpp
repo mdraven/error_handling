@@ -42,8 +42,7 @@ public:
 
 	Ret(const Ret<Val, Errors>& v) = delete;
 
-	template <class OVal, class OErrors,
-	class = typename erve::EnableMoveConstructorFor_Ret_ValErrors<OVal, OErrors, Val, Errors>::type::type>
+	template <class OVal, class OErrors>
 	Ret(Ret<OVal, OErrors>&& v) noexcept;
 
 	Ret<Val, Errors>& operator=(const Val& v);
@@ -90,12 +89,22 @@ Ret<Val, Errors>::Ret(const OErr& v) : v(v) {printf("copy constr Err\n");}
 template <class Val, class Errors>
 template <class OErr, class>
 Ret<Val, Errors>::Ret(OErr&& v) noexcept(std::is_nothrow_move_constructible<OErr>::value) :
-	v(std::move(v)) {printf("move constr Err\n");}
+	v(std::move(v)) {
+	printf("move constr Err\n");
+}
 
 template <class Val, class Errors>
-template <class OVal, class OErrors, class>
+template <class OVal, class OErrors>
 Ret<Val, Errors>::Ret(Ret<OVal, OErrors>&& v) noexcept :
-	v(std::move(unsafe_access_to_internal_data(v))) {printf("move constr Ret\n");}
+	v(std::move(unsafe_access_to_internal_data(v))) {
+	printf("move constr Ret\n");
+
+	static const bool is_convertible_val = std::is_convertible<OVal, Val>::value;
+	static_assert(is_convertible_val, "Cannot convert `Val` type.");
+
+	static const bool is_more_weak = IsDifferenceEmpty<OErrors, Errors>::value;
+	static_assert(is_more_weak, "Assign to more strong type.");
+}
 
 template <class Val, class Errors>
 Ret<Val, Errors>&

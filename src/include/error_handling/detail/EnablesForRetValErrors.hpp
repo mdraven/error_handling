@@ -29,13 +29,6 @@ struct EnableMoveConstructorFor_Err {
 	using type = std::enable_if<value>;
 };
 
-template <class OVal, class OErrors, class Val, class Errors>
-struct EnableMoveConstructorFor_Ret_ValErrors {
-	static const bool value = std::is_convertible<OVal, Val>::value &&
-			IsDifferenceEmpty<OErrors, Errors>::value;
-	using type = std::enable_if<value>;
-};
-
 template <class Errors, class Err>
 struct EnableCopyAssignFor_Err {
 	static const bool value = IsContains<Errors, Err>::value;
