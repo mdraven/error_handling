@@ -79,23 +79,21 @@ int main() {
 	Ret<std::string, Set<ErrA, ErrB>> ret13{std::string("hello")};
 	Ret<std::string, Set<ErrA>> ret14 = if_err<Set<ErrB>>(std::move(ret13), boost::fusion::make_list([](ErrB&&) { return; }));
 //	Ret<std::string, ErrA> ret15 = if_err<ErrB>(std::move(ret14), [](){}); // ERR
-#if 0
 	Ret<std::string, Set<>> ret16 = if_err<Set<ErrA>>(std::move(ret14), boost::fusion::make_list([](ErrA&&) { return; }));
 
 	std::cout << ret16.data() << std::endl;
 
 	Ret<std::string, Set<int>> ret17{int(666)};
-	Ret<std::string, Set<>> ret18 = if_err<Set<int>>(std::move(ret17), [](int&& i) { std::cout << i << std::endl; return; });
+	Ret<std::string, Set<>> ret18 = if_err<Set<int>>(std::move(ret17), boost::fusion::make_list([](int&& i) { std::cout << i << std::endl; return; }));
 
 	Ret<std::string, Set<ErrA, ErrB>> ret19{std::string("hello")}; // N14error_handling6detail3RetIISs4ErrA4ErrBEEE
-	if_err<Set<ErrB>>(std::move(ret19), [](ErrB&&) -> Ret<std::string, Set<ErrA>> { return std::string(); }); // N14error_handling6detail3RetIISs4ErrAEEE
+	if_err<Set<ErrB>>(std::move(ret19), boost::fusion::make_list([](ErrB&&) -> Ret<std::string, Set<ErrA>> { return std::string(); })); // N14error_handling6detail3RetIISs4ErrAEEE
 
 	Ret<std::string, Set<ErrA, ErrB>> ret20{ErrB()};
-	if_err<Set<ErrB>>(std::move(ret20), [](ErrB&&) -> Ret<std::string, Set<ErrA>> { std::cout << "err_b" << std::endl; return std::string(); });
+	if_err<Set<ErrB>>(std::move(ret20), boost::fusion::make_list([](ErrB&&) -> Ret<std::string, Set<ErrA>> { std::cout << "err_b" << std::endl; return std::string(); }));
 
 	Ret<std::string, Set<ErrA, ErrB, ErrC>> ret21{ErrB()};
-//	if_err<ErrA, ErrB, ErrC>(std::move(ret21), Ops());
-#endif
+//	if_err<ErrA, ErrB, ErrC>(std::move(ret21), boost::fusion::make_list(Ops()));
 
 //	std::cout << IsUnOp<ErrA, Ops>::value << std::endl;
 //	std::cout << IsUnOp<ErrB, Ops>::value << std::endl;
