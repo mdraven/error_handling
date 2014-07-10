@@ -12,7 +12,7 @@ namespace error_handling {
 
 namespace detail {
 
-template <class... Args>
+template <class Val, class Errors>
 class Ret;
 
 } /* namespace detail */

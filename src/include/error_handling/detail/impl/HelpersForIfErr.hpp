@@ -17,7 +17,14 @@
 #include <error_handling/detail/impl/UnOp.hpp>
 
 // TODO: delete
+#include <boost/fusion/container.hpp>
+#include <boost/fusion/algorithm.hpp>
+#include <boost/fusion/include/front.hpp>
+// ^^^^
+
+// TODO: delete
 #include <type_traits>
+// ^^^^
 
 namespace error_handling {
 
@@ -25,45 +32,44 @@ namespace detail {
 
 namespace helpers_for_if_err {
 
-template <class... CErrors, class Val, class... Errors>
-class RetTypeFor_ValErrors<Wrapper<CErrors...>, Val, Errors...> {
-	using WithoutErr = typename Difference<Set<Errors...>, Set<CErrors...>>::type;
+template <class CErrors, class Val, class Errors>
+class RetTypeFor_ValErrors {
+	using WithoutErr = typename Difference<Errors, CErrors>::type;
 public:
-	using type = typename BuildRet<Ret, Val, WithoutErr>::type;
+	using type = Ret<Val, WithoutErr>;
 };
 
-template <class... CErrors, class UnOp, class... UnOps, class Val, class... Errors>
-class ConstraintsFor_ValErrors<Wrapper<CErrors...>, Wrapper<UnOp, UnOps...>, Val, Errors...> {
-	static_assert(IsDifferenceEmpty<Set<CErrors...>, Set<Errors...>>::value, "`CErrors...` isn't contains in `Errors...`");
-	static_assert(!IsEmpty<typename UnOpArgSet<Set<CErrors...>, UnOp>::type>::value, "No one from `CError...` appropriate to `UnOp`");
+template <class CErrors, class UnOps, class Val, class Errors>
+class ConstraintsFor_ValErrors {
+	static_assert(IsDifferenceEmpty<CErrors, Errors>::value, "`CErrors` isn't contains in `Errors`");
 };
 
 class AssignHelper {
-	template <class Val, class... Errors,
-	class RetType>
+	template <class CErrors,
+	class Val, class Errors,
+	class RetType, class UnOps>
 	friend
 	RetType
-	error_handling::detail::if_err(Ret<Val, Errors...>&& v);
+	error_handling::detail::if_err(Ret<Val, Errors>&& v, UnOps ops);
 
-	template <class Val, class OVal, class... OErrors>
-	static void assign(Ret<Val>& v, Ret<OVal, OErrors...>&& ov) {
+	template <class Val, class OVal, class OErrors>
+	static void assign(Ret<Val, Set<>>& v, Ret<OVal, OErrors>&& ov) {printf("xxx %s\n", unsafe_access_to_internal_data(ov).type().name());
 		unsafe_access_to_internal_data(v) = std::move(unsafe_any_cast<OVal>(unsafe_access_to_internal_data(ov)));
 	}
 
-	template <class Val, class Err, class... Errors, class OVal, class... OErrors>
-	static void assign(Ret<Val, Err, Errors...>& v, Ret<OVal, OErrors...>&& ov) {
+	template <class Val, class Errors, class OVal, class OErrors>
+	static void assign(Ret<Val, Errors>& v, Ret<OVal, OErrors>&& ov) {
 		AnyAssign::auto_move(unsafe_access_to_internal_data(v), std::move(unsafe_access_to_internal_data(ov)));
 	}
 };
 
 class CallHandler {
-	template <class CErr, class... CErrors,
-	class UnOp, class... UnOps,
-	class Val, class... Errors,
-	class RetType>
+	template <class CErrors,
+	class Val, class Errors,
+	class RetType, class UnOps>
 	friend
 	RetType
-	error_handling::detail::if_err(Ret<Val, Errors...>&& v, UnOp op, UnOps... ops);
+	error_handling::detail::if_err(Ret<Val, Errors>&& v, UnOps ops);
 
 	template <class Arg, class UnOp>
 	struct EnableForReturnsVoid {
@@ -90,10 +96,6 @@ class CallHandler {
 	static Ret call(UnOp op, Err&& err, void* fake = nullptr) {
 		return op(std::move(err));
 	}
-};
-
-class SetBasedIfErr {
-
 };
 
 } /* namespace helpers_for_if_err */

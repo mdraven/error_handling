@@ -34,7 +34,7 @@ Val unsafe_any_cast(Any<Types...>& v) {
 struct AnyAssign {
 	template <class Val, class Err, class... Errors, class OVal, class... OErrors>
 	static void auto_move(Any<Val, Err, Errors...>& any, Any<OVal, OErrors...>&& oany) {
-		static_cast<boost::any>(any) = std::move(oany);
+		static_cast<boost::any&>(any) = std::move(static_cast<boost::any&>(oany));
 	}
 };
 

@@ -10,18 +10,19 @@
 
 #include "Ret.hpp"
 #include "Any.hpp"
+#include <error_handling/detail/Set.hpp>
 
 namespace error_handling {
 
 namespace detail {
 
-template <class Val, class Err, class... Errors>
-Any<Val, Err, Errors...>& unsafe_access_to_internal_data(Ret<Val, Err, Errors...>& v) {
+template <class Val, class Errors>
+Any<Val, Errors>& unsafe_access_to_internal_data(Ret<Val, Errors>& v) {
 	return v.v;
 }
 
 template <class Val>
-Val& unsafe_access_to_internal_data(Ret<Val>& v) {
+Val& unsafe_access_to_internal_data(Ret<Val, Set<>>& v) {
 	return v.v;
 }
 

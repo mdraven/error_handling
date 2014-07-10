@@ -10,23 +10,24 @@
 
 #include <error_handling/detail/HelpersForIfErr.hpp>
 
+// TODO: delete
+#include <boost/fusion/container.hpp>
+#include <boost/fusion/algorithm.hpp>
+#include <boost/fusion/include/front.hpp>
+// ^^^^
+
 namespace error_handling {
 
 namespace detail {
 
 namespace hfif = error_handling::detail::helpers_for_if_err;
 
-template <class CErr, class... CErrors,
-class UnOp, class... UnOps,
-class Val, class... Errors,
-class RetType = typename hfif::RetTypeFor_ValErrors<hfif::Wrapper<CErr, CErrors...>, Val, Errors...>::type>
+template <class CErrors,
+class Val, class Errors,
+class RetType = typename hfif::RetTypeFor_ValErrors<CErrors, Val, Errors>::type,
+class UnOps>
 RetType
-if_err(Ret<Val, Errors...>&& v, UnOp op, UnOps... ops);
-
-template <class Val, class... Errors,
-class RetType = typename hfif::RetTypeFor_ValErrors<hfif::Wrapper<>, Val, Errors...>::type>
-RetType
-if_err(Ret<Val, Errors...>&& v);
+if_err(Ret<Val, Errors>&& v, UnOps ops);
 
 } /* namespace detail */
 

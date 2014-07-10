@@ -90,28 +90,6 @@ public:
 	using type = typename Helper<m::size<Seq>::value>::type;
 };
 
-template <class Seq, template <class...> class Builder>
-class SeqToVariadicCall {
-	template <size_t i = m::size<Seq>::value, class... Acc>
-	struct Helper :
-			Helper<i-1, Acc...,
-			typename m::advance<typename m::begin<Seq>::type, m::int_<i-1>>::type::type>::type {};
-
-	template <class... Acc>
-	struct Helper<0, Acc...> {
-		template <class... Args>
-		auto call(Args... args) -> decltype(Builder<Acc...>(args...)) {
-			return Builder<Acc...>(args...);
-		}
-	};
-public:
-	template <class... Args>
-	static
-	auto call(Args... args) -> decltype(Helper<m::size<Seq>::value>::call(args...)) {
-		return Helper<m::size<Seq>::value>::call(args...);
-	}
-};
-
 } /* namespace detail */
 
 } /* namespace error_handling */

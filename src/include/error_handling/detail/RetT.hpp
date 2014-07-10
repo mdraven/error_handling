@@ -11,20 +11,22 @@
 #include "Ret.hpp"
 #include "T.hpp"
 
+#include <error_handling/detail/Set.hpp>
+
 namespace error_handling {
 
 namespace detail {
 
 template <>
-class Ret<T> final {
+class Ret<T, Set<>> final {
 public:
 	Ret() noexcept = default;
 
-	Ret(const Ret<T>&) noexcept = default;
-	Ret(Ret<T>&&) noexcept = default;
+	Ret(const Ret<T, Set<>>&) noexcept = default;
+	Ret(Ret<T, Set<>>&&) noexcept = default;
 
-	Ret<T>& operator=(const Ret<T>&) noexcept = default;
-	Ret<T>& operator=(Ret<T>&&) noexcept = default;
+	Ret<T, Set<>>& operator=(const Ret<T, Set<>>&) noexcept = default;
+	Ret<T, Set<>>& operator=(Ret<T, Set<>>&&) noexcept = default;
 
 	template <class Val>
 	Ret(const Val&) noexcept {}
@@ -33,28 +35,28 @@ public:
 	Ret(Val&&) noexcept {}
 
 	template <class Val>
-	Ret(const Ret<Val>&) noexcept {}
+	Ret(const Ret<Val, Set<>>&) noexcept {}
 
 	template <class Val>
-	Ret(Ret<Val>&&) noexcept {}
+	Ret(Ret<Val, Set<>>&&) noexcept {}
 
 	template <class Val>
-	Ret<T>& operator=(const Val&) noexcept {
+	Ret<T, Set<>>& operator=(const Val&) noexcept {
 		return *this;
 	}
 
 	template <class Val>
-	Ret<T>& operator=(Val&&) noexcept {
+	Ret<T, Set<>>& operator=(Val&&) noexcept {
 		return *this;
 	}
 
 	template <class Val>
-	Ret<T>& operator=(const Ret<Val>&) noexcept {
+	Ret<T, Set<>>& operator=(const Ret<Val, Set<>>&) noexcept {
 		return *this;
 	}
 
 	template <class Val>
-	Ret<T>& operator=(Ret<Val>&&) noexcept {
+	Ret<T, Set<>>& operator=(Ret<Val, Set<>>&&) noexcept {
 		return *this;
 	}
 

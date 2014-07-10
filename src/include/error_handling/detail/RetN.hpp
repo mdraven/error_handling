@@ -10,21 +10,22 @@
 
 #include "Ret.hpp"
 #include "N.hpp"
+#include <error_handling/detail/Set.hpp>
 
 namespace error_handling {
 
 namespace detail {
 
 template <>
-class Ret<N> final {
+class Ret<N, Set<>> final {
 public:
 	Ret() noexcept = default;
 
-	Ret(const Ret<N>&) noexcept = default;
-	Ret(Ret<N>&&) noexcept = default;
+	Ret(const Ret<N, Set<>>&) noexcept = default;
+	Ret(Ret<N, Set<>>&&) noexcept = default;
 
-	Ret<N>& operator=(const Ret<N>&) noexcept = default;
-	Ret<N>& operator=(Ret<N>&&) noexcept = default;
+	Ret<N, Set<>>& operator=(const Ret<N, Set<>>&) noexcept = default;
+	Ret<N, Set<>>& operator=(Ret<N, Set<>>&&) noexcept = default;
 
 	~Ret() noexcept = default;
 };

@@ -14,13 +14,10 @@ namespace detail {
 
 namespace helpers_for_if_err {
 
-template <class... Args>
-struct Wrapper;
-
-template <class... Args>
+template <class CErrors, class Val, class Errors>
 class RetTypeFor_ValErrors;
 
-template <class... Args>
+template <class CErrors, class UnOps, class Val, class Errors>
 class ConstraintsFor_ValErrors;
 
 class AssignHelper;

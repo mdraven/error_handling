@@ -13,6 +13,7 @@
 #include "detail/RetVal.hpp"
 #include "detail/RetValErrors.hpp"
 #include <error_handling/detail/impl/IfErr.hpp>
+#include <error_handling/detail/Set.hpp>
 #include "detail/T.hpp"
 #include "detail/N.hpp"
 #include "detail/V.hpp"
@@ -26,6 +27,8 @@ using error_handling::detail::if_err;
 using error_handling::detail::T;
 using error_handling::detail::N;
 using error_handling::detail::V;
+
+using error_handling::detail::Set;
 
 } /* namespace error_handling */
 
