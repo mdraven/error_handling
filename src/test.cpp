@@ -112,7 +112,10 @@ int main() {
 //	std::cout << IsUnOp<Base, Ops>::value << std::endl;
 //	typename error_handling::detail::UnOpArgSet<error_handling::detail::Set<ErrA, Derived, ErrB, ErrC, Base>, Ops>::type x = 10;
 
+//	error_handling::detail::EnableIfNotUniversalRef<ErrA&>::value;  // OK
 //	error_handling::detail::EnableIfNotUniversalRef<ErrA&&>::value;  // OK
-//	typename error_handling::detail::EnableIfNotUniversalRef<ErrA&&>::type xxx1;  // OK
-//	typename error_handling::detail::EnableIfNotUniversalRef<ErrA&&>::type::type xxx2; // compile-time ERR
+//	typename error_handling::detail::EnableIfNotUniversalRef<ErrA&>::type xxx1;  // OK
+//	typename error_handling::detail::EnableIfNotUniversalRef<ErrA&&>::type xxx2;  // OK
+//	std::is_same<typename error_handling::detail::EnableIfNotUniversalRef<ErrA&>::type::type, void>::value; // compile-time ERR
+//	std::is_same<typename error_handling::detail::EnableIfNotUniversalRef<ErrA&&>::type::type, void>::value; // OK
 }
