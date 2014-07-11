@@ -28,8 +28,8 @@ class Ret<Val, Set<>> final {
 public:
 	Ret() = default;
 
-	Ret(const Val& v);
-	Ret(Val&& v);
+	Ret(const Val& v) : v(v) {}
+	Ret(Val&& v) : v(std::move(v)) {}
 
 	Ret(const Ret<Val, Set<>>& v) = default;
 	Ret(Ret<Val, Set<>>&& v) noexcept(std::is_nothrow_move_constructible<Val>::value) :
@@ -41,44 +41,27 @@ public:
 	Ret<Val, Set<>>& operator=(const Ret<Val, Set<>>& v) = delete;
 	Ret<Val, Set<>>& operator=(Ret<Val, Set<>>&& v) = delete;
 
-	explicit operator Val&() noexcept;
-	explicit operator const Val&() const noexcept;
+	explicit operator Val&() noexcept {
+		return v;
+	}
 
-	Val& data() noexcept;
-	const Val& data() const noexcept;
+	explicit operator const Val&() const noexcept {
+		return v;
+	}
+
+	Val& data() noexcept {
+		return v;
+	}
+
+	const Val& data() const noexcept {
+		return v;
+	}
 
 	/* тут набор операторов сравнения, если они есть у Val.
       Все сравнения только с Val и Ret<Val>, никаких Ret<...,Val> */
 
 	~Ret() = default;
 };
-
-template <class Val>
-Ret<Val, Set<>>::Ret(const Val& v) : v(v) {}
-
-template <class Val>
-Ret<Val, Set<>>::Ret(Val&& v) :
-	v(std::move(v)) {}
-
-template <class Val>
-Ret<Val, Set<>>::operator Val&() noexcept {
-	return v;
-}
-
-template <class Val>
-Ret<Val, Set<>>::operator const Val&() const noexcept {
-	return v;
-}
-
-template <class Val>
-Val& Ret<Val, Set<>>::data() noexcept {
-	return v;
-}
-
-template <class Val>
-const Val& Ret<Val, Set<>>::data() const noexcept {
-	return v;
-}
 
 } /* namespace detail */
 

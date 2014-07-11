@@ -69,7 +69,6 @@ public:
 		printf("move constr Ret\n");
 
 		unsafe_access_to_internal_data(v).clear();
-
 	}
 
 	Ret<Val, Errors>& operator=(const Val& v) = delete;
@@ -97,7 +96,7 @@ public:
 
 	~Ret() {
 		if(!v.empty())
-			printf("Unchecked Ret: %s\n", typeid(Ret<Val, Errors>).name());
+			printf("Unchecked Ret: %s.\n", typeid(Ret<Val, Errors>).name());
 	}
 };
 

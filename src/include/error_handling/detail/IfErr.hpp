@@ -11,6 +11,7 @@
 #include <error_handling/detail/Set/Set.hpp>
 #include <error_handling/detail/Ret/RetTraits.hpp>
 #include <error_handling/detail/UnOp.hpp>
+#include <error_handling/detail/config.hpp>
 
 // TODO: delete
 #include <boost/fusion/container.hpp>
@@ -56,12 +57,20 @@ class IfErrsImpl {
 	struct AssignHelper {
 		template <class Val, class OVal, class OErrors>
 		static void assign(Ret<Val, Set<>>& v, Ret<OVal, OErrors>&& ov) {
-			unsafe_access_to_internal_data(v) = std::move(unsafe_cast<OVal>(unsafe_access_to_internal_data(ov)));
+			Any<OVal, OErrors>& any = unsafe_access_to_internal_data(ov);
+			Val& val = unsafe_access_to_internal_data(v);
+
+			val = std::move(unsafe_cast<OVal>(any));
 		}
 
 		template <class Val, class Errors, class OVal, class OErrors>
 		static void assign(Ret<Val, Errors>& v, Ret<OVal, OErrors>&& ov) {
-			unsafe_access_to_internal_data(v) = std::move(unsafe_access_to_internal_data(ov));
+			Any<Val, Errors>& any = unsafe_access_to_internal_data(v);
+			Any<OVal, OErrors>& oany = unsafe_access_to_internal_data(ov);
+
+			any = std::move(oany);
+
+			oany.clear();
 		}
 	};
 
@@ -200,6 +209,12 @@ class Val, class Errors,
 class UnOps>
 typename IfErrsRetType<CErrors, Val, Errors>::type
 if_err(Ret<Val, Errors>&& v, UnOps ops) {
+#ifdef ERROR_HANDLING_CHECK_DOUBLE_IFERR
+	if(unsafe_access_to_internal_data(v).empty()) {
+		ERROR_HANDLING_CRITICAL_ERROR("Double `if_err` on `Ret`.\n");
+	}
+#endif
+
 	using RetType = typename IfErrsRetType<CErrors, Val, Errors>::type;
 	return IfErrsImpl<RetType>::template call<CErrors>(std::move(v), ops, IfErrsSeal());
 }

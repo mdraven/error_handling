@@ -79,6 +79,7 @@ int main() {
 	Ret<std::string, Set<ErrA, ErrB>> ret6{Ret<std::string, Set<ErrA>>()};
 //	Ret<std::string, ErrA, ErrB> ret7{Ret<std::string, ErrA, ErrC>()}; // ERR
 
+	// присваивать нельзя
 //	ret6 = Ret<std::string, Set<ErrB>>(); // ERR
 //	ret6 = Ret<std::string, Set<ErrC>>(); // ERR
 //	ret6 = Ret<std::string, ErrC>(); // ERR
@@ -138,6 +139,15 @@ int main() {
 
 //    Ret<std::string, Set<>> ret36;
 //    if_err<Set<>>(std::move(ret36), boost::fusion::make_list([](ErrA&&) { return; })); // ERR
+
+    // тест на множественный вызов if_err для одного Ret<> и для одной ошибки.
+#if 0
+    Ret<std::string, Set<ErrA>> ret37{ErrA()};
+    if_err<Set<ErrA>>(std::move(ret37), boost::fusion::make_list([](ErrA&&) { return; }));
+    if_err<Set<ErrA>>(std::move(ret37), boost::fusion::make_list([](ErrA&&) { return; })); // ERR
+    if_err<Set<ErrA>>(std::move(ret37), boost::fusion::make_list([](ErrA&&) { return; })); // ERR
+    if_err<Set<ErrA>>(std::move(ret37), boost::fusion::make_list([](ErrA&&) { return; })); // ERR
+#endif
 
 //	std::cout << IsUnOp<ErrA, Ops>::value << std::endl;
 //	std::cout << IsUnOp<ErrB, Ops>::value << std::endl;

@@ -401,6 +401,7 @@ public:
 
 template <class Val, class OVal, class OErrors>
 Val unsafe_cast(Any<OVal, OErrors>& v) {
+	assert(v.type() == typeid(Val));
 	return *static_cast<Val*>(static_cast<void*>(v.storage));
 }
 
