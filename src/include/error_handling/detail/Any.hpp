@@ -231,14 +231,22 @@ public:
 
 	template <class OVal, class OErrors>
 	Any(const Any<OVal, OErrors>& v) : ti(nullptr) {
-		v.callCopyConstructor(storage);
-		ti = v.ti;
+		if(v.ti == nullptr)
+			clear();
+		else {
+			v.callCopyConstructor(storage);
+			ti = v.ti;
+		}
 	}
 
 	template <class OVal, class OErrors>
 	Any(Any<OVal, OErrors>&& v) : ti(nullptr) {
-		v.callMoveConstructor(storage);
-		ti = v.ti;
+		if(v.ti == nullptr)
+			clear();
+		else {
+			v.callMoveConstructor(storage);
+			ti = v.ti;
+		}
 	}
 
 	template <class OVal>
@@ -256,32 +264,40 @@ public:
 		if(this == &v)
 			return *this;
 
-		if(ti == nullptr)
-			v.callCopyConstructor(storage);
-		else if(ti == v.ti)
-			v.callCopyAssign(storage);
+		if(v.ti == nullptr)
+			clear();
 		else {
-			destructor();
-			v.callCopyConstructor(storage);
-		}
+			if(ti == nullptr)
+				v.callCopyConstructor(storage);
+			else if(ti == v.ti)
+				v.callCopyAssign(storage);
+			else {
+				destructor();
+				v.callCopyConstructor(storage);
+			}
 
-		ti = v.ti;
+			ti = v.ti;
+		}
 
 		return *this;
 	}
 
 	template <class OVal, class OErrors>
 	Any<Val, Errors>& operator=(const Any<OVal, OErrors>& v) {
-		if(ti == nullptr)
-			v.callCopyConstructor(storage);
-		else if(ti == v.ti)
-			v.callCopyAssign(storage);
+		if(v.ti == nullptr)
+			clear();
 		else {
-			destructor();
-			v.callCopyConstructor(storage);
-		}
+			if(ti == nullptr)
+				v.callCopyConstructor(storage);
+			else if(ti == v.ti)
+				v.callCopyAssign(storage);
+			else {
+				destructor();
+				v.callCopyConstructor(storage);
+			}
 
-		ti = v.ti;
+			ti = v.ti;
+		}
 
 		return *this;
 	}
@@ -290,32 +306,40 @@ public:
 		if(this == &v)
 			return *this;
 
-		if(ti == nullptr)
-			v.callMoveConstructor(storage);
-		else if(ti == v.ti)
-			v.callMoveAssign(storage);
+		if(v.ti == nullptr)
+			clear();
 		else {
-			destructor();
-			v.callMoveConstructor(storage);
-		}
+			if(ti == nullptr)
+				v.callMoveConstructor(storage);
+			else if(ti == v.ti)
+				v.callMoveAssign(storage);
+			else {
+				destructor();
+				v.callMoveConstructor(storage);
+			}
 
-		ti = v.ti;
+			ti = v.ti;
+		}
 
 		return *this;
 	}
 
 	template <class OVal, class OErrors>
 	Any<Val, Errors>& operator=(Any<OVal, OErrors>&& v) noexcept {
-		if(ti == nullptr)
-			v.callMoveConstructor(storage);
-		else if(ti == v.ti)
-			v.callMoveAssign(storage);
+		if(v.ti == nullptr)
+			clear();
 		else {
-			destructor();
-			v.callMoveConstructor(storage);
-		}
+			if(ti == nullptr)
+				v.callMoveConstructor(storage);
+			else if(ti == v.ti)
+				v.callMoveAssign(storage);
+			else {
+				destructor();
+				v.callMoveConstructor(storage);
+			}
 
-		ti = v.ti;
+			ti = v.ti;
+		}
 
 		return *this;
 	}
