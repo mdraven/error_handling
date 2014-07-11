@@ -17,8 +17,8 @@ struct N {
 	N(const N&) = delete;
 	N(N&&) = delete;
 
-	N& operator=(const N&) = delete;
-	N& operator=(N&&) = delete;
+	N& operator=(const N&) = default;
+	N& operator=(N&&) = default;
 };
 
 } /* namespace detail */

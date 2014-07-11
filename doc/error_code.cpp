@@ -32,7 +32,9 @@
 struct T {}; // это полное определение T
 struct V {}; // это полное определение V
 
-struct N {  // Такой тип нельзя создать (TODO: может просто сделать struct N; без определения?)
+struct N {  /* Такой тип нельзя создать (TODO: может просто сделать struct N; без определения?
+                                                 С определением -- лучше. Если есть только декларация, то
+                                                 кто-нибудь может дописать определение и "сломать систему")
     N() = delete;
     N(const N&) = delete;
 };
@@ -520,6 +522,7 @@ Ret<B, C, Val> checkA(Ret<A, B, C, Val>&& v) {
     //! Ret<N, A> v = Ret<N>(); // ошибка: в N нет значения; в v должен быть A
     Ret<Val, A> v = Ret<N, A>(); // OK: есть ещё A
     Ret<N, A, B> v = Ret<N, A>(); // OK: есть ещё A
+    Ret<N> v = Ret<N>(); // OK: N можно к N
 
     if_err<ErrB>(std::move(xxx), [](ErrB&&) -> Ret<std::string, ErrA> {}); // должен падать из-за не поглащонной ошибки
     if_err<ErrB>(std::move(xxx), [](ErrB&&) {}); // скорее всего не падает, так как возвращает Ret<Val>
@@ -795,3 +798,6 @@ public:
        IfErrsSeal* p;
        IfErrsImpl<Ret<int, Set<>>>::template call<Set<int>>(Ret<int, Set<int, std::string, char>>(), boost::fusion::make_list([](int){}), *p);
      }
+*/
+
+/* может быть реально сделать утечку как в примере advocate.cpp у сатера. */
