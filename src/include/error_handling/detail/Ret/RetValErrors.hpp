@@ -58,8 +58,11 @@ public:
 	Ret(const Ret<Val, Errors>& v) = delete;
 
 	template <class OVal, class OErrors>
-	Ret(Ret<OVal, OErrors>&& v) /*noexcept TODO: тут нужен предикат, который проверяет на noexcept OVal и OErrors*/ : v(std::move(unsafe_access_to_internal_data(v))) {
+	Ret(Ret<OVal, OErrors>&& v) /*noexcept TODO: тут нужен предикат, который проверяет на noexcept OVal и OErrors*/ :
+			v(std::move(unsafe_access_to_internal_data(v))) {
 		printf("move constr Ret\n");
+
+		unsafe_access_to_internal_data(v).clear();
 
 		static const bool is_convertible_val = std::is_convertible<OVal, Val>::value;
 		static_assert(is_convertible_val, "Cannot convert `Val` type.");
@@ -102,6 +105,8 @@ public:
 	template <class OVal, class OErrors>
 	Ret<Val, Errors>& operator=(Ret<OVal, OErrors>&& v) /*noexcept TODO: про предикат выше*/ {
 		printf("move assign Ret\n");
+
+		unsafe_access_to_internal_data(v).clear();
 
 		static const bool is_convertible_val = std::is_convertible<OVal, Val>::value;
 		static_assert(is_convertible_val, "Cannot convert `Val` type.");

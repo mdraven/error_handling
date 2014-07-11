@@ -58,7 +58,6 @@ struct FromString {
 //}
 
 int main() {
-
 	using error_handling::Ret;
 	using error_handling::if_err;
 	using error_handling::T;
