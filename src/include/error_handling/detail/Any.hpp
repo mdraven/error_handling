@@ -118,8 +118,6 @@ struct TypeInfo {
 
 template <class Type>
 class TypeInfoHolder {
-	static const TypeInfo* instance;
-
 	static void wrapperForDestructor(void* data) {
 		static_cast<Type*>(data)->~Type();
 	}
@@ -142,6 +140,8 @@ class TypeInfoHolder {
 
 public:
 	static const TypeInfo* getTypeInfo() {
+		static const TypeInfo* instance;
+
 		if(instance == nullptr) {
 			// TODO: need race protect
 			static TypeInfo ti;
@@ -157,10 +157,10 @@ public:
 
 			instance = &ti;
 		}
+
 		return instance;
 	}
 };
-
 
 template <class Val, class Errors>
 class Any {
@@ -321,7 +321,7 @@ public:
 
 template <class Val, class Errors>
 Val unsafe_cast(Any<Val, Errors>& v) {
-	return *static_cast<Val*>(v.storage);
+	return *static_cast<Val*>(static_cast<void*>(v.storage));
 }
 
 #endif
