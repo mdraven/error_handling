@@ -79,7 +79,7 @@ int main() {
 	Ret<std::string, Set<ErrA, ErrB>> ret6{Ret<std::string, Set<ErrA>>()};
 //	Ret<std::string, ErrA, ErrB> ret7{Ret<std::string, ErrA, ErrC>()}; // ERR
 
-	ret6 = Ret<std::string, Set<ErrB>>();
+//	ret6 = Ret<std::string, Set<ErrB>>(); // ERR
 //	ret6 = Ret<std::string, Set<ErrC>>(); // ERR
 //	ret6 = Ret<std::string, ErrC>(); // ERR
 
@@ -89,7 +89,7 @@ int main() {
 	Ret<Base, Set<ErrA>> ret10{Ret<Derived, Set<ErrA>>()};
 //	Ret<Derived, ErrA> ret11{Ret<Base, ErrA>()}; // ERR
 
-	ret10 = Ret<Derived, Set<ErrA>>();
+//	ret10 = Ret<Derived, Set<ErrA>>(); // ERR
 //	Ret<Derived, ErrA> ret12; ret12 = Ret<Base, ErrA>();  //ERR
 
 	Ret<std::string, Set<ErrA, ErrB>> ret13{std::string("hello")};
@@ -135,6 +135,9 @@ int main() {
 //    FromString ret34{(FromString)if_err<Set<ErrA>>(std::move(ret32), boost::fusion::make_list([](ErrA&&) { return std::string("bye"); }))}; // ERR
 
     Ret<std::unique_ptr<int>, Set<ErrA>> ret35{std::unique_ptr<int>(new int)};
+
+//    Ret<std::string, Set<>> ret36;
+//    if_err<Set<>>(std::move(ret36), boost::fusion::make_list([](ErrA&&) { return; })); // ERR
 
 //	std::cout << IsUnOp<ErrA, Ops>::value << std::endl;
 //	std::cout << IsUnOp<ErrB, Ops>::value << std::endl;

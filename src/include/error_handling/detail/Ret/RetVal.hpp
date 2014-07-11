@@ -25,7 +25,6 @@ class Ret<Val, Set<>> final {
 
 	template <class OVal>
 	friend OVal& unsafe_access_to_internal_data(Ret<OVal, Set<>>&);
-
 public:
 	Ret() = default;
 
@@ -36,16 +35,11 @@ public:
 	Ret(Ret<Val, Set<>>&& v) noexcept(std::is_nothrow_move_constructible<Val>::value) :
 			v(std::move(v.v)) {}
 
-	Ret<Val, Set<>>& operator=(const Val& v);
-	Ret<Val, Set<>>& operator=(Val&& v);
+	Ret<Val, Set<>>& operator=(const Val& v) = delete;
+	Ret<Val, Set<>>& operator=(Val&& v) = delete;
 
-	Ret<Val, Set<>>& operator=(const Ret<Val, Set<>>& v) = default;
-	Ret<Val, Set<>>& operator=(Ret<Val, Set<>>&& v) noexcept(std::is_nothrow_move_assignable<Val>::value) {
-		if(this == &v)
-			return *this;
-		v = std::move(v.v);
-		return *this;
-	}
+	Ret<Val, Set<>>& operator=(const Ret<Val, Set<>>& v) = delete;
+	Ret<Val, Set<>>& operator=(Ret<Val, Set<>>&& v) = delete;
 
 	explicit operator Val&() noexcept;
 	explicit operator const Val&() const noexcept;
@@ -65,20 +59,6 @@ Ret<Val, Set<>>::Ret(const Val& v) : v(v) {}
 template <class Val>
 Ret<Val, Set<>>::Ret(Val&& v) :
 	v(std::move(v)) {}
-
-template <class Val>
-Ret<Val, Set<>>&
-Ret<Val, Set<>>::operator=(const Val& v) {
-	this->v = v;
-	return *this;
-}
-
-template <class Val>
-Ret<Val, Set<>>&
-Ret<Val, Set<>>::operator=(Val&& v) {
-	this->v = std::move(v);
-	return *this;
-}
 
 template <class Val>
 Ret<Val, Set<>>::operator Val&() noexcept {

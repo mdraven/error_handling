@@ -72,67 +72,21 @@ public:
 
 	}
 
-	Ret<Val, Errors>& operator=(const Val& v) {
-		if(!this->v.empty())
-			printf("Assign to not empty Ret: %s\n", typeid(Ret<Val, Errors>).name());
+	Ret<Val, Errors>& operator=(const Val& v) = delete;
 
-		this->v = v;
-		return *this;
-	}
-
-	Ret<Val, Errors>& operator=(Val&& v) {
-		if(!this->v.empty())
-			printf("Assign to not empty Ret: %s\n", typeid(Ret<Val, Errors>).name());
-
-		this->v = std::move(v);
-		return *this;
-	}
+	Ret<Val, Errors>& operator=(Val&& v) = delete;
 
 	template <class OErr>
-	Ret<Val, Errors>& operator=(const OErr& v) {
-		static const bool is_known_error = IsContains<Errors, OErr>::value;
-		static_assert(is_known_error, "Unknown error type");
-
-		if(!this->v.empty())
-			printf("Assign to not empty Ret: %s\n", typeid(Ret<Val, Errors>).name());
-
-		this->v = v;
-		return *this;
-	}
+	Ret<Val, Errors>& operator=(const OErr& v) = delete;
 
 	template <class OErr,
 	class = typename EnableIfNotUniversalRef<OErr>::type::type>
-	Ret<Val, Errors>& operator=(OErr&& v) {
-		static const bool is_known_error = IsContains<Errors, OErr>::value;
-		static_assert(is_known_error, "Unknown error type");
-
-		if(!this->v.empty())
-			printf("Assign to not empty Ret: %s\n", typeid(Ret<Val, Errors>).name());
-
-		this->v = std::move(v);
-		return *this;
-	}
+	Ret<Val, Errors>& operator=(OErr&& v) = delete;
 
 	Ret<Val, Errors>& operator=(const Ret<Val, Errors>& v) = delete;
 
 	template <class OVal, class OErrors>
-	Ret<Val, Errors>& operator=(Ret<OVal, OErrors>&& v) /*noexcept TODO: про предикат выше*/ {
-		static const bool is_convertible_val = std::is_convertible<OVal, Val>::value;
-		static_assert(is_convertible_val, "Cannot convert `Val` type.");
-
-		static const bool is_more_weak = IsDifferenceEmpty<OErrors, Errors>::value;
-		static_assert(is_more_weak, "Assign to more strong type.");
-
-		printf("move assign Ret\n");
-
-		if(!this->v.empty())
-			printf("Assign to not empty Ret: %s\n", typeid(Ret<Val, Errors>).name());
-
-		unsafe_access_to_internal_data(v).clear();
-
-		this->v = std::move(unsafe_access_to_internal_data(v));
-		return *this;
-	}
+	Ret<Val, Errors>& operator=(Ret<OVal, OErrors>&& v) = delete;
 
 	/* операторов приведения типа(например к Val или ErrN) -- нет: если тип в v не совпал, то
       мы можем только бросить исключение, но эта библиотека не кидает >своих< исключений(возможно только в
