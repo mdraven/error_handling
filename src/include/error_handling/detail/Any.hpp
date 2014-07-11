@@ -25,8 +25,8 @@ namespace detail {
 template <class Val, class Errors>
 class Any;
 
-template <class Val, class Errors>
-Val unsafe_cast(Any<Val, Errors>& v);
+template <class Val, class OVal, class OErrors>
+Val unsafe_cast(Any<OVal, OErrors>& v);
 
 #if ERROR_HANDLING_ANY == 1
 
@@ -122,22 +122,32 @@ class TypeInfoHolder {
 		static_cast<Type*>(data)->~Type();
 	}
 
+	template <class OType>
 	static void wrapperForCopyConstr(const void* from, void* to) {
-		new(to) Type(*static_cast<const Type*>(from));
+		new(to) OType(*static_cast<const OType*>(from));
 	}
 
+	template <class OType>
 	static void wrapperForMoveConstr(void* from, void* to) {
-		new(to) Type(std::move(*static_cast<Type*>(from)));
+		new(to) OType(std::move(*static_cast<OType*>(from)));
 	}
 
+	template <class OType>
 	static void wrapperForCopyAssign(const void* from, void* to) {
-		static_cast<Type*>(to)->operator=(*static_cast<const Type*>(from));
+		*static_cast<OType*>(to) = *static_cast<const OType*>(from);
 	}
 
+	template <class OType>
 	static void wrapperForMoveAssign(void* from, void* to) {
-		static_cast<Type*>(to)->operator=(std::move(*static_cast<const Type*>(from)));
+		*static_cast<OType*>(to) = std::move(*static_cast<OType*>(from));
 	}
 
+	struct Helper {
+		Helper(const Helper&) = default;
+		Helper(Helper&&) = default;
+		Helper& operator=(const Helper&) = default;
+		Helper& operator=(Helper&&) = default;
+	};
 public:
 	static const TypeInfo* getTypeInfo() {
 		static const TypeInfo* instance;
@@ -149,11 +159,22 @@ public:
 			ti.ti = &typeid(Type);
 
 			ti.destr = &wrapperForDestructor;
-			ti.copy_constr = &wrapperForCopyConstr;
-			ti.move_constr = &wrapperForMoveConstr;
 
-			ti.copy_assign = &wrapperForCopyAssign;
-			ti.move_assign = &wrapperForMoveAssign;
+			static const bool is_copy_constructible = std::is_copy_constructible<Type>::value;
+			using copy_constructible_type = typename std::conditional<is_copy_constructible, Type, Helper>::type;
+			ti.copy_constr = is_copy_constructible ? &wrapperForCopyConstr<copy_constructible_type> : nullptr;
+
+			static const bool is_move_constructible = std::is_move_constructible<Type>::value;
+			using move_constructible_type = typename std::conditional<is_move_constructible, Type, Helper>::type;
+			ti.move_constr = is_move_constructible ? &wrapperForMoveConstr<move_constructible_type> : nullptr;
+
+			static const bool is_copy_assignable = std::is_copy_assignable<Type>::value;
+			using copy_assignable_type = typename std::conditional<is_copy_assignable, Type, Helper>::type;
+			ti.copy_assign = is_copy_assignable ? &wrapperForCopyAssign<copy_assignable_type> : nullptr;
+
+			static const bool is_move_assignable = std::is_move_assignable<Type>::value;
+			using move_assignable_type = typename std::conditional<is_move_assignable, Type, Helper>::type;
+			ti.move_assign = is_move_assignable ? &wrapperForMoveAssign<move_assignable_type> : nullptr;
 
 			instance = &ti;
 		}
@@ -167,8 +188,8 @@ class Any {
 	char storage[MaxSize<typename Insert<Errors, Val>::type>::value];
 	const TypeInfo* ti;
 
-	template <class OVal, class OErrors>
-	friend OVal unsafe_cast(Any<OVal, OErrors>& v);
+	template <class RVal, class OVal, class OErrors>
+	friend RVal unsafe_cast(Any<OVal, OErrors>& v);
 
 	template <class OVal, class OErrors>
 	friend class Any;
