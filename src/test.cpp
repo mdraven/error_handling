@@ -114,6 +114,7 @@ int main() {
 	Ret<std::string, Set<>> ret28{if_err<Set<ErrA>>(std::move(ret27), boost::fusion::make_list([](ErrA&&) -> Ret<std::string, Set<>> { return std::string("bye"); }))};
 	Ret<std::string, Set<>> ret29{if_err<Set<ErrA>>(std::move(ret27), boost::fusion::make_list([](ErrA&&) -> std::string { return "bye"; }))};
     std::string ret30{if_err<Set<ErrA>>(std::move(ret27), boost::fusion::make_list([](ErrA&&) -> std::string { return "bye"; }))};
+    std::string ret31{if_err<Set<ErrA>>(std::move(ret27), boost::fusion::make_list([](ErrA&&) { return "bye"; }))};
 
 //	std::cout << IsUnOp<ErrA, Ops>::value << std::endl;
 //	std::cout << IsUnOp<ErrB, Ops>::value << std::endl;

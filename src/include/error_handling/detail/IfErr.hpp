@@ -83,6 +83,14 @@ class IfErrsImpl {
 				using type = std::enable_if<is_ret_ret>;
 			};
 
+			template <class Arg, class UnOp, class Val>
+			class EnableForReturnsConvertibleToVal {
+				using ret_type = typename std::result_of<UnOp(Arg)>::type;
+				static const bool is_ret_convertible_to_val = std::is_convertible<ret_type, Val>::value;
+			public:
+				using type = std::enable_if<is_ret_convertible_to_val>;
+			};
+
 			template <class Arg, class UnOp>
 			struct ConstraintsForReturnsRet {
 				static_assert(std::is_convertible<typename std::result_of<UnOp(Arg&&)>::type,
@@ -101,6 +109,12 @@ class IfErrsImpl {
 			static RetType call(UnOp op, Err&& err, void* fake = nullptr) {
 				ConstraintsForReturnsRet<Err, UnOp>();
 				return op(std::move(err));
+			}
+
+			template <class Val, class Err, class UnOp,
+			class = typename EnableForReturnsConvertibleToVal<Err&&, UnOp, Val>::type::type>
+			static RetType call(UnOp op, Err&& err, char* fake = nullptr) {
+				return Val(op(std::move(err)));
 			}
 		};
 
