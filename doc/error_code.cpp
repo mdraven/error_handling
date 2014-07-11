@@ -687,11 +687,11 @@ int main(int argc, char *argv[]) {
    template <class Args>
    class Any {
      Union<Args> u;
-     type_info *ti;
-     DesturctorPtr* destr;
+     type_info* ti;
+     DestructorPtr* destr;
      CopyConstr* copy_constr;
      MoveConstr* move_constr;
-     CopyAssign* assign_constr;
+     CopyAssign* copy_assign;
      MoveAssign* move_assign;
      EqOper* eq; // == и прочие операторы сравнения
    }
@@ -703,10 +703,10 @@ int main(int argc, char *argv[]) {
 
    Информация по указателям для одного и того же типа всегда одинаковая и поэтому
    пересчитывать её нет смысла. Неплохо было бы, чтобы следующий метод работал:
-   template <void Type>
+   template <class Type>
    class Info {
       struct Internal {
-        type_info *ti;
+        type_info* ti;
         DesturctorPtr* destr;
         CopyConstr* copy_constr;
         MoveConstr* move_constr;
