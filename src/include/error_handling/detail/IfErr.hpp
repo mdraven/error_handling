@@ -57,10 +57,12 @@ class IfErrsImpl {
 	struct AssignHelper {
 		template <class Val, class OVal, class OErrors>
 		static void assign(Ret<Val, Set<>>& v, Ret<OVal, OErrors>&& ov) {
-			Any<OVal, OErrors>& any = unsafe_access_to_internal_data(ov);
+			Any<OVal, OErrors>& oany = unsafe_access_to_internal_data(ov);
 			Val& val = unsafe_access_to_internal_data(v);
 
-			val = std::move(unsafe_cast<OVal>(any));
+			val = std::move(unsafe_cast<OVal>(oany));
+
+			oany.clear();
 		}
 
 		template <class Val, class Errors, class OVal, class OErrors>
@@ -164,8 +166,14 @@ class IfErrsImpl {
 			using NewErrors = typename Remove<CErrors, CallArg>::type;
 
 			if(unsafe_access_to_internal_data(v).type() == typeid(CallArg)) {
-				return CallHandler::template call<Val>(boost::fusion::front(ops),
-						std::move(unsafe_cast<CallArg>(unsafe_access_to_internal_data(v))));
+				Any<Val, Errors>& any = unsafe_access_to_internal_data(v);
+
+				RetType ret = CallHandler::template call<Val>(boost::fusion::front(ops),
+						std::move(unsafe_cast<CallArg>(any)));
+
+				any.clear();
+
+				return ret;
 			}
 
 			return ItCanBeReused<(Size<CallArgs>::value > 1), void>::template call<NewErrors, Val, Errors>(std::move(v), ops);
@@ -211,7 +219,7 @@ typename IfErrsRetType<CErrors, Val, Errors>::type
 if_err(Ret<Val, Errors>&& v, UnOps ops) {
 #ifdef ERROR_HANDLING_CHECK_DOUBLE_IFERR
 	if(unsafe_access_to_internal_data(v).empty()) {
-		ERROR_HANDLING_CRITICAL_ERROR("Double `if_err` on `Ret`.\n");
+		ERROR_HANDLING_CRITICAL_ERROR("Double `if_err` on `Ret`.");
 	}
 #endif
 

@@ -125,11 +125,16 @@ int main() {
 
 	std::string ret26{(std::string)Ret<std::string, Set<>>{std::string("hello")}};
 
-	Ret<std::string, Set<ErrA>> ret27{std::string("hello")};
-	Ret<std::string, Set<>> ret28{(std::string)if_err<Set<ErrA>>(std::move(ret27), boost::fusion::make_list([](ErrA&&) -> Ret<std::string, Set<>> { return std::string("bye"); }))};
-	Ret<std::string, Set<>> ret29{(std::string)if_err<Set<ErrA>>(std::move(ret27), boost::fusion::make_list([](ErrA&&) -> std::string { return "bye"; }))};
-    std::string ret30{(std::string)if_err<Set<ErrA>>(std::move(ret27), boost::fusion::make_list([](ErrA&&) -> std::string { return "bye"; }))};
-    std::string ret31{(std::string)if_err<Set<ErrA>>(std::move(ret27), boost::fusion::make_list([](ErrA&&) { return "bye"; }))};
+	{
+		Ret<std::string, Set<ErrA>> ret27{std::string("hello")};
+		Ret<std::string, Set<>> ret28{(std::string)if_err<Set<ErrA>>(std::move(ret27), boost::fusion::make_list([](ErrA&&) -> Ret<std::string, Set<>> { return std::string("bye"); }))};
+		Ret<std::string, Set<ErrA>> ret29{std::string("hello")};
+		Ret<std::string, Set<>> ret30{(std::string)if_err<Set<ErrA>>(std::move(ret29), boost::fusion::make_list([](ErrA&&) -> std::string { return "bye"; }))};
+		Ret<std::string, Set<ErrA>> ret31{std::string("hello")};
+		std::string ret32{(std::string)if_err<Set<ErrA>>(std::move(ret31), boost::fusion::make_list([](ErrA&&) -> std::string { return "bye"; }))};
+		Ret<std::string, Set<ErrA>> ret33{std::string("hello")};
+		std::string ret34{(std::string)if_err<Set<ErrA>>(std::move(ret33), boost::fusion::make_list([](ErrA&&) { return "bye"; }))};
+	}
 
     Ret<FromString, Set<ErrA>> ret32{ErrA()};
     FromString ret33{(FromString)if_err<Set<ErrA>>(std::move(ret32), boost::fusion::make_list([](ErrA&&) { return FromString(std::string("bye")); }))};
