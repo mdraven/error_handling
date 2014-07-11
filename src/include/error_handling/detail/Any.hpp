@@ -231,8 +231,7 @@ public:
 		valMoveConstructor(std::move(v));
 	}
 
-	template <class OVal, class OErrors>
-	Any<Val, Errors>& operator=(const Any<OVal, OErrors>& v) {
+	Any<Val, Errors>& operator=(const Any<Val, Errors>& v) {
 		if(this == &v)
 			return *this;
 
@@ -251,10 +250,41 @@ public:
 	}
 
 	template <class OVal, class OErrors>
-	Any<Val, Errors>& operator=(Any<OVal, OErrors>&& v) noexcept {
+	Any<Val, Errors>& operator=(const Any<OVal, OErrors>& v) {
+		if(ti == nullptr)
+			v.callCopyConstructor(storage);
+		else if(ti == v.ti)
+			v.callCopyAssign(storage);
+		else {
+			destructor();
+			v.callCopyConstructor(storage);
+		}
+
+		ti = v.ti;
+
+		return *this;
+	}
+
+	Any<Val, Errors>& operator=(Any<Val, Errors>&& v) noexcept {
 		if(this == &v)
 			return *this;
 
+		if(ti == nullptr)
+			v.callMoveConstructor(storage);
+		else if(ti == v.ti)
+			v.callMoveAssign(storage);
+		else {
+			destructor();
+			v.callMoveConstructor(storage);
+		}
+
+		ti = v.ti;
+
+		return *this;
+	}
+
+	template <class OVal, class OErrors>
+	Any<Val, Errors>& operator=(Any<OVal, OErrors>&& v) noexcept {
 		if(ti == nullptr)
 			v.callMoveConstructor(storage);
 		else if(ti == v.ti)
@@ -319,8 +349,8 @@ public:
 	}
 };
 
-template <class Val, class Errors>
-Val unsafe_cast(Any<Val, Errors>& v) {
+template <class Val, class OVal, class OErrors>
+Val unsafe_cast(Any<OVal, OErrors>& v) {
 	return *static_cast<Val*>(static_cast<void*>(v.storage));
 }
 
