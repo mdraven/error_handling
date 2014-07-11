@@ -9,11 +9,17 @@
 #define CONFIG_HPP_
 
 #ifndef ERROR_HANDLING_CRITICAL_ERROR
-
 #include <stdexcept>
 
 #define ERROR_HANDLING_CRITICAL_ERROR(MSG) \
 	throw std::runtime_error((MSG));
+
+#endif
+
+#ifndef ERROR_HANDLING_ERROR
+#include <iostream>
+#define ERROR_HANDLING_ERROR(TYPE, MSG) \
+	std::cerr << (MSG) << typeid TYPE .name() << std::endl;
 
 #endif
 

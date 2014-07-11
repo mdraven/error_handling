@@ -13,10 +13,7 @@
 #include <error_handling/detail/EnableIfNotUniversalRef.hpp>
 #include <error_handling/detail/unsafe_access_to_internal_data.hpp>
 #include <error_handling/detail/Any.hpp>
-
-// TODO: delete
-#include <cstdio>
-// ^^^^
+#include <error_handling/detail/config.hpp>
 
 namespace error_handling {
 
@@ -95,8 +92,9 @@ public:
       v != Val -- кинуть исключение, а кидать исключения нельзя(в этом суть идеи) */
 
 	~Ret() {
-		if(!v.empty())
-			printf("Unchecked Ret: %s.\n", typeid(Ret<Val, Errors>).name());
+		if(!v.empty()) {
+			ERROR_HANDLING_ERROR((Ret<Val, Errors>), "Unchecked Ret");
+		}
 	}
 };
 

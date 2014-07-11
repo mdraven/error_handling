@@ -37,7 +37,7 @@ public:
 	AutoClearAny(const AutoClearAny<Val, Errors>&) = delete;
 	AutoClearAny(AutoClearAny<Val, Errors>&&) = delete;
 
-	AutoClearAny(Any<Val, Errors>& any) : any(any) {}
+	AutoClearAny(Any<Val, Errors>& any) noexcept : any(any) {}
 
 	operator Any<Val, Errors>&() {
 		return any;
