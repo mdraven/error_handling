@@ -15,6 +15,7 @@
 #if ERROR_HANDLING_ANY == 1
 #include <boost/any.hpp>
 #else
+#include <cassert>
 #include <typeinfo>
 #endif
 
@@ -207,18 +208,22 @@ class Any {
 	}
 
 	void callCopyConstructor(void* to) {
+		assert(ti->copy_constr);
 		ti->copy_constr(storage, to);
 	}
 
 	void callMoveConstructor(void* to) {
+		assert(ti->move_constr);
 		ti->move_constr(storage, to);
 	}
 
 	void callCopyAssign(void* to) {
+		assert(ti->copy_assign);
 		ti->copy_assign(storage, to);
 	}
 
 	void callMoveAssign(void* to) {
+		assert(ti->move_assign);
 		ti->move_assign(storage, to);
 	}
 
