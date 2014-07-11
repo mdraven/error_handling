@@ -29,6 +29,38 @@ class Any;
 template <class Val, class OVal, class OErrors>
 Val unsafe_cast(Any<OVal, OErrors>& v);
 
+template <class Val, class Errors>
+class AutoClearAny {
+	Any<Val, Errors>& any;
+public:
+	AutoClearAny() = delete;
+	AutoClearAny(const AutoClearAny<Val, Errors>&) = delete;
+	AutoClearAny(AutoClearAny<Val, Errors>&&) = delete;
+
+	AutoClearAny(Any<Val, Errors>& any) : any(any) {}
+
+	operator Any<Val, Errors>&() {
+		return any;
+	}
+
+	operator const Any<Val, Errors>&() const {
+		return any;
+	}
+
+	Any<Val, Errors>& data() {
+		return any;
+	}
+
+	const Any<Val, Errors>& data() const {
+		return any;
+	}
+
+	~AutoClearAny() {
+		any.clear();
+	}
+};
+
+
 #if ERROR_HANDLING_ANY == 1
 
 template <class... Types>

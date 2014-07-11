@@ -24,7 +24,7 @@ class Ret<Val, Set<>> final {
 	Val v{};
 
 	template <class OVal>
-	friend OVal& unsafe_access_to_internal_data(Ret<OVal, Set<>>&);
+	friend OVal& unsafe_access_to_internal_data(Ret<OVal, Set<>>&) noexcept;
 public:
 	Ret() = default;
 

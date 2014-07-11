@@ -29,7 +29,7 @@ class Ret final {
 	Any<Val, Errors> v;
 
 	template <class OVal, class OErrors>
-	friend Any<OVal, OErrors>& unsafe_access_to_internal_data(Ret<OVal, OErrors>&);
+	friend Any<OVal, OErrors>& unsafe_access_to_internal_data(Ret<OVal, OErrors>&) noexcept;
 
 public:
 	Ret() : v(Val()) {}

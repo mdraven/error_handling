@@ -17,12 +17,12 @@ namespace error_handling {
 namespace detail {
 
 template <class Val, class Errors>
-Any<Val, Errors>& unsafe_access_to_internal_data(Ret<Val, Errors>& v) {
+Any<Val, Errors>& unsafe_access_to_internal_data(Ret<Val, Errors>& v) noexcept {
 	return v.v;
 }
 
 template <class Val>
-Val& unsafe_access_to_internal_data(Ret<Val, Set<>>& v) {
+Val& unsafe_access_to_internal_data(Ret<Val, Set<>>& v) noexcept {
 	return v.v;
 }
 

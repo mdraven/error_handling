@@ -57,22 +57,18 @@ class IfErrsImpl {
 	struct AssignHelper {
 		template <class Val, class OVal, class OErrors>
 		static void assign(Ret<Val, Set<>>& v, Ret<OVal, OErrors>&& ov) {
-			Any<OVal, OErrors>& oany = unsafe_access_to_internal_data(ov);
+			AutoClearAny<OVal, OErrors> oany(unsafe_access_to_internal_data(ov));
 			Val& val = unsafe_access_to_internal_data(v);
 
-			val = std::move(unsafe_cast<OVal>(oany));
-
-			oany.clear();
+			val = std::move(unsafe_cast<OVal>(oany.data()));
 		}
 
 		template <class Val, class Errors, class OVal, class OErrors>
 		static void assign(Ret<Val, Errors>& v, Ret<OVal, OErrors>&& ov) {
 			Any<Val, Errors>& any = unsafe_access_to_internal_data(v);
-			Any<OVal, OErrors>& oany = unsafe_access_to_internal_data(ov);
+			AutoClearAny<OVal, OErrors> oany(unsafe_access_to_internal_data(ov));
 
-			any = std::move(oany);
-
-			oany.clear();
+			any = std::move(oany.data());
 		}
 	};
 
@@ -166,12 +162,10 @@ class IfErrsImpl {
 			using NewErrors = typename Remove<CErrors, CallArg>::type;
 
 			if(unsafe_access_to_internal_data(v).type() == typeid(CallArg)) {
-				Any<Val, Errors>& any = unsafe_access_to_internal_data(v);
+				AutoClearAny<Val, Errors> any(unsafe_access_to_internal_data(v));
 
 				RetType ret = CallHandler::template call<Val>(boost::fusion::front(ops),
-						std::move(unsafe_cast<CallArg>(any)));
-
-				any.clear();
+						std::move(unsafe_cast<CallArg>(any.data())));
 
 				return ret;
 			}
