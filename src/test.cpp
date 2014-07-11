@@ -69,6 +69,7 @@ int main() {
 
 	ret6 = Ret<std::string, Set<ErrB>>();
 //	ret6 = Ret<std::string, Set<ErrC>>(); // ERR
+//	ret6 = Ret<std::string, ErrC>(); // ERR
 
 //	Ret<N> ret8{Ret<std::string>()}; // ERR
 	Ret<T, Set<>> ret9{Ret<std::string, Set<>>()};
@@ -121,4 +122,10 @@ int main() {
 //	typename error_handling::detail::EnableIfNotUniversalRef<ErrA&&>::type xxx2;  // OK
 //	std::is_same<typename error_handling::detail::EnableIfNotUniversalRef<ErrA&>::type::type, void>::value; // compile-time ERR
 //	std::is_same<typename error_handling::detail::EnableIfNotUniversalRef<ErrA&&>::type::type, void>::value; // OK
+
+//	static_assert(boost::mpl::empty<boost::mpl::set<>>::value, "");  // true
+//	static_assert(boost::mpl::empty<boost::mpl::set<int>>::value, "");  // false
+//	static_assert(boost::mpl::empty<ErrA>::value, ""); // false
+//	static_assert(boost::mpl::size<boost::mpl::set<>>::value == 0, ""); // true
+//	static_assert(boost::mpl::size<ErrA>::value == 0, ""); //
 }

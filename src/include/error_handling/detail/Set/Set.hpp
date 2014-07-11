@@ -19,6 +19,7 @@
 #include <boost/mpl/if.hpp>
 #include <boost/mpl/remove.hpp>
 #include <boost/mpl/remove_if.hpp>
+#include <boost/mpl/is_sequence.hpp>
 
 namespace error_handling {
 
@@ -92,18 +93,8 @@ public:
 
 template <class T>
 class IsSet {
-	template <class... Types>
-	struct Helper {
-		static const bool value = false;
-	};
-
-	template <class... Types>
-	struct Helper<Set<Types...>> {
-		static const bool value = true;
-	};
-
 public:
-	static const bool value = Helper<T>::value;
+	static const bool value = m::is_sequence<T>::value;
 };
 
 
