@@ -40,19 +40,19 @@ public:
 
 	template <class OErr>
 	Ret(const OErr& v) : v(v) {
-		printf("copy constr Err\n");
-
 		static const bool is_known_error = IsContains<Errors, OErr>::value;
 		static_assert(is_known_error, "Unknown error type");
+
+		printf("copy constr Err\n");
 	}
 
 	template <class OErr,
 	class = typename EnableIfNotUniversalRef<OErr>::type::type>
 	Ret(OErr&& v) : v(std::move(v)) {
-		printf("move constr Err\n");
-
 		static const bool is_known_error = IsContains<Errors, OErr>::value;
 		static_assert(is_known_error, "Unknown error type");
+
+		printf("move constr Err\n");
 	}
 
 	Ret(const Ret<Val, Errors>& v) = delete;
@@ -60,23 +60,30 @@ public:
 	template <class OVal, class OErrors>
 	Ret(Ret<OVal, OErrors>&& v) /*noexcept TODO: тут нужен предикат, который проверяет на noexcept OVal и OErrors*/ :
 			v(std::move(unsafe_access_to_internal_data(v))) {
-		printf("move constr Ret\n");
-
-		unsafe_access_to_internal_data(v).clear();
-
 		static const bool is_convertible_val = std::is_convertible<OVal, Val>::value;
 		static_assert(is_convertible_val, "Cannot convert `Val` type.");
 
 		static const bool is_more_weak = IsDifferenceEmpty<OErrors, Errors>::value;
 		static_assert(is_more_weak, "Assign to more strong type.");
+
+		printf("move constr Ret\n");
+
+		unsafe_access_to_internal_data(v).clear();
+
 	}
 
 	Ret<Val, Errors>& operator=(const Val& v) {
+		if(!this->v.empty())
+			printf("Assign to not empty Ret: %s\n", typeid(Ret<Val, Errors>).name());
+
 		this->v = v;
 		return *this;
 	}
 
 	Ret<Val, Errors>& operator=(Val&& v) {
+		if(!this->v.empty())
+			printf("Assign to not empty Ret: %s\n", typeid(Ret<Val, Errors>).name());
+
 		this->v = std::move(v);
 		return *this;
 	}
@@ -85,6 +92,9 @@ public:
 	Ret<Val, Errors>& operator=(const OErr& v) {
 		static const bool is_known_error = IsContains<Errors, OErr>::value;
 		static_assert(is_known_error, "Unknown error type");
+
+		if(!this->v.empty())
+			printf("Assign to not empty Ret: %s\n", typeid(Ret<Val, Errors>).name());
 
 		this->v = v;
 		return *this;
@@ -96,6 +106,9 @@ public:
 		static const bool is_known_error = IsContains<Errors, OErr>::value;
 		static_assert(is_known_error, "Unknown error type");
 
+		if(!this->v.empty())
+			printf("Assign to not empty Ret: %s\n", typeid(Ret<Val, Errors>).name());
+
 		this->v = std::move(v);
 		return *this;
 	}
@@ -104,15 +117,18 @@ public:
 
 	template <class OVal, class OErrors>
 	Ret<Val, Errors>& operator=(Ret<OVal, OErrors>&& v) /*noexcept TODO: про предикат выше*/ {
-		printf("move assign Ret\n");
-
-		unsafe_access_to_internal_data(v).clear();
-
 		static const bool is_convertible_val = std::is_convertible<OVal, Val>::value;
 		static_assert(is_convertible_val, "Cannot convert `Val` type.");
 
 		static const bool is_more_weak = IsDifferenceEmpty<OErrors, Errors>::value;
 		static_assert(is_more_weak, "Assign to more strong type.");
+
+		printf("move assign Ret\n");
+
+		if(!this->v.empty())
+			printf("Assign to not empty Ret: %s\n", typeid(Ret<Val, Errors>).name());
+
+		unsafe_access_to_internal_data(v).clear();
 
 		this->v = std::move(unsafe_access_to_internal_data(v));
 		return *this;
