@@ -14,6 +14,10 @@
 #include <error_handling/detail/unsafe_access_to_internal_data.hpp>
 #include <error_handling/detail/Any.hpp>
 
+// TODO: delete
+#include <cstdio>
+// ^^^^
+
 namespace error_handling {
 
 namespace detail {
@@ -54,7 +58,7 @@ public:
 	Ret(const Ret<Val, Errors>& v) = delete;
 
 	template <class OVal, class OErrors>
-	Ret(Ret<OVal, OErrors>&& v) noexcept : v(std::move(unsafe_access_to_internal_data(v))) {
+	Ret(Ret<OVal, OErrors>&& v) /*noexcept TODO: тут нужен предикат, который проверяет на noexcept OVal и OErrors*/ : v(std::move(unsafe_access_to_internal_data(v))) {
 		printf("move constr Ret\n");
 
 		static const bool is_convertible_val = std::is_convertible<OVal, Val>::value;
@@ -96,7 +100,7 @@ public:
 	Ret<Val, Errors>& operator=(const Ret<Val, Errors>& v) = delete;
 
 	template <class OVal, class OErrors>
-	Ret<Val, Errors>& operator=(Ret<OVal, OErrors>&& v) noexcept {
+	Ret<Val, Errors>& operator=(Ret<OVal, OErrors>&& v) /*noexcept TODO: про предикат выше*/ {
 		printf("move assign Ret\n");
 
 		static const bool is_convertible_val = std::is_convertible<OVal, Val>::value;

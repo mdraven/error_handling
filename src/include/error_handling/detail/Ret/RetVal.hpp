@@ -30,16 +30,22 @@ public:
 	Ret() = default;
 
 	Ret(const Val& v);
-	Ret(Val&& v) noexcept(std::is_nothrow_move_constructible<Val>::value);
+	Ret(Val&& v);
 
 	Ret(const Ret<Val, Set<>>& v) = default;
-	Ret(Ret<Val, Set<>>&& v) noexcept(std::is_nothrow_move_constructible<Val>::value) = default;
+	Ret(Ret<Val, Set<>>&& v) noexcept(std::is_nothrow_move_constructible<Val>::value) :
+			v(std::move(v.v)) {}
 
 	Ret<Val, Set<>>& operator=(const Val& v);
-	Ret<Val, Set<>>& operator=(Val&& v) noexcept(std::is_nothrow_move_assignable<Val>::value);
+	Ret<Val, Set<>>& operator=(Val&& v);
 
 	Ret<Val, Set<>>& operator=(const Ret<Val, Set<>>& v) = default;
-	Ret<Val, Set<>>& operator=(Ret<Val, Set<>>&& v) noexcept(std::is_nothrow_move_assignable<Val>::value) = default;
+	Ret<Val, Set<>>& operator=(Ret<Val, Set<>>&& v) noexcept(std::is_nothrow_move_assignable<Val>::value) {
+		if(this == &v)
+			return *this;
+		v = std::move(v.v);
+		return *this;
+	}
 
 	explicit operator Val&() noexcept;
 	explicit operator const Val&() const noexcept;
@@ -57,7 +63,7 @@ template <class Val>
 Ret<Val, Set<>>::Ret(const Val& v) : v(v) {}
 
 template <class Val>
-Ret<Val, Set<>>::Ret(Val&& v) noexcept(std::is_nothrow_move_constructible<Val>::value) :
+Ret<Val, Set<>>::Ret(Val&& v) :
 	v(std::move(v)) {}
 
 template <class Val>
@@ -69,7 +75,7 @@ Ret<Val, Set<>>::operator=(const Val& v) {
 
 template <class Val>
 Ret<Val, Set<>>&
-Ret<Val, Set<>>::operator=(Val&& v) noexcept(std::is_nothrow_move_assignable<Val>::value) {
+Ret<Val, Set<>>::operator=(Val&& v) {
 	this->v = std::move(v);
 	return *this;
 }

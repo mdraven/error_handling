@@ -9,6 +9,7 @@
 
 #include <string>
 #include <iostream>
+#include <memory>
 
 // TODO: delete
 #include <boost/fusion/container.hpp>
@@ -43,7 +44,21 @@ struct Ops {
 	}
 };
 
+struct FromString {
+	FromString() = default;
+	FromString(const FromString&) = default;
+	FromString(FromString&&) = default;
+	explicit FromString(const std::string&) {}
+
+	FromString& operator=(FromString&&) = default;
+};
+
+//FromString func() {
+//	return std::string("hello");
+//}
+
 int main() {
+
 	using error_handling::Ret;
 	using error_handling::if_err;
 	using error_handling::T;
@@ -108,13 +123,19 @@ int main() {
 //	if_err<Set<ErrA, ErrB, ErrC>>(std::move(ret25), boost::fusion::make_list([](ErrB&&) {return;},
 //			[](ErrC&&) {return;})); // ERR
 
-	std::string ret26{Ret<std::string, Set<>>{std::string("hello")}};
+	std::string ret26{(std::string)Ret<std::string, Set<>>{std::string("hello")}};
 
 	Ret<std::string, Set<ErrA>> ret27{std::string("hello")};
-	Ret<std::string, Set<>> ret28{if_err<Set<ErrA>>(std::move(ret27), boost::fusion::make_list([](ErrA&&) -> Ret<std::string, Set<>> { return std::string("bye"); }))};
-	Ret<std::string, Set<>> ret29{if_err<Set<ErrA>>(std::move(ret27), boost::fusion::make_list([](ErrA&&) -> std::string { return "bye"; }))};
-    std::string ret30{if_err<Set<ErrA>>(std::move(ret27), boost::fusion::make_list([](ErrA&&) -> std::string { return "bye"; }))};
-    std::string ret31{if_err<Set<ErrA>>(std::move(ret27), boost::fusion::make_list([](ErrA&&) { return "bye"; }))};
+	Ret<std::string, Set<>> ret28{(std::string)if_err<Set<ErrA>>(std::move(ret27), boost::fusion::make_list([](ErrA&&) -> Ret<std::string, Set<>> { return std::string("bye"); }))};
+	Ret<std::string, Set<>> ret29{(std::string)if_err<Set<ErrA>>(std::move(ret27), boost::fusion::make_list([](ErrA&&) -> std::string { return "bye"; }))};
+    std::string ret30{(std::string)if_err<Set<ErrA>>(std::move(ret27), boost::fusion::make_list([](ErrA&&) -> std::string { return "bye"; }))};
+    std::string ret31{(std::string)if_err<Set<ErrA>>(std::move(ret27), boost::fusion::make_list([](ErrA&&) { return "bye"; }))};
+
+    Ret<FromString, Set<ErrA>> ret32{ErrA()};
+    FromString ret33{(FromString)if_err<Set<ErrA>>(std::move(ret32), boost::fusion::make_list([](ErrA&&) { return FromString(std::string("bye")); }))};
+//    FromString ret34{(FromString)if_err<Set<ErrA>>(std::move(ret32), boost::fusion::make_list([](ErrA&&) { return std::string("bye"); }))}; // ERR
+
+    Ret<std::unique_ptr<int>, Set<ErrA>> ret35{std::unique_ptr<int>(new int)};
 
 //	std::cout << IsUnOp<ErrA, Ops>::value << std::endl;
 //	std::cout << IsUnOp<ErrB, Ops>::value << std::endl;
@@ -134,4 +155,8 @@ int main() {
 //	static_assert(boost::mpl::empty<ErrA>::value, ""); // false
 //	static_assert(boost::mpl::size<boost::mpl::set<>>::value == 0, ""); // true
 //	static_assert(boost::mpl::size<ErrA>::value == 0, ""); //
+
+//    error_handling::detail::Any<std::string, error_handling::detail::Set<int>> a1;
+//    error_handling::detail::Any<std::string, error_handling::detail::Set<int>> a2{std::string("hello")};
+//    std::cout << error_handling::detail::unsafe_cast<std::string>(a2) << std::endl;
 }

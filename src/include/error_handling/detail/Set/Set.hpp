@@ -20,6 +20,7 @@
 #include <boost/mpl/remove.hpp>
 #include <boost/mpl/remove_if.hpp>
 #include <boost/mpl/is_sequence.hpp>
+#include <boost/mpl/size_t.hpp>
 
 namespace error_handling {
 
@@ -33,6 +34,11 @@ using Set = m::set<Args...>;
 struct SetInserter {
 	using state = m::set<>;
 	using operation =  m::insert<m::_1, m::_2>;
+};
+
+template <class Set, class Elem>
+struct Insert {
+	using type = typename m::insert<Set, Elem>::type;
 };
 
 template <class Set, class Elem>
@@ -75,6 +81,15 @@ struct IsDifferenceEmpty {
 	static const bool value = m::empty<typename Difference<Seq1, Seq2>::type>::value;
 };
 
+template <class Set>
+class MaxSize {
+	using First = typename m::front<Set>::type;
+	using type = typename m::fold<Set, m::size_t<sizeof(First)>,
+			m::if_<m::less<m::_1, m::size_t<sizeof(m::_2)>>, m::size_t<sizeof(m::_2)>, m::_1>>::type;
+public:
+	static const std::size_t value = type::value;
+};
+
 template <class Seq, template <class...> class Builder>
 class SeqToVariadicType {
 	template <size_t i = m::size<Seq>::value, class... Acc>
@@ -92,8 +107,7 @@ public:
 };
 
 template <class T>
-class IsSet {
-public:
+struct IsSet {
 	static const bool value = m::is_sequence<T>::value;
 };
 
