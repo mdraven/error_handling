@@ -14,8 +14,6 @@
 #include <boost/fusion/container.hpp>
 #include <boost/fusion/algorithm.hpp>
 #include <boost/fusion/include/front.hpp>
-
-#include <error_handling/detail/Set/Set.hpp>
 // ^^^^
 
 struct ErrA {};
@@ -109,6 +107,13 @@ int main() {
 //	Ret<std::string, Set<ErrA, ErrB, ErrC>> ret25{ErrB()};
 //	if_err<Set<ErrA, ErrB, ErrC>>(std::move(ret25), boost::fusion::make_list([](ErrB&&) {return;},
 //			[](ErrC&&) {return;})); // ERR
+
+	std::string ret26{Ret<std::string, Set<>>{std::string("hello")}};
+
+	Ret<std::string, Set<ErrA>> ret27{std::string("hello")};
+	Ret<std::string, Set<>> ret28{if_err<Set<ErrA>>(std::move(ret27), boost::fusion::make_list([](ErrA&&) -> Ret<std::string, Set<>> { return std::string("bye"); }))};
+	Ret<std::string, Set<>> ret29{if_err<Set<ErrA>>(std::move(ret27), boost::fusion::make_list([](ErrA&&) -> std::string { return "bye"; }))};
+    std::string ret30{if_err<Set<ErrA>>(std::move(ret27), boost::fusion::make_list([](ErrA&&) -> std::string { return "bye"; }))};
 
 //	std::cout << IsUnOp<ErrA, Ops>::value << std::endl;
 //	std::cout << IsUnOp<ErrB, Ops>::value << std::endl;

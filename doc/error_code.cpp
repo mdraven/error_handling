@@ -335,7 +335,9 @@ auto if_err(Ret<Args...>&&/* тут не универсальная ссылка
             func) -> Ret<MAGIC_FILT<Err, Args...>> { /* MAGIC_FILT убирает из Args тип Err */
     if(err.v.type == typeid(Err)) {
         // если func возвращает Ret<...>, то: return func(std::move(err.v));
-        // если func возвращает что-то другое, то ошибка компиляции(зарезервирую bool для себя ^_^)
+        /* если func возвращает что-то другое, то возвращаем это(в идеале вначале оно должно
+              пытаться присвоиться как Val, а потом, при неудаче, как Err.
+              Так сделано для поддержки автовывода типа возвращаемого функцией по return. */
         /* если func возвращает void: func(std::move(err.v)); return Ret<Val>();
            (такое поведения для типов Val != Void нужно потому, что из лямбды могут кидать
            исключение или делать exit(). И если разрешить не писать типы только для Val == Void,
@@ -372,6 +374,7 @@ template <class Err, class UnOp>
 auto if_err(Ret<N, Err>&& val, UnOp func) -> Ret<N> {
     // если func возвращает Ret<N>, то: return func(std::move(err.v));
     // если func возвращает что-то другое, то ошибка компиляции(зарезервирую bool для себя ^_^)
+    //          вариант изменён(см выше)
     // если func возвращает void: func(std::move(err.v)); return Ret<N>();
 }
 
@@ -424,6 +427,7 @@ auto repack(Ret<Val, Errors...>&& val, UnOp func) -> Ret<OVal, OErrors...> {
     if(val.v.type == typeid(Val)) {
         // если func возвращает Ret<...>, то: return func(std::move(val.v));
         // если func возвращает что-то другое, то ошибка компиляции(зарезервирую bool для себя ^_^)
+        //          вариант изменён(см выше)
         // если func возвращает void: func(std::move(val.v)); return Ret<OVal>();
     }
 
@@ -524,8 +528,11 @@ Ret<B, C, Val> checkA(Ret<A, B, C, Val>&& v) {
     Ret<N, A, B> v = Ret<N, A>(); // OK: есть ещё A
     Ret<N> v = Ret<N>(); // OK: N можно к N
 
-    if_err<ErrB>(std::move(xxx), [](ErrB&&) -> Ret<std::string, ErrA> {}); // должен падать из-за не поглащонной ошибки
+    if_err<ErrB>(std::move(xxx), [](ErrB&&) -> Ret<std::string, ErrA> {}); // должен падать из-за не поглащённой ошибки
     if_err<ErrB>(std::move(xxx), [](ErrB&&) {}); // скорее всего не падает, так как возвращает Ret<Val>
+
+    std::string str{Ret<std::string, Set<>>{std::string("hello")}};
+    std::string str{if_err<ErrA>(std::move(xxx), [](ErrA&&) -> std::string { return "hello"; })};
 #endif
 
     return ret;
@@ -801,3 +808,7 @@ public:
 */
 
 /* может быть реально сделать утечку как в примере advocate.cpp у сатера. */
+
+/* if_err должен проверять, что Ret<> уже не пуст.
+         Нет не должен. Если сработал предыдущий if_err на этот Ret<>, то он разумеется будет пуст,
+         но для того if_err и пишут цепочкой. Те это нормальное поведение */
