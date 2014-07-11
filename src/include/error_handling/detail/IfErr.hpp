@@ -101,7 +101,7 @@ class IfErrsImpl {
 			class = typename EnableForReturnsVoid<Err&&, UnOp>::type::type>
 			static RetType call(UnOp op, Err&& err) {
 				op(std::move(err));
-				return Val();
+				return Ret<Val, Set<>>();
 			}
 
 			template <class Val, class Err, class UnOp,
