@@ -109,8 +109,15 @@ int main() {
 	Ret<std::string, Set<ErrA, ErrB>> ret20{ErrB()};
 	if_err<Set<ErrB>>(std::move(ret20), boost::fusion::make_list([](ErrB&&) -> Ret<std::string, Set<ErrA>> { std::cout << "err_b" << std::endl; return std::string(); }));
 
-	Ret<std::string, Set<ErrA, ErrB, ErrC>> ret21{ErrB()};
-	if_err<Set<ErrA, ErrB, ErrC>>(std::move(ret21), boost::fusion::make_list(Ops()));
+	{
+		Ret<std::string, Set<ErrA, ErrB, ErrC>> ret21{ErrB()};
+		if_err<Set<ErrA, ErrB, ErrC>>(std::move(ret21), boost::fusion::make_list(Ops()));
+	}
+
+	{
+		Ret<std::string, Set<ErrA, ErrB, ErrC>> ret21{ErrB()};
+		Ret<std::string, Set<>> ret22 = if_err<Set<ErrA, ErrB, ErrC>>(std::move(ret21), boost::fusion::make_list(Ops()));
+	}
 
 	Ret<std::string, Set<ErrA, ErrB, ErrC>> ret22{ErrB()};
 //	Ret<std::string, Set<ErrC>> ret23 = if_err<Set<ErrA>>(std::move(ret22), boost::fusion::make_list([](ErrA&&) { return; })); // ERR
