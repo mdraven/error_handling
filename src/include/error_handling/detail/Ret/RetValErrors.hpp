@@ -98,10 +98,12 @@ public:
       v != Val -- кинуть исключение, а кидать исключения нельзя(в этом суть идеи) */
 
 	~Ret() {
+#ifdef ERROR_HANDLING_CHECK_EMPTY_RET
 		if(!v.empty()) {
 //			ERROR_HANDLING_CRITICAL_ERROR("Unchecked Ret.");
 			ERROR_HANDLING_ERROR((Ret<Val, Errors>), "Unchecked Ret");
 		}
+#endif
 	}
 };
 
