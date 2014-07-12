@@ -254,9 +254,9 @@ class Val, class Errors,
 class UnOps>
 typename IfErrsRetType<CErrors, Val, Errors, UnOps>::type
 if_err(Ret<Val, Errors>&& v, UnOps ops) {
-#ifdef ERROR_HANDLING_CHECK_DOUBLE_IFERR
+#ifdef ERROR_HANDLING_CHECK_EMPTY_RET
 	if(unsafe_access_to_internal_data(v).empty()) {
-		ERROR_HANDLING_CRITICAL_ERROR("Double `if_err` on `Ret`.");
+		ERROR_HANDLING_CRITICAL_ERROR("Calling `if_err` on an empty `Ret`.");
 	}
 #endif
 

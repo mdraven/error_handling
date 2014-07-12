@@ -65,6 +65,12 @@ public:
 
 		printf("move constr Ret\n");
 
+#ifdef ERROR_HANDLING_CHECK_EMPTY_RET
+		if(unsafe_access_to_internal_data(v).empty()) {
+			ERROR_HANDLING_CRITICAL_ERROR("Moving an empty `Ret`.");
+		}
+#endif
+
 		unsafe_access_to_internal_data(v).clear();
 	}
 

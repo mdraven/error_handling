@@ -24,6 +24,6 @@
 #endif
 
 
-#define ERROR_HANDLING_CHECK_DOUBLE_IFERR
+#define ERROR_HANDLING_CHECK_EMPTY_RET
 
 #endif /* CONFIG_HPP_ */
