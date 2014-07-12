@@ -56,11 +56,6 @@ struct Size {
 	static const size_t value = m::size<Seq>::value;
 };
 
-template <class Seq, template <class> class Pred>
-struct AccumulateToSet {
-	using type = typename m::fold<Seq, m::set<>, m::if_<Pred<m::_2>, m::insert<m::_1, m::_2>, m::_1>>::type;
-};
-
 template <class Seq>
 struct Front {
 	using type = typename m::front<Seq>::type;
@@ -69,6 +64,11 @@ struct Front {
 template <class Seq, class Elem>
 struct IsContains {
 	static const bool value = m::contains<Seq, Elem>::value;
+};
+
+template <class Seq1, class Seq2>
+struct Union {
+	using type = typename m::fold<Seq2, Seq1, m::insert<m::_1, m::_2>>::type;
 };
 
 template <class Seq1, class Seq2>
@@ -111,6 +111,21 @@ struct IsSet {
 	static const bool value = m::is_sequence<T>::value;
 };
 
+template <class Seq, template <class> class Pred>
+struct AccumulateToSet {
+	using type = typename m::fold<Seq, m::set<>, m::if_<Pred<m::_2>, m::insert<m::_1, m::_2>, m::_1>>::type;
+};
+
+template <class Seq, template <class> class Pred>
+struct AccumulateToSetFromPred {
+	struct Helper {
+		template <class T1, class T2>
+		struct apply {
+			using type = typename Union<T1, typename Pred<T2>::result>::type;
+		};
+	};
+	using type = typename m::fold<Seq, m::set<>, m::if_<Pred<m::_2>, m::bind<Helper, m::_1, m::_2>, m::_1>>::type;
+};
 
 } /* namespace detail */
 

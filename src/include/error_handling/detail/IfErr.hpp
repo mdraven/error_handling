@@ -24,7 +24,7 @@ namespace error_handling {
 namespace detail {
 
 template <class CErrors, class Val, class Errors>
-class IfErrsRetType {
+class IfErrsStrongRetType {
 	using WithoutErr = typename Difference<Errors, CErrors>::type;
 public:
 	using type = Ret<Val, WithoutErr>;
@@ -33,7 +33,52 @@ public:
 template <class CErrors,
 class Val, class Errors,
 class UnOps>
-typename IfErrsRetType<CErrors, Val, Errors>::type
+class IfErrsWeakRetType {
+	template <class UnOp>
+	class UnOpsPred {
+		template <class CError>
+		class CErrorsPred {
+			using ret_type = typename std::result_of<UnOp(CError&&)>::type;
+			static const bool is_ret_ret = IsRet<ret_type>::value;
+
+			template <class T>
+			struct Wrapper {
+				using type = typename T::errors_type;
+			};
+
+			struct EmptySet {
+				using type = Set<>;
+			};
+		public:
+			using result = typename std::conditional<is_ret_ret, Wrapper<IsRet<ret_type>>, EmptySet>::type::type;
+			static const bool value = !IsEmpty<result>::value;
+		};
+	public:
+		using result = typename AccumulateToSetFromPred<typename UnOpArgSet<CErrors, UnOp>::type, CErrorsPred>::type;
+		static const bool value = !IsEmpty<result>::value;
+	};
+
+	using ErrorsFromUnOpsRet = typename AccumulateToSetFromPred<UnOps, UnOpsPred>::type;
+public:
+	using type = Ret<Val, ErrorsFromUnOpsRet>;
+};
+
+template <class CErrors,
+class Val, class Errors,
+class UnOps>
+class IfErrsRetType {
+	using StrongType = typename IfErrsStrongRetType<CErrors, Val, Errors>::type;
+	using StrongErrors = typename IsRet<StrongType>::errors_type;
+	using WeakType = typename IfErrsWeakRetType<CErrors, Val, Errors, UnOps>::type;
+	using WeakErrors = typename IsRet<WeakType>::errors_type;
+public:
+	using type = Ret<Val, typename Union<StrongErrors, WeakErrors>::type>;
+};
+
+template <class CErrors,
+class Val, class Errors,
+class UnOps>
+typename IfErrsRetType<CErrors, Val, Errors, UnOps>::type
 if_err(Ret<Val, Errors>&& v, UnOps ops);
 
 class IfErrsSeal final {
@@ -41,7 +86,7 @@ class IfErrsSeal final {
 	class Val, class Errors,
 	class UnOps>
 	friend
-	typename IfErrsRetType<CErrors, Val, Errors>::type
+	typename IfErrsRetType<CErrors, Val, Errors, UnOps>::type
 	if_err(Ret<Val, Errors>&& v, UnOps ops);
 
 	template <class>
@@ -207,7 +252,7 @@ public:
 template <class CErrors,
 class Val, class Errors,
 class UnOps>
-typename IfErrsRetType<CErrors, Val, Errors>::type
+typename IfErrsRetType<CErrors, Val, Errors, UnOps>::type
 if_err(Ret<Val, Errors>&& v, UnOps ops) {
 #ifdef ERROR_HANDLING_CHECK_DOUBLE_IFERR
 	if(unsafe_access_to_internal_data(v).empty()) {
@@ -215,7 +260,7 @@ if_err(Ret<Val, Errors>&& v, UnOps ops) {
 	}
 #endif
 
-	using RetType = typename IfErrsRetType<CErrors, Val, Errors>::type;
+	using RetType = typename IfErrsRetType<CErrors, Val, Errors, UnOps>::type;
 	return IfErrsImpl<RetType>::template call<CErrors>(std::move(v), ops, IfErrsSeal());
 }
 

@@ -25,10 +25,10 @@ class IsRet {
 		static const bool value = false;
 	};
 
-	template <class Val, class... Errors>
-	struct Helper<Ret<Val, Errors...>> {
+	template <class Val, class Errors>
+	struct Helper<Ret<Val, Errors>> {
 		using val_type = Val;
-		using errors_type = Set<Errors...>;
+		using errors_type = Errors;
 
 		static const bool value = true;
 	};
