@@ -154,6 +154,14 @@ int main() {
     if_err<Set<ErrA>>(std::move(ret37), boost::fusion::make_list([](ErrA&&) { return; })); // ERR
 #endif
 
+#if 1
+    {
+    	Ret<std::string, Set<ErrA>> ret1{ErrA()};
+    	Ret<std::string, Set<ErrB>> ret2 = if_err<Set<ErrA>>(std::move(ret1),
+    			boost::fusion::make_list([](ErrA&&) { return Ret<std::string, Set<ErrB>>{ErrB()}; }));
+    }
+#endif
+
 //	std::cout << IsUnOp<ErrA, Ops>::value << std::endl;
 //	std::cout << IsUnOp<ErrB, Ops>::value << std::endl;
 //	std::cout << IsUnOp<ErrC, Ops>::value << std::endl;

@@ -164,10 +164,8 @@ class IfErrsImpl {
 			if(unsafe_access_to_internal_data(v).type() == typeid(CallArg)) {
 				AutoClearAny<Val, Errors> any(unsafe_access_to_internal_data(v));
 
-				RetType ret = CallHandler::template call<Val>(boost::fusion::front(ops),
+				return CallHandler::template call<Val>(boost::fusion::front(ops),
 						std::move(unsafe_cast<CallArg>(any.data())));
-
-				return ret;
 			}
 
 			return ItCanBeReused<(Size<CallArgs>::value > 1), void>::template call<NewErrors, Val, Errors>(std::move(v), ops);
