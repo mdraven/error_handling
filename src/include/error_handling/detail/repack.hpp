@@ -27,12 +27,26 @@ struct RepacksRetType {
 	using type = Ret<OVal, typename Union<Errors, typename UnOpsErrors<OVal, Val&&, UnOp>::type>::type>;
 };
 
+class RepacksSeal final {
+	template <class OVal, class UnOp, class Val, class Errors>
+	friend
+	typename RepacksRetType<OVal, UnOp, Val, Errors>::type
+	repack(Ret<Val, Errors>&& v, UnOp op);
+
+	template <class>
+	friend class RepacksImpl;
+
+	constexpr RepacksSeal() {}
+	constexpr RepacksSeal(const RepacksSeal&) {}
+	constexpr RepacksSeal(RepacksSeal&&) {}
+};
+
 template <class RetType>
 class RepacksImpl {
 public:
 	template <class OVal, class UnOp, class Val, class Errors>
 	static RetType
-	call(Ret<Val, Errors>&& v, UnOp op) {
+	call(Ret<Val, Errors>&& v, UnOp op, const RepacksSeal) {
 	    if(unsafe_access_to_internal_data(v).type() == typeid(Val)) {
 	    	AutoClearAny<Val, Errors> any(unsafe_access_to_internal_data(v));
 	    	return CallHandler<RetType>::template call<OVal>(op,
@@ -50,7 +64,7 @@ typename RepacksRetType<OVal, UnOp, Val, Errors>::type
 repack(Ret<Val, Errors>&& v, UnOp op) {
 	using RetType = typename RepacksRetType<OVal, UnOp, Val, Errors>::type;
 
-	return RepacksImpl<RetType>::template call<OVal>(std::move(v), op);
+	return RepacksImpl<RetType>::template call<OVal>(std::move(v), op, RepacksSeal());
 }
 
 } /* namespace detail */
