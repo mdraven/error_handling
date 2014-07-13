@@ -69,6 +69,10 @@ public:
 		return f == l;
 	}
 
+	bool operator!=(const LastIter&) const {
+		return f != l;
+	}
+
 	error_handling::Ret<T, error_handling::Set<EndSeq>> operator*() {
 		if(f == l)
 			return EndSeq();
@@ -80,6 +84,12 @@ public:
 		if(f != l)
 			++f;
 		return ret;
+	}
+
+	VectorIter& operator++() {
+		if(f != l)
+			++f;
+		return *this;
 	}
 };
 
@@ -107,6 +117,25 @@ Init fold_rec(FIter first, LIter last, Init init, F f) {
 		}
 	};
 	return H::call(first, last, std::forward<Init>(init), f);
+}
+
+template <class FIter, class LIter, class Init, class F>
+Init fold_iter(FIter first, LIter last, Init init, F f) {
+	using Ret = error_handling::detail::IsRet<Init>;
+	using Val = typename Ret::val_type::type;
+
+	using ORet = error_handling::detail::IsRet<decltype(*std::declval<FIter>())>;
+	using OVal = typename ORet::val_type::type;
+
+	for(; first != last; ++first) {
+		init = error_handling::detail::repack<Val>(std::move(init), [&](Val&& val) -> Init {
+			auto ret = *first;
+			return error_handling::detail::repack<Val>(std::move(ret),
+					[&val, f](OVal&& oval) -> Init { return f(std::move(val), std::move(oval)); });
+		});
+	}
+
+	return init;
 }
 
 int main() {
@@ -254,7 +283,7 @@ int main() {
     }
 #endif
 
-#if 1
+#if 0
     {
     	std::vector<int> num{1, 2, 3, 13, 15};
     	for(size_t i = 0; i < 10; ++i)
@@ -262,9 +291,13 @@ int main() {
 
     	VectorIter<int> it(num.begin(), num.end());
 
-    	Ret<std::string, Set<EndSeq>> ret = fold_rec(it, LastIter(), Ret<std::string, Set<EndSeq>>(std::string("")),
+    	Ret<std::string, Set<EndSeq>> ret1 = fold_rec(it, LastIter(), Ret<std::string, Set<EndSeq>>(std::string("")),
     			[](std::string&& str, int&& num) { return str + std::to_string(num); });
-    	repack<std::string>(std::move(ret), [](std::string&& str) { std::cout << str << std::endl; return; });
+    	repack<std::string>(std::move(ret1), [](std::string&& str) { std::cout << str << std::endl; return; });
+
+    	Ret<std::string, Set<EndSeq>> ret2 = fold_iter(it, LastIter(), Ret<std::string, Set<EndSeq>>(std::string("")),
+    	    			[](std::string&& str, int&& num) { return str + std::to_string(num); });
+    	repack<std::string>(std::move(ret2), [](std::string&& str) { std::cout << str << std::endl; return; });
     }
 #endif
 
