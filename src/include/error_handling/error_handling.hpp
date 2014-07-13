@@ -10,6 +10,7 @@
 
 #include <error_handling/detail/Ret.hpp>
 #include <error_handling/detail/ifErr.hpp>
+#include <error_handling/detail/repack.hpp>
 #include <error_handling/detail/Set/Set.hpp>
 #include <error_handling/detail/FSet/FSet.hpp>
 #include <error_handling/detail/T.hpp>
@@ -26,6 +27,8 @@ using error_handling::detail::V;
 
 using error_handling::detail::Set;
 using error_handling::detail::FSet;
+
+using error_handling::detail::repack;
 
 template <class... CErrors, class Val, class... Errors,
 class... UnOps>

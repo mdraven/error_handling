@@ -54,6 +54,7 @@ struct FromString {
 int main() {
 	using error_handling::Ret;
 	using error_handling::if_err;
+	using error_handling::repack;
 	using error_handling::T;
 	using error_handling::N;
 	using error_handling::V;
@@ -174,6 +175,13 @@ int main() {
     	Ret<std::string, Set<ErrA>> ret1{ErrA()};
     	Ret<std::string, Set<ErrA>> ret2 = if_err<Set<std::string>>(std::move(ret1),
     			FSet([](std::string&&) { return; }));  // ERR
+    }
+#endif
+
+#if 1
+    {
+       	Ret<std::string, Set<ErrA>> ret1{std::string()};
+       	Ret<int, Set<ErrA>> ret2 = repack<int>(std::move(ret1), [](std::string&& s) {});
     }
 #endif
 
