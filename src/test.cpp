@@ -60,10 +60,12 @@ template <class T>
 class VectorIter {
 	typename std::vector<T>::iterator f;
 	typename std::vector<T>::iterator l;
+	typename std::vector<T>::iterator endvec;
 public:
 	VectorIter(typename std::vector<T>::iterator f,
-			typename std::vector<T>::iterator l) :
-				f(f), l(l) {}
+			typename std::vector<T>::iterator l,
+			typename std::vector<T>::iterator endvec) :
+				f(f), l(l), endvec(endvec) {}
 
 	bool operator==(const LastIter&) const {
 		return f == l;
@@ -74,13 +76,13 @@ public:
 	}
 
 	error_handling::Ret<T, error_handling::Set<EndSeq>> operator*() {
-		if(f == l)
+		if(f == endvec)
 			return EndSeq();
 		return *f;
 	}
 
 	VectorIter operator++(int) {
-		VectorIter ret(f, l);
+		VectorIter ret(f, l, endvec);
 		if(f != l)
 			++f;
 		return ret;
@@ -289,15 +291,20 @@ int main() {
     	for(size_t i = 0; i < 10; ++i)
     		num.push_back(i);
 
-    	VectorIter<int> it(num.begin(), num.end());
+//    	VectorIter<int> it(num.begin(), num.end() + 15, num.end());
+    	VectorIter<int> it(num.begin(), num.end(), num.end());
 
     	Ret<std::string, Set<EndSeq>> ret1 = fold_rec(it, LastIter(), Ret<std::string, Set<EndSeq>>(std::string("")),
     			[](std::string&& str, int&& num) { return str + std::to_string(num); });
-    	repack<std::string>(std::move(ret1), [](std::string&& str) { std::cout << str << std::endl; return; });
+    	Ret<V, Set<EndSeq>> res1 = repack<V>(std::move(ret1),
+    			[](std::string&& str) { std::cout << str << std::endl; return; });
+    	if_err<EndSeq>(std::move(res1), [](EndSeq&&) { std::cout << "EndSeq" << std::endl; });
 
     	Ret<std::string, Set<EndSeq>> ret2 = fold_iter(it, LastIter(), Ret<std::string, Set<EndSeq>>(std::string("")),
     	    			[](std::string&& str, int&& num) { return str + std::to_string(num); });
-    	repack<std::string>(std::move(ret2), [](std::string&& str) { std::cout << str << std::endl; return; });
+    	Ret<V, Set<EndSeq>> res2 = repack<V>(std::move(ret2),
+    			[](std::string&& str) { std::cout << str << std::endl; return; });
+    	if_err<EndSeq>(std::move(res2), [](EndSeq&&) { std::cout << "EndSeq" << std::endl; });
     }
 #endif
 
