@@ -23,6 +23,16 @@ f::list<Args...> FSet(Args... args) {
 	return f::make_list(std::forward<Args>(args)...);
 }
 
+template <class FSet>
+auto fpop_front(FSet fset) -> decltype(f::pop_front(std::forward<FSet>(fset))) {
+	return f::pop_front(std::forward<FSet>(fset));
+}
+
+template <class FSet>
+auto ffront(FSet fset) -> decltype(f::front(std::forward<FSet>(fset))) {
+	return f::front(std::forward<FSet>(fset));
+}
+
 } /* namespace detail */
 
 } /* namespace error_handling */

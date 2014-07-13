@@ -9,15 +9,10 @@
 #define IFERR_HPP_
 
 #include <error_handling/detail/Set/Set.hpp>
+#include <error_handling/detail/FSet/FSet.hpp>
 #include <error_handling/detail/Ret/RetTraits.hpp>
 #include <error_handling/detail/UnOp.hpp>
 #include <error_handling/detail/config.hpp>
-
-// TODO: delete
-#include <boost/fusion/container.hpp>
-#include <boost/fusion/algorithm.hpp>
-#include <boost/fusion/include/front.hpp>
-// ^^^^
 
 namespace error_handling {
 
@@ -117,7 +112,7 @@ class IfErrsImpl {
 		}
 	};
 
-	template <class UnOps, bool with_unops = !boost::fusion::result_of::empty<UnOps>::value>
+	template <class UnOps, bool with_unops = !IsEmpty<UnOps>::value>
 	class WithUnOps {
 		class CallHandler {
 			template <class Arg, class UnOp>
@@ -188,7 +183,7 @@ class IfErrsImpl {
 			static
 			RetType
 			call(Ret<Val, Errors>&& v, UnOps ops) {
-				return IfErrsImpl<RetType>::call<CErrors, Val, Errors>(std::move(v), boost::fusion::pop_front(ops), IfErrsSeal());
+				return IfErrsImpl<RetType>::call<CErrors, Val, Errors>(std::move(v), fpop_front(ops), IfErrsSeal());
 			}
 		};
 	public:
@@ -197,7 +192,7 @@ class IfErrsImpl {
 		static
 		RetType
 		call(Ret<Val, Errors>&& v, UnOps ops) {
-			using UnOp = typename boost::fusion::result_of::front<UnOps>::type;
+			using UnOp = typename Front<UnOps>::type;
 
 			static_assert(!IsEmpty<typename UnOpArgSet<CErrors, UnOp>::type>::value,
 					"No one from `CError` appropriate to `UnOp`: Check an error handler's argument type.");
@@ -209,7 +204,7 @@ class IfErrsImpl {
 			if(unsafe_access_to_internal_data(v).type() == typeid(CallArg)) {
 				AutoClearAny<Val, Errors> any(unsafe_access_to_internal_data(v));
 
-				return CallHandler::template call<Val>(boost::fusion::front(ops),
+				return CallHandler::template call<Val>(ffront(ops),
 						std::move(unsafe_cast<CallArg>(any.data())));
 			}
 
