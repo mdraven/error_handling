@@ -972,7 +972,7 @@ public:
     Оптимизации ещё может не быть из-за объектов с деструктором внутри самого loop(например Ret<>).
     ----------
     Ret<int, Err> ret = fold(getline, Ret<int, Err>(0), [](int sum, std::string&& str) { return sum + strlen(str); });
-    ... fold(Iter it, Init init, F f) {
+    Ret<int, Err> fold(Iter it, Init init, F f) {
       struct H {
         static Ret<int, Err> call(Iter it, Ret<int, Err> init, F f) {
           Ret<int, Err> res = repack<int>(init, [](int sum) {
