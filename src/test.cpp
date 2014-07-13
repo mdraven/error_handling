@@ -71,21 +71,21 @@ int main() {
 
 	Ret<std::string, Set<ErrA>> ret4(std::move(erra));
 //	Ret<std::string, ErrA> ret5(std::move(errb)); // ERR
-	Ret<std::string, Set<ErrA, ErrB>> ret6{Ret<std::string, Set<ErrA>>()};
+	Ret<std::string, Set<ErrA, ErrB>> ret6{Ret<std::string, Set<ErrA>>(std::string())};
 //	Ret<std::string, ErrA, ErrB> ret7{Ret<std::string, ErrA, ErrC>()}; // ERR
 
 	// присваивать нельзя
-//	ret6 = Ret<std::string, Set<ErrB>>(); // ERR
+	ret6 = Ret<std::string, Set<ErrB>>(std::string());
 //	ret6 = Ret<std::string, Set<ErrC>>(); // ERR
 //	ret6 = Ret<std::string, ErrC>(); // ERR
 
 //	Ret<N> ret8{Ret<std::string>()}; // ERR
 	Ret<T, Set<>> ret9{Ret<std::string, Set<>>()};
 
-	Ret<Base, Set<ErrA>> ret10{Ret<Derived, Set<ErrA>>()};
+	Ret<Base, Set<ErrA>> ret10{Ret<Derived, Set<ErrA>>(Derived())};
 //	Ret<Derived, ErrA> ret11{Ret<Base, ErrA>()}; // ERR
 
-//	ret10 = Ret<Derived, Set<ErrA>>(); // ERR
+	ret10 = Ret<Derived, Set<ErrA>>(Derived());
 //	Ret<Derived, ErrA> ret12; ret12 = Ret<Base, ErrA>();  //ERR
 
 	Ret<std::string, Set<ErrA, ErrB>> ret13{std::string("hello")};
@@ -145,7 +145,7 @@ int main() {
     Ret<std::unique_ptr<int>, Set<ErrA>> ret35{std::unique_ptr<int>(new int)};
 
 //    Ret<std::string, Set<>> ret36;
-//    if_err<Set<>>(std::move(ret36), boost::fusion::make_list([](ErrA&&) { return; })); // ERR
+//    if_err<>(std::move(ret36), [](ErrA&&) { return; }); // ERR
 
     // тест на множественный вызов if_err для одного Ret<> и для одной ошибки.
 #if 0

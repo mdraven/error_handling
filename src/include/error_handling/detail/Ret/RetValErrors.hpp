@@ -23,20 +23,24 @@ template <class Val, class Errors>
 class Ret final {
 	static_assert(IsSet<Errors>::value, "Second template argument must be `Set` type.");
 
-	Any<Val, Errors> v;
+	Any<Val, Errors> any;
 
 	template <class OVal, class OErrors>
 	friend Any<OVal, OErrors>& unsafe_access_to_internal_data(Ret<OVal, OErrors>&) noexcept;
 
 public:
-	Ret() : v(Val()) {}
+	Ret() noexcept(noexcept(Any<Val, Errors>())) :
+		any() {}
 
-	Ret(const Val& v) : v(v) {}
+	Ret(const Val& v) noexcept(noexcept(Any<Val, Errors>(v))) :
+		any(v) {}
 
-	Ret(Val&& v) : v(std::move(v)) {}
+	Ret(Val&& v) noexcept(noexcept(Any<Val, Errors>(std::move(v)))) :
+		any(std::move(v)) {}
 
 	template <class OErr>
-	Ret(const OErr& v) : v(v) {
+	Ret(const OErr& v) noexcept(noexcept(Any<Val, Errors>(v))) :
+		any(v) {
 		static const bool is_known_error = IsContains<Errors, OErr>::value;
 		static_assert(is_known_error, "Unknown error type");
 
@@ -45,18 +49,35 @@ public:
 
 	template <class OErr,
 	class = typename EnableIfNotUniversalRef<OErr>::type::type>
-	Ret(OErr&& v) : v(std::move(v)) {
+	Ret(OErr&& v) noexcept(noexcept(Any<Val, Errors>(std::move(v)))) :
+		any(std::move(v)) {
 		static const bool is_known_error = IsContains<Errors, OErr>::value;
 		static_assert(is_known_error, "Unknown error type");
 
 		printf("move constr Err\n");
 	}
 
-	Ret(const Ret<Val, Errors>& v) = delete;
+	template <class OVal, class OErrors>
+	Ret(const Ret<OVal, OErrors>& v) noexcept(noexcept(Any<Val, Errors>(unsafe_access_to_internal_data(v)))) :
+		any(unsafe_access_to_internal_data(v)) {
+		static const bool is_convertible_val = std::is_convertible<OVal, Val>::value;
+		static_assert(is_convertible_val, "Cannot convert `Val` type.");
+
+		static const bool is_more_weak = IsDifferenceEmpty<OErrors, Errors>::value;
+		static_assert(is_more_weak, "Assign to more strong type.");
+
+		printf("copy constr Ret\n");
+
+#ifdef ERROR_HANDLING_CHECK_EMPTY_RET
+		if(unsafe_access_to_internal_data(v).empty()) {
+			ERROR_HANDLING_CRITICAL_ERROR("Copying an empty `Ret`.");
+		}
+#endif
+	}
 
 	template <class OVal, class OErrors>
-	Ret(Ret<OVal, OErrors>&& v) /*noexcept TODO: тут нужен предикат, который проверяет на noexcept OVal и OErrors*/ :
-			v(std::move(unsafe_access_to_internal_data(v))) {
+	Ret(Ret<OVal, OErrors>&& v) noexcept(noexcept(Any<Val, Errors>(std::move(unsafe_access_to_internal_data(v))))) :
+			any(std::move(unsafe_access_to_internal_data(v))) {
 		static const bool is_convertible_val = std::is_convertible<OVal, Val>::value;
 		static_assert(is_convertible_val, "Cannot convert `Val` type.");
 
@@ -74,32 +95,85 @@ public:
 		unsafe_access_to_internal_data(v).clear();
 	}
 
-	Ret<Val, Errors>& operator=(const Val& v) = delete;
+	Ret<Val, Errors>& operator=(const Val& v) noexcept(noexcept(any = v)) {
+		this->any = v;
+		return *this;
+	}
 
-	Ret<Val, Errors>& operator=(Val&& v) = delete;
+	Ret<Val, Errors>& operator=(Val&& v) noexcept(noexcept(any = std::move(v))) {
+		this->any = std::move(v);
+		return *this;
+	}
 
 	template <class OErr>
-	Ret<Val, Errors>& operator=(const OErr& v) = delete;
+	Ret<Val, Errors>& operator=(const OErr& v) noexcept(noexcept(any = v)) {
+		static const bool is_known_error = IsContains<Errors, OErr>::value;
+		static_assert(is_known_error, "Unknown error type");
+
+		this->any = v;
+		return *this;
+	}
 
 	template <class OErr,
 	class = typename EnableIfNotUniversalRef<OErr>::type::type>
-	Ret<Val, Errors>& operator=(OErr&& v) = delete;
+	Ret<Val, Errors>& operator=(OErr&& v) noexcept(noexcept(any = std::move(v))) {
+		static const bool is_known_error = IsContains<Errors, OErr>::value;
+		static_assert(is_known_error, "Unknown error type");
 
-	Ret<Val, Errors>& operator=(const Ret<Val, Errors>& v) = delete;
+		this->any = std::move(v);
+		return *this;
+	}
 
 	template <class OVal, class OErrors>
-	Ret<Val, Errors>& operator=(Ret<OVal, OErrors>&& v) = delete;
+	Ret<Val, Errors>& operator=(const Ret<OVal, OErrors>& v) noexcept(noexcept(any = unsafe_access_to_internal_data(v))) {
+		static const bool is_convertible_val = std::is_convertible<OVal, Val>::value;
+		static_assert(is_convertible_val, "Cannot convert `Val` type.");
 
-	/* операторов приведения типа(например к Val или ErrN) -- нет: если тип в v не совпал, то
+		static const bool is_more_weak = IsDifferenceEmpty<OErrors, Errors>::value;
+		static_assert(is_more_weak, "Assign to more strong type.");
+
+		printf("copy assign Ret\n");
+
+		if(unsafe_access_to_internal_data(v).empty()) {
+			ERROR_HANDLING_CRITICAL_ERROR("Copying an empty `Ret`.");
+		}
+
+		this->any = unsafe_access_to_internal_data(v);
+
+		return *this;
+	}
+
+	template <class OVal, class OErrors>
+	Ret<Val, Errors>& operator=(Ret<OVal, OErrors>&& v) noexcept(noexcept(any = std::move(unsafe_access_to_internal_data(v)))) {
+		static const bool is_convertible_val = std::is_convertible<OVal, Val>::value;
+		static_assert(is_convertible_val, "Cannot convert `Val` type.");
+
+		static const bool is_more_weak = IsDifferenceEmpty<OErrors, Errors>::value;
+		static_assert(is_more_weak, "Assign to more strong type.");
+
+		printf("move assign Ret\n");
+
+		if(unsafe_access_to_internal_data(v).empty()) {
+			ERROR_HANDLING_CRITICAL_ERROR("Moving an empty `Ret`.");
+		}
+
+		this->any = std::move(unsafe_access_to_internal_data(v));
+
+		unsafe_access_to_internal_data(v).clear();
+
+		return *this;
+	}
+
+	/* операторов приведения типа(например к Val или ErrN) -- нет: если тип в any не совпал, то
       мы можем только бросить исключение, но эта библиотека не кидает >своих< исключений(возможно только в
       деструкторе этого класса) */
 
 	/* набор операторов сравнения отсутствует, так как всё что они могут при
-      v != Val -- кинуть исключение, а кидать исключения нельзя(в этом суть идеи) */
+      any != Val -- кинуть исключение, а кидать исключения нельзя(в этом суть идеи) */
 
 	~Ret() {
 #ifdef ERROR_HANDLING_CHECK_EMPTY_RET
-		if(!v.empty()) {
+		if(!any.empty()) {
 //			ERROR_HANDLING_CRITICAL_ERROR("Unchecked Ret.");
 			ERROR_HANDLING_ERROR((Ret<Val, Errors>), "Unchecked Ret");
 		}

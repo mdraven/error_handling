@@ -18,7 +18,12 @@ namespace detail {
 
 template <class Val, class Errors>
 Any<Val, Errors>& unsafe_access_to_internal_data(Ret<Val, Errors>& v) noexcept {
-	return v.v;
+	return v.any;
+}
+
+template <class Val, class Errors>
+const Any<Val, Errors>& unsafe_access_to_internal_data(const Ret<Val, Errors>& v) noexcept {
+	return v.any;
 }
 
 template <class Val>

@@ -36,20 +36,28 @@ public:
 	template <class Val>
 	Ret(Ret<Val, Set<>>&&) noexcept {}
 
-	Ret<T, Set<>>& operator=(const Ret<T, Set<>>&) = delete;
-	Ret<T, Set<>>& operator=(Ret<T, Set<>>&&) = delete;
+	Ret<T, Set<>>& operator=(const Ret<T, Set<>>&) noexcept = default;
+	Ret<T, Set<>>& operator=(Ret<T, Set<>>&&) noexcept = default;
 
 	template <class Val>
-	Ret<T, Set<>>& operator=(const Val&) = delete;
+	Ret<T, Set<>>& operator=(const Val&) noexcept {
+		return *this;
+	}
 
 	template <class Val>
-	Ret<T, Set<>>& operator=(Val&&) = delete;
+	Ret<T, Set<>>& operator=(Val&&) noexcept {
+		return *this;
+	}
 
 	template <class Val>
-	Ret<T, Set<>>& operator=(const Ret<Val, Set<>>&) = delete;
+	Ret<T, Set<>>& operator=(const Ret<Val, Set<>>&) noexcept {
+		return *this;
+	}
 
 	template <class Val>
-	Ret<T, Set<>>& operator=(Ret<Val, Set<>>&&) = delete;
+	Ret<T, Set<>>& operator=(Ret<Val, Set<>>&&) noexcept {
+		return *this;
+	}
 
 	explicit operator T() const noexcept {
 		return T();

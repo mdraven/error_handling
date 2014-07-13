@@ -24,8 +24,8 @@ public:
 	Ret(const Ret<N, Set<>>&) noexcept = default;
 	Ret(Ret<N, Set<>>&&) noexcept = default;
 
-	Ret<N, Set<>>& operator=(const Ret<N, Set<>>&) noexcept = delete;
-	Ret<N, Set<>>& operator=(Ret<N, Set<>>&&) noexcept = delete;
+	Ret<N, Set<>>& operator=(const Ret<N, Set<>>&) noexcept = default;
+	Ret<N, Set<>>& operator=(Ret<N, Set<>>&&) noexcept = default;
 
 	~Ret() noexcept = default;
 };

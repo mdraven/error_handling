@@ -35,11 +35,29 @@ public:
 	Ret(Ret<Val, Set<>>&& v) noexcept(std::is_nothrow_move_constructible<Val>::value) :
 			v(std::move(v.v)) {}
 
-	Ret<Val, Set<>>& operator=(const Val& v) = delete;
-	Ret<Val, Set<>>& operator=(Val&& v) = delete;
+	Ret<Val, Set<>>& operator=(const Val& v) noexcept(std::is_nothrow_copy_assignable<Val>::value) {
+		this->v = v;
+		return *this;
+	}
 
-	Ret<Val, Set<>>& operator=(const Ret<Val, Set<>>& v) = delete;
-	Ret<Val, Set<>>& operator=(Ret<Val, Set<>>&& v) = delete;
+	Ret<Val, Set<>>& operator=(Val&& v) noexcept(std::is_nothrow_move_assignable<Val>::value) {
+		this->v = std::move(v);
+		return *this;
+	}
+
+	Ret<Val, Set<>>& operator=(const Ret<Val, Set<>>& v) noexcept(std::is_nothrow_copy_assignable<Val>::value) {
+		if(this == &v)
+			return *this;
+		this->v = v.v;
+		return *this;
+	}
+
+	Ret<Val, Set<>>& operator=(Ret<Val, Set<>>&& v) noexcept(std::is_nothrow_copy_assignable<Val>::value) {
+		if(this == &v)
+			return *this;
+		this->v = std::move(v.v);
+		return *this;
+	}
 
 	explicit operator Val&() noexcept {
 		return v;
