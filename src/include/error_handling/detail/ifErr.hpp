@@ -12,6 +12,8 @@
 #include <error_handling/detail/FSet/FSet.hpp>
 #include <error_handling/detail/Ret/RetTraits.hpp>
 #include <error_handling/detail/UnOp.hpp>
+#include <error_handling/detail/AssignHelper.hpp>
+#include <error_handling/detail/CallHandler.hpp>
 #include <error_handling/detail/config.hpp>
 
 namespace error_handling {
@@ -70,12 +72,6 @@ public:
 	using type = Ret<Val, typename Union<StrongErrors, WeakErrors>::type>;
 };
 
-template <class CErrors,
-class Val, class Errors,
-class UnOps>
-typename IfErrsRetType<CErrors, Val, Errors, UnOps>::type
-ifErr(Ret<Val, Errors>&& v, UnOps ops);
-
 class IfErrsSeal final {
 	template <class CErrors,
 	class Val, class Errors,
@@ -94,77 +90,8 @@ class IfErrsSeal final {
 
 template <class RetType>
 class IfErrsImpl {
-	struct AssignHelper {
-		template <class Val, class OVal, class OErrors>
-		static void assign(Ret<Val, Set<>>& v, Ret<OVal, OErrors>&& ov) {
-			AutoClearAny<OVal, OErrors> oany(unsafe_access_to_internal_data(ov));
-			Val& val = unsafe_access_to_internal_data(v);
-
-			val = std::move(unsafe_cast<OVal>(oany.data()));
-		}
-
-		template <class Val, class Errors, class OVal, class OErrors>
-		static void assign(Ret<Val, Errors>& v, Ret<OVal, OErrors>&& ov) {
-			Any<Val, Errors>& any = unsafe_access_to_internal_data(v);
-			AutoClearAny<OVal, OErrors> oany(unsafe_access_to_internal_data(ov));
-
-			any = std::move(oany.data());
-		}
-	};
-
 	template <class UnOps, bool with_unops = !IsEmpty<UnOps>::value>
 	class WithUnOps {
-		class CallHandler {
-			template <class Arg, class UnOp>
-			class EnableForReturnsVoid {
-				static const bool is_ret_void = std::is_void<typename std::result_of<UnOp(Arg)>::type>::value;
-			public:
-				using type = std::enable_if<is_ret_void>;
-			};
-
-			template <class Arg, class UnOp>
-			class EnableForReturnsRet {
-				using ret_type = typename std::result_of<UnOp(Arg)>::type;
-				static const bool is_ret_ret = IsRet<ret_type>::value;
-			public:
-				using type = std::enable_if<is_ret_ret>;
-			};
-
-			template <class Arg, class UnOp, class Val>
-			class EnableForReturnsConvertibleToVal {
-				using ret_type = typename std::result_of<UnOp(Arg)>::type;
-				static const bool is_ret_convertible_to_val = std::is_convertible<ret_type, Val>::value;
-			public:
-				using type = std::enable_if<is_ret_convertible_to_val>;
-			};
-
-			template <class Arg, class UnOp>
-			struct ConstraintsForReturnsRet {
-				static_assert(std::is_convertible<typename std::result_of<UnOp(Arg&&)>::type,
-						RetType>::value, "Cannot convert from `UnOp(Arg&&) to `RetType`: Maybe your error handler returns too common type?");
-			};
-		public:
-			template <class Val, class Err, class UnOp,
-			class = typename EnableForReturnsVoid<Err&&, UnOp>::type::type>
-			static RetType call(UnOp op, Err&& err) {
-				op(std::move(err));
-				return Ret<Val, Set<>>();
-			}
-
-			template <class Val, class Err, class UnOp,
-			class = typename EnableForReturnsRet<Err&&, UnOp>::type::type>
-			static RetType call(UnOp op, Err&& err, void* fake = nullptr) {
-				ConstraintsForReturnsRet<Err, UnOp>();
-				return op(std::move(err));
-			}
-
-			template <class Val, class Err, class UnOp,
-			class = typename EnableForReturnsConvertibleToVal<Err&&, UnOp, Val>::type::type>
-			static RetType call(UnOp op, Err&& err, char* fake = nullptr) {
-				return Val(op(std::move(err)));
-			}
-		};
-
 		template <bool it_can_be_reused, class>
 		struct ItCanBeReused {
 			template <class CErrors,
@@ -204,8 +131,8 @@ class IfErrsImpl {
 			if(unsafe_access_to_internal_data(v).type() == typeid(CallArg)) {
 				AutoClearAny<Val, Errors> any(unsafe_access_to_internal_data(v));
 
-				return CallHandler::template call<Val>(getFront(ops),
-						std::move(unsafe_cast<CallArg>(any.data())));
+				return CallHandler<RetType>::template call<Val>(getFront(ops),
+						std::move(unsafe_cast<CallArg>(any.data())), CallHandlerSeal());
 			}
 
 			return ItCanBeReused<(Size<CallArgs>::value > 1), void>::template call<NewErrors, Val, Errors>(std::move(v), ops);
@@ -223,7 +150,7 @@ class IfErrsImpl {
 			static_assert(IsEmpty<CErrors>::value, "`CErrors` is not empty: Not enough error handlers.");
 
 			RetType ret;
-			AssignHelper::assign(ret, std::move(v));
+			AssignHelper::assign(ret, std::move(v), AssignHelperSeal());
 		    return ret;
 		}
 	};

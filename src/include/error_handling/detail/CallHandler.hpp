@@ -1,0 +1,84 @@
+/*
+ * CallHandler.hpp
+ *
+ *  Created on: Jul 13, 2014
+ *      Author: mdraven
+ */
+
+#ifndef CALLHANDLER_HPP_
+#define CALLHANDLER_HPP_
+
+namespace error_handling {
+
+namespace detail {
+
+class CallHandlerSeal final {
+	template <class OVal, class UnOp, class Val, class Errors>
+	friend
+	Ret<OVal, Errors> repack(Ret<Val, Errors>&& v, UnOp func);
+
+	template <class>
+	friend class IfErrsImpl;
+
+	constexpr CallHandlerSeal() {}
+	constexpr CallHandlerSeal(const CallHandlerSeal&) {}
+	constexpr CallHandlerSeal(CallHandlerSeal&&) {}
+};
+
+template <class RetType>
+class CallHandler {
+	template <class Arg, class UnOp>
+	class EnableForReturnsVoid {
+		static const bool is_ret_void = std::is_void<typename std::result_of<UnOp(Arg)>::type>::value;
+	public:
+		using type = std::enable_if<is_ret_void>;
+	};
+
+	template <class Arg, class UnOp>
+	class EnableForReturnsRet {
+		using ret_type = typename std::result_of<UnOp(Arg)>::type;
+		static const bool is_ret_ret = IsRet<ret_type>::value;
+	public:
+		using type = std::enable_if<is_ret_ret>;
+	};
+
+	template <class Arg, class UnOp, class Val>
+	class EnableForReturnsConvertibleToVal {
+		using ret_type = typename std::result_of<UnOp(Arg)>::type;
+		static const bool is_ret_convertible_to_val = std::is_convertible<ret_type, Val>::value;
+	public:
+		using type = std::enable_if<is_ret_convertible_to_val>;
+	};
+
+	template <class Arg, class UnOp>
+	struct ConstraintsForReturnsRet {
+		static_assert(std::is_convertible<typename std::result_of<UnOp(Arg&&)>::type,
+				RetType>::value, "Cannot convert from `UnOp(Arg&&) to `RetType`: Maybe your error handler returns too common type?");
+	};
+public:
+	template <class Val, class Err, class UnOp,
+	class = typename EnableForReturnsVoid<Err&&, UnOp>::type::type>
+	static RetType call(UnOp op, Err&& err, const CallHandlerSeal) {
+		op(std::move(err));
+		return Ret<Val, Set<>>();
+	}
+
+	template <class Val, class Err, class UnOp,
+	class = typename EnableForReturnsRet<Err&&, UnOp>::type::type>
+	static RetType call(UnOp op, Err&& err, const CallHandlerSeal, void* fake = nullptr) {
+		ConstraintsForReturnsRet<Err, UnOp>();
+		return op(std::move(err));
+	}
+
+	template <class Val, class Err, class UnOp,
+	class = typename EnableForReturnsConvertibleToVal<Err&&, UnOp, Val>::type::type>
+	static RetType call(UnOp op, Err&& err, const CallHandlerSeal, char* fake = nullptr) {
+		return Val(op(std::move(err)));
+	}
+};
+
+} /* namespace detail */
+
+} /* namespace error_handling */
+
+#endif /* CALLHANDLER_HPP_ */
