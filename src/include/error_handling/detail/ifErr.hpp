@@ -1,5 +1,5 @@
 /*
- * IfErr.hpp
+ * ifErr.hpp
  *
  *  Created on: Jul 8, 2014
  *      Author: mdraven
@@ -74,7 +74,7 @@ template <class CErrors,
 class Val, class Errors,
 class UnOps>
 typename IfErrsRetType<CErrors, Val, Errors, UnOps>::type
-if_err(Ret<Val, Errors>&& v, UnOps ops);
+ifErr(Ret<Val, Errors>&& v, UnOps ops);
 
 class IfErrsSeal final {
 	template <class CErrors,
@@ -82,7 +82,7 @@ class IfErrsSeal final {
 	class UnOps>
 	friend
 	typename IfErrsRetType<CErrors, Val, Errors, UnOps>::type
-	if_err(Ret<Val, Errors>&& v, UnOps ops);
+	ifErr(Ret<Val, Errors>&& v, UnOps ops);
 
 	template <class>
 	friend class IfErrsImpl;
@@ -248,7 +248,7 @@ template <class CErrors,
 class Val, class Errors,
 class UnOps>
 typename IfErrsRetType<CErrors, Val, Errors, UnOps>::type
-if_err(Ret<Val, Errors>&& v, UnOps ops) {
+ifErr(Ret<Val, Errors>&& v, UnOps ops) {
 #ifdef ERROR_HANDLING_CHECK_EMPTY_RET
 	if(unsafe_access_to_internal_data(v).empty()) {
 		ERROR_HANDLING_CRITICAL_ERROR("Calling `if_err` on an empty `Ret`.");

@@ -9,7 +9,7 @@
 #define ERROR_HANDLING_HPP_
 
 #include <error_handling/detail/Ret.hpp>
-#include <error_handling/detail/IfErr.hpp>
+#include <error_handling/detail/ifErr.hpp>
 #include <error_handling/detail/Set/Set.hpp>
 #include <error_handling/detail/FSet/FSet.hpp>
 #include <error_handling/detail/T.hpp>
@@ -20,14 +20,19 @@ namespace error_handling {
 
 using error_handling::detail::Ret;
 
-using error_handling::detail::if_err;
-
 using error_handling::detail::T;
 using error_handling::detail::N;
 using error_handling::detail::V;
 
 using error_handling::detail::Set;
 using error_handling::detail::FSet;
+
+template <class... CErrors, class Val, class... Errors,
+class... UnOps>
+auto if_err(Ret<Val, Set<Errors...>>&& v, UnOps... ops)
+->decltype(error_handling::detail::ifErr<Set<CErrors...>>(std::move(v), FSet(std::forward<UnOps>(ops)...))) {
+	return error_handling::detail::ifErr<Set<CErrors...>>(std::move(v), FSet(std::forward<UnOps>(ops)...));
+}
 
 } /* namespace error_handling */
 
