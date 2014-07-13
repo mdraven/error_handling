@@ -16,11 +16,12 @@
 
 #endif
 
-#ifndef ERROR_HANDLING_ERROR
-#include <iostream>
-#define ERROR_HANDLING_ERROR(TYPE, MSG) \
-	std::cerr << (MSG) << typeid TYPE .name() << std::endl;
-
+#ifndef NDEBUG
+  #include <iostream>
+  #define ERROR_HANDLING_DEBUG_MSG(TYPE, MSG) \
+	  std::cerr << (MSG) << typeid TYPE .name() << std::endl;
+#else
+  #define ERROR_HANDLING_DEBUG_MSG(TYPE, MSG)
 #endif
 
 

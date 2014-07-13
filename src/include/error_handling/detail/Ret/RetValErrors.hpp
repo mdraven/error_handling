@@ -47,7 +47,7 @@ public:
 		static const bool is_known_error = IsContains<Errors, OErr>::value;
 		static_assert(is_known_error, "Unknown error type");
 
-		printf("copy constr Err\n");
+		ERROR_HANDLING_DEBUG_MSG((Ret<Val, Errors>), "copy constructor Err");
 	}
 
 	template <class OErr,
@@ -57,7 +57,7 @@ public:
 		static const bool is_known_error = IsContains<Errors, OErr>::value;
 		static_assert(is_known_error, "Unknown error type");
 
-		printf("move constr Err\n");
+		ERROR_HANDLING_DEBUG_MSG((Ret<Val, Errors>), "move constructor Err");
 	}
 
 	template <class OVal, class OErrors>
@@ -69,7 +69,7 @@ public:
 		static const bool is_more_weak = IsDifferenceEmpty<OErrors, Errors>::value;
 		static_assert(is_more_weak, "Assign to more strong type.");
 
-		printf("copy constr Ret\n");
+		ERROR_HANDLING_DEBUG_MSG((Ret<Val, Errors>), "copy constructor Ret");
 
 #ifdef ERROR_HANDLING_CHECK_EMPTY_RET
 		if(unsafe_access_to_internal_data(v).empty()) {
@@ -84,7 +84,7 @@ public:
 		static const bool is_convertible_val = std::is_convertible<OVal, Val>::value;
 		static_assert(is_convertible_val, "Cannot convert `Val` type.");
 
-		printf("copy constr Ret\n");
+		ERROR_HANDLING_DEBUG_MSG((Ret<Val, Errors>), "copy constructor Ret");
 	}
 
 	template <class OVal, class OErrors>
@@ -96,7 +96,7 @@ public:
 		static const bool is_more_weak = IsDifferenceEmpty<OErrors, Errors>::value;
 		static_assert(is_more_weak, "Assign to more strong type.");
 
-		printf("move constr Ret\n");
+		ERROR_HANDLING_DEBUG_MSG((Ret<Val, Errors>), "move constructor Ret");
 
 #ifdef ERROR_HANDLING_CHECK_EMPTY_RET
 		if(unsafe_access_to_internal_data(v).empty()) {
@@ -113,7 +113,7 @@ public:
 		static const bool is_convertible_val = std::is_convertible<OVal, Val>::value;
 		static_assert(is_convertible_val, "Cannot convert `Val` type.");
 
-		printf("move constr Ret\n");
+		ERROR_HANDLING_DEBUG_MSG((Ret<Val, Errors>), "move constructor Ret");
 	}
 
 	Ret<Val, Errors>& operator=(const Val& v) noexcept(noexcept(any = v)) {
@@ -122,6 +122,8 @@ public:
 	}
 
 	Ret<Val, Errors>& operator=(Val&& v) noexcept(noexcept(any = std::move(v))) {
+		ERROR_HANDLING_DEBUG_MSG((Ret<Val, Errors>), "move assign Val");
+
 		this->any = std::move(v);
 		return *this;
 	}
@@ -141,6 +143,8 @@ public:
 		static const bool is_known_error = IsContains<Errors, OErr>::value;
 		static_assert(is_known_error, "Unknown error type");
 
+		ERROR_HANDLING_DEBUG_MSG((Ret<Val, Errors>), "move assign Err");
+
 		this->any = std::move(v);
 		return *this;
 	}
@@ -153,7 +157,7 @@ public:
 		static const bool is_more_weak = IsDifferenceEmpty<OErrors, Errors>::value;
 		static_assert(is_more_weak, "Assign to more strong type.");
 
-		printf("copy assign Ret\n");
+		ERROR_HANDLING_DEBUG_MSG((Ret<Val, Errors>), "copy assign Ret");
 
 		if(unsafe_access_to_internal_data(v).empty()) {
 			ERROR_HANDLING_CRITICAL_ERROR("Copying an empty `Ret`.");
@@ -169,7 +173,7 @@ public:
 		static const bool is_convertible_val = std::is_convertible<OVal, Val>::value;
 		static_assert(is_convertible_val, "Cannot convert `Val` type.");
 
-		printf("copy assign Ret\n");
+		ERROR_HANDLING_DEBUG_MSG((Ret<Val, Errors>), "copy assign Ret");
 
 		this->any = unsafe_access_to_internal_data(v);
 
@@ -184,7 +188,7 @@ public:
 		static const bool is_more_weak = IsDifferenceEmpty<OErrors, Errors>::value;
 		static_assert(is_more_weak, "Assign to more strong type.");
 
-		printf("move assign Ret\n");
+		ERROR_HANDLING_DEBUG_MSG((Ret<Val, Errors>), "move assign Ret");
 
 		if(unsafe_access_to_internal_data(v).empty()) {
 			ERROR_HANDLING_CRITICAL_ERROR("Moving an empty `Ret`.");
@@ -202,7 +206,7 @@ public:
 		static const bool is_convertible_val = std::is_convertible<OVal, Val>::value;
 		static_assert(is_convertible_val, "Cannot convert `Val` type.");
 
-		printf("move assign Ret\n");
+		ERROR_HANDLING_DEBUG_MSG((Ret<Val, Errors>), "move assign Ret");
 
 		this->any = std::move(unsafe_access_to_internal_data(v));
 
@@ -220,7 +224,7 @@ public:
 #ifdef ERROR_HANDLING_CHECK_EMPTY_RET
 		if(!any.empty()) {
 //			ERROR_HANDLING_CRITICAL_ERROR("Unchecked Ret.");
-			ERROR_HANDLING_ERROR((Ret<Val, Errors>), "Unchecked Ret");
+			ERROR_HANDLING_DEBUG_MSG((Ret<Val, Errors>), "Unchecked Ret");
 		}
 #endif
 	}
