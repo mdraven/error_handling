@@ -84,7 +84,7 @@ public:
 };
 
 template <class FIter, class LIter, class Init, class F>
-Init fold(FIter first, LIter last, Init init, F f) {
+Init fold_rec(FIter first, LIter last, Init init, F f) {
 	using Ret = error_handling::detail::IsRet<Init>;
 	using Val = typename Ret::val_type::type;
 
@@ -257,9 +257,12 @@ int main() {
 #if 1
     {
     	std::vector<int> num{1, 2, 3, 13, 15};
+    	for(size_t i = 0; i < 10; ++i)
+    		num.push_back(i);
+
     	VectorIter<int> it(num.begin(), num.end());
 
-    	Ret<std::string, Set<EndSeq>> ret = fold(it, LastIter(), Ret<std::string, Set<EndSeq>>(std::string("")),
+    	Ret<std::string, Set<EndSeq>> ret = fold_rec(it, LastIter(), Ret<std::string, Set<EndSeq>>(std::string("")),
     			[](std::string&& str, int&& num) { return str + std::to_string(num); });
     	repack<std::string>(std::move(ret), [](std::string&& str) { std::cout << str << std::endl; return; });
     }
