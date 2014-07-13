@@ -11,9 +11,10 @@
 #include <error_handling/detail/Ret.hpp>
 #include <error_handling/detail/IfErr.hpp>
 #include <error_handling/detail/Set/Set.hpp>
-#include "detail/T.hpp"
-#include "detail/N.hpp"
-#include "detail/V.hpp"
+#include <error_handling/detail/FSet/FSet.hpp>
+#include <error_handling/detail/T.hpp>
+#include <error_handling/detail/N.hpp>
+#include <error_handling/detail/V.hpp>
 
 namespace error_handling {
 
@@ -26,6 +27,7 @@ using error_handling::detail::N;
 using error_handling::detail::V;
 
 using error_handling::detail::Set;
+using error_handling::detail::FSet;
 
 } /* namespace error_handling */
 
