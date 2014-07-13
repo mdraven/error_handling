@@ -24,12 +24,12 @@ f::list<Args...> FSet(Args... args) {
 }
 
 template <class FSet>
-auto fpop_front(FSet fset) -> decltype(f::pop_front(std::forward<FSet>(fset))) {
+auto popFront(FSet fset) -> decltype(f::pop_front(std::forward<FSet>(fset))) {
 	return f::pop_front(std::forward<FSet>(fset));
 }
 
 template <class FSet>
-auto ffront(FSet fset) -> decltype(f::front(std::forward<FSet>(fset))) {
+auto getFront(FSet fset) -> decltype(f::front(std::forward<FSet>(fset))) {
 	return f::front(std::forward<FSet>(fset));
 }
 

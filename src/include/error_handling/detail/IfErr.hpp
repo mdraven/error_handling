@@ -183,7 +183,7 @@ class IfErrsImpl {
 			static
 			RetType
 			call(Ret<Val, Errors>&& v, UnOps ops) {
-				return IfErrsImpl<RetType>::call<CErrors, Val, Errors>(std::move(v), fpop_front(ops), IfErrsSeal());
+				return IfErrsImpl<RetType>::call<CErrors, Val, Errors>(std::move(v), popFront(ops), IfErrsSeal());
 			}
 		};
 	public:
@@ -204,7 +204,7 @@ class IfErrsImpl {
 			if(unsafe_access_to_internal_data(v).type() == typeid(CallArg)) {
 				AutoClearAny<Val, Errors> any(unsafe_access_to_internal_data(v));
 
-				return CallHandler::template call<Val>(ffront(ops),
+				return CallHandler::template call<Val>(getFront(ops),
 						std::move(unsafe_cast<CallArg>(any.data())));
 			}
 
