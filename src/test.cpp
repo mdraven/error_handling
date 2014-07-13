@@ -74,7 +74,6 @@ int main() {
 	Ret<std::string, Set<ErrA, ErrB>> ret6{Ret<std::string, Set<ErrA>>(std::string())};
 //	Ret<std::string, ErrA, ErrB> ret7{Ret<std::string, ErrA, ErrC>()}; // ERR
 
-	// присваивать нельзя
 	ret6 = Ret<std::string, Set<ErrB>>(std::string());
 //	ret6 = Ret<std::string, Set<ErrC>>(); // ERR
 //	ret6 = Ret<std::string, ErrC>(); // ERR
@@ -156,6 +155,12 @@ int main() {
     if_err<Set<ErrA>>(std::move(ret37), FSet([](ErrA&&) { return; })); // runtime ERR
 #endif
 
+#if 0
+    {
+    	Ret<std::string, Set<ErrA>> ret = Ret<std::string, Set<ErrA>>{}; // ERR
+    }
+#endif
+
 #if 1
     {
     	Ret<std::string, Set<ErrA>> ret1{ErrA()};
@@ -169,7 +174,6 @@ int main() {
     	Ret<std::string, Set<ErrA>> ret1{ErrA()};
     	Ret<std::string, Set<ErrA>> ret2 = if_err<Set<std::string>>(std::move(ret1),
     			FSet([](std::string&&) { return; }));  // ERR
-
     }
 #endif
 
