@@ -10,6 +10,7 @@
 #include <string>
 #include <iostream>
 #include <memory>
+#include <vector>
 
 struct ErrA {};
 struct ErrB {};
@@ -50,6 +51,63 @@ struct FromString {
 //FromString func() {
 //	return std::string("hello");
 //}
+
+struct LastIter {};
+
+struct EndSeq {};
+
+template <class T>
+class VectorIter {
+	typename std::vector<T>::iterator f;
+	typename std::vector<T>::iterator l;
+public:
+	VectorIter(typename std::vector<T>::iterator f,
+			typename std::vector<T>::iterator l) :
+				f(f), l(l) {}
+
+	bool operator==(const LastIter&) const {
+		return f == l;
+	}
+
+	error_handling::Ret<T, error_handling::Set<EndSeq>> operator*() {
+		if(f == l)
+			return EndSeq();
+		return *f;
+	}
+
+	VectorIter operator++(int) {
+		VectorIter ret(f, l);
+		if(f != l)
+			++f;
+		return ret;
+	}
+};
+
+template <class FIter, class LIter, class Init, class F>
+Init fold(FIter first, LIter last, Init init, F f) {
+	using Ret = error_handling::detail::IsRet<Init>;
+	using Val = typename Ret::val_type::type;
+
+	using ORet = error_handling::detail::IsRet<decltype(*std::declval<FIter>())>;
+	using OVal = typename ORet::val_type::type;
+
+	struct H {
+		static Init call(FIter first, LIter last, Init init, F f) {
+			Init res = error_handling::detail::repack<Val>(std::move(init), [&](Val&& val) -> Init {
+				if(first == last)
+					return val;
+
+				auto ret = *(first++);
+				Init res = error_handling::detail::repack<Val>(std::move(ret),
+						[&val, f](OVal&& oval) -> Init { return f(std::move(val), std::move(oval)); });
+
+				return H::call(first, last, std::forward<Init>(res), f);
+			});
+			return res;
+		}
+	};
+	return H::call(first, last, std::forward<Init>(init), f);
+}
 
 int main() {
 	using error_handling::Ret;
@@ -193,6 +251,17 @@ int main() {
        	Ret<int, Set<ErrA>> ret8 = repack<int>(std::move(ret7), [](std::string&& s) { return ErrA(); });
        	Ret<std::string, Set<ErrA>> ret9{std::string()};
        	Ret<int, Set<ErrA, ErrC>> ret10 = repack<int>(std::move(ret9), [](std::string&& s) { return ErrC(); });
+    }
+#endif
+
+#if 1
+    {
+    	std::vector<int> num{1, 2, 3, 13, 15};
+    	VectorIter<int> it(num.begin(), num.end());
+
+    	Ret<std::string, Set<EndSeq>> ret = fold(it, LastIter(), Ret<std::string, Set<EndSeq>>(std::string("")),
+    			[](std::string&& str, int&& num) { return str + std::to_string(num); });
+    	repack<std::string>(std::move(ret), [](std::string&& str) { std::cout << str << std::endl; return; });
     }
 #endif
 

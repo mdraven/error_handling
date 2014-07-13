@@ -62,6 +62,12 @@ public:
 template <class OVal, class UnOp, class Val, class Errors>
 typename RepacksRetType<OVal, UnOp, Val, Errors>::type
 repack(Ret<Val, Errors>&& v, UnOp op) {
+#ifdef ERROR_HANDLING_CHECK_EMPTY_RET
+	if(unsafe_access_to_internal_data(v).empty()) {
+		ERROR_HANDLING_CRITICAL_ERROR("Calling `repack` on an empty `Ret`.");
+	}
+#endif
+
 	using RetType = typename RepacksRetType<OVal, UnOp, Val, Errors>::type;
 
 	return RepacksImpl<RetType>::template call<OVal>(std::move(v), op, RepacksSeal());
