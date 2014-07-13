@@ -967,6 +967,20 @@ public:
       Если сделать чтобы хендлеры принимали по значению, а не ссылке, то AutoClearAny будет не нужен.
         А вот и нет. При перемещении any.clear не вызывается.
     Оптимизации ещё может не быть из-за объектов с деструктором внутри самого loop(например Ret<>).
+    ----------
+    Ret<int, Err> ret = fold(getline, Ret<int, Err>(0), [](int sum, std::string&& str) { return sum + strlen(str); });
+    ... fold(Iter it, Init init, F f) {
+      struct H {
+        static Ret<int, Err> call(Iter it, Ret<int, Err> init, F f) {
+          Ret<std::string, Err> ret = it();
+          Ret<int, Err> res = repack<int>(ret, [](std::string&& str) { 
+            return repack<int>(init, [](int sum) { return sum + strlen(str); });
+          });
+          return H::call(it, res, f);
+        }
+      }
+      return H::call(it, init, f);
+    }
  */
 
 /* Интересно есть либы для деманглинга type_info->name()? Если взять популярные компиляторы,
