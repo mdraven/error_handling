@@ -167,6 +167,9 @@ int main() {
     	Ret<std::string, Set<ErrA>> ret1{ErrA()};
     	Ret<std::string, Set<ErrB>> ret2 = if_err<ErrA>(std::move(ret1),
     			[](ErrA&&) { return Ret<std::string, Set<ErrB>>(ErrB()); });
+    	Ret<std::string, Set<ErrA>> ret3{ErrA()};
+    	Ret<std::string, Set<ErrB>> ret4 = if_err<ErrA>(std::move(ret3),
+    			[](ErrA&&) { return ErrB(); });
     }
 #endif
 
@@ -182,6 +185,14 @@ int main() {
     {
        	Ret<std::string, Set<ErrA>> ret1{std::string()};
        	Ret<int, Set<ErrA>> ret2 = repack<int>(std::move(ret1), [](std::string&& s) {});
+       	Ret<std::string, Set<ErrA>> ret3{std::string()};
+       	Ret<int, Set<ErrA>> ret4 = repack<int>(std::move(ret3), [](std::string&& s) { return 13; });
+       	Ret<std::string, Set<ErrA>> ret5{std::string()};
+       	Ret<int, Set<ErrA>> ret6 = repack<int>(std::move(ret5), [](std::string&& s) { return Ret<int, Set<ErrA>>(ErrA()); });
+       	Ret<std::string, Set<ErrA>> ret7{std::string()};
+       	Ret<int, Set<ErrA>> ret8 = repack<int>(std::move(ret7), [](std::string&& s) { return ErrA(); });
+       	Ret<std::string, Set<ErrA>> ret9{std::string()};
+       	Ret<int, Set<ErrA, ErrC>> ret10 = repack<int>(std::move(ret9), [](std::string&& s) { return ErrC(); });
     }
 #endif
 

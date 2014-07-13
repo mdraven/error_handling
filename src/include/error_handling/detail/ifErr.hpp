@@ -36,18 +36,15 @@ class IfErrsWeakRetType {
 		template <class CError>
 		class CErrorsPred {
 			using ret_type = typename std::result_of<UnOp(CError&&)>::type;
+			static const bool is_ret_void = std::is_void<ret_type>::value;
 			static const bool is_ret_ret = IsRet<ret_type>::value;
+			static const bool is_ret_convertible_to_val = std::is_convertible<ret_type, Val>::value;
+			static const bool is_ret_error = !(is_ret_void || is_ret_ret || is_ret_convertible_to_val);
 
-			template <class T>
-			struct Wrapper {
-				using type = typename T::errors_type;
-			};
-
-			struct EmptySet {
-				using type = Set<>;
-			};
+			using ret = typename std::conditional<is_ret_ret, typename IsRet<ret_type>::errors_type::type, Set<>>::type;
+			using error = typename std::conditional<is_ret_error, Set<ret_type>, Set<>>::type;
 		public:
-			using result = typename std::conditional<is_ret_ret, Wrapper<IsRet<ret_type>>, EmptySet>::type::type;
+			using result = typename Union<ret, error>::type;
 			static const bool value = !IsEmpty<result>::value;
 		};
 	public:
@@ -65,9 +62,9 @@ class Val, class Errors,
 class UnOps>
 class IfErrsRetType {
 	using StrongType = typename IfErrsStrongRetType<CErrors, Val, Errors>::type;
-	using StrongErrors = typename IsRet<StrongType>::errors_type;
+	using StrongErrors = typename IsRet<StrongType>::errors_type::type;
 	using WeakType = typename IfErrsWeakRetType<CErrors, Val, Errors, UnOps>::type;
-	using WeakErrors = typename IsRet<WeakType>::errors_type;
+	using WeakErrors = typename IsRet<WeakType>::errors_type::type;
 public:
 	using type = Ret<Val, typename Union<StrongErrors, WeakErrors>::type>;
 };

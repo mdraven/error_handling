@@ -21,10 +21,11 @@ namespace detail {
 
 template <class OVal, class UnOp, class Val, class Errors>
 Ret<OVal, Errors> repack(Ret<Val, Errors>&& v, UnOp func) {
-	AutoClearAny<Val, Errors> any(unsafe_access_to_internal_data(v));
-//    if(any.data().type() == typeid(Val)) {
-//    	return func(unsafe_cast<Val>(any.data()));
-//    }
+    if(unsafe_access_to_internal_data(v).type() == typeid(Val)) {
+    	AutoClearAny<Val, Errors> any(unsafe_access_to_internal_data(v));
+    	return CallHandler<Ret<OVal, Errors>>::template call<OVal>(func,
+    			std::move(unsafe_cast<Val>(any.data())), CallHandlerSeal());
+    }
 
 	Ret<OVal, Errors> ret;
 	AssignHelper::assign(ret, std::move(v), AssignHelperSeal());

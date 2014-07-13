@@ -50,6 +50,15 @@ class CallHandler {
 		using type = std::enable_if<is_ret_convertible_to_val>;
 	};
 
+	template <class Arg, class UnOp, class Val>
+	class EnableForReturnsError {
+		using ret_type = typename std::result_of<UnOp(Arg)>::type;
+		using errors = typename IsRet<RetType>::errors_type::type;
+		static const bool is_ret_error = IsContains<errors, ret_type>::value;
+	public:
+		using type = std::enable_if<is_ret_error>;
+	};
+
 	template <class Arg, class UnOp>
 	struct ConstraintsForReturnsRet {
 		static_assert(std::is_convertible<typename std::result_of<UnOp(Arg&&)>::type,
@@ -74,6 +83,12 @@ public:
 	class = typename EnableForReturnsConvertibleToVal<Err&&, UnOp, Val>::type::type>
 	static RetType call(UnOp op, Err&& err, const CallHandlerSeal, char* fake = nullptr) {
 		return Val(op(std::move(err)));
+	}
+
+	template <class Val, class Err, class UnOp,
+	class = typename EnableForReturnsError<Err&&, UnOp, Val>::type::type>
+	static RetType call(UnOp op, Err&& err, const CallHandlerSeal, int* fake = nullptr) {
+		return op(std::move(err));
 	}
 };
 

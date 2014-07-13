@@ -34,8 +34,13 @@ class IsRet {
 	};
 
 public:
-	using val_type = typename Helper<T>::val_type;
-	using errors_type = typename Helper<T>::errors_type;
+	struct val_type {
+		using type = typename Helper<T>::val_type;
+	};
+
+	struct errors_type {
+		using type = typename Helper<T>::errors_type;
+	};
 
 	static const bool value = Helper<T>::value;
 };

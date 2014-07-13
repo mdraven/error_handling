@@ -75,6 +75,15 @@ public:
 #endif
 	}
 
+	template <class OVal>
+	Ret(const Ret<OVal, Set<>>& v) noexcept(noexcept(Any<Val, Errors>(unsafe_access_to_internal_data(v)))) :
+		any(unsafe_access_to_internal_data(v)) {
+		static const bool is_convertible_val = std::is_convertible<OVal, Val>::value;
+		static_assert(is_convertible_val, "Cannot convert `Val` type.");
+
+		printf("copy constr Ret\n");
+	}
+
 	template <class OVal, class OErrors>
 	Ret(Ret<OVal, OErrors>&& v) noexcept(noexcept(Any<Val, Errors>(std::move(unsafe_access_to_internal_data(v))))) :
 			any(std::move(unsafe_access_to_internal_data(v))) {
@@ -93,6 +102,15 @@ public:
 #endif
 
 		unsafe_access_to_internal_data(v).clear();
+	}
+
+	template <class OVal>
+	Ret(Ret<OVal, Set<>>&& v) noexcept(noexcept(Any<Val, Errors>(std::move(unsafe_access_to_internal_data(v))))) :
+			any(std::move(unsafe_access_to_internal_data(v))) {
+		static const bool is_convertible_val = std::is_convertible<OVal, Val>::value;
+		static_assert(is_convertible_val, "Cannot convert `Val` type.");
+
+		printf("move constr Ret\n");
 	}
 
 	Ret<Val, Errors>& operator=(const Val& v) noexcept(noexcept(any = v)) {
@@ -143,6 +161,18 @@ public:
 		return *this;
 	}
 
+	template <class OVal>
+	Ret<Val, Errors>& operator=(const Ret<OVal, Set<>>& v) noexcept(noexcept(any = unsafe_access_to_internal_data(v))) {
+		static const bool is_convertible_val = std::is_convertible<OVal, Val>::value;
+		static_assert(is_convertible_val, "Cannot convert `Val` type.");
+
+		printf("copy assign Ret\n");
+
+		this->any = unsafe_access_to_internal_data(v);
+
+		return *this;
+	}
+
 	template <class OVal, class OErrors>
 	Ret<Val, Errors>& operator=(Ret<OVal, OErrors>&& v) noexcept(noexcept(any = std::move(unsafe_access_to_internal_data(v)))) {
 		static const bool is_convertible_val = std::is_convertible<OVal, Val>::value;
@@ -160,6 +190,18 @@ public:
 		this->any = std::move(unsafe_access_to_internal_data(v));
 
 		unsafe_access_to_internal_data(v).clear();
+
+		return *this;
+	}
+
+	template <class OVal>
+	Ret<Val, Errors>& operator=(Ret<OVal, Set<>>&& v) noexcept(noexcept(any = std::move(unsafe_access_to_internal_data(v)))) {
+		static const bool is_convertible_val = std::is_convertible<OVal, Val>::value;
+		static_assert(is_convertible_val, "Cannot convert `Val` type.");
+
+		printf("move assign Ret\n");
+
+		this->any = std::move(unsafe_access_to_internal_data(v));
 
 		return *this;
 	}
