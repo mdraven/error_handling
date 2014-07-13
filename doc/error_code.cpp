@@ -975,9 +975,9 @@ public:
     ... fold(Iter it, Init init, F f) {
       struct H {
         static Ret<int, Err> call(Iter it, Ret<int, Err> init, F f) {
-          Ret<std::string, Err> ret = it();
-          Ret<int, Err> res = repack<int>(ret, [](std::string&& str) { 
-            Ret<int, Err> res = repack<int>(init, [](int sum) { return f(sum, std::move(str)); });
+          Ret<int, Err> res = repack<int>(init, [](int sum) {
+            Ret<std::string, Err> ret = it();
+            Ret<int, Err> res = repack<int>(ret, [](std::string&& str) { return f(sum, std::move(str)); });
             return H::call(it, res, f);
           });
           return res;
