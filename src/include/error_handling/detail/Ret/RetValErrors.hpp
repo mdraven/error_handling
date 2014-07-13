@@ -28,6 +28,9 @@ class Ret final {
 	template <class OVal, class OErrors>
 	friend Any<OVal, OErrors>& unsafe_access_to_internal_data(Ret<OVal, OErrors>&) noexcept;
 
+	template <class OVal, class OErrors>
+	friend const Any<OVal, OErrors>& unsafe_access_to_internal_data(const Ret<OVal, OErrors>& v) noexcept;
+
 public:
 	Ret() noexcept(noexcept(Any<Val, Errors>())) :
 		any() {}

@@ -34,17 +34,8 @@ class IfErrsWeakRetType {
 	template <class UnOp>
 	class UnOpsPred {
 		template <class CError>
-		class CErrorsPred {
-			using ret_type = typename std::result_of<UnOp(CError&&)>::type;
-			static const bool is_ret_void = std::is_void<ret_type>::value;
-			static const bool is_ret_ret = IsRet<ret_type>::value;
-			static const bool is_ret_convertible_to_val = std::is_convertible<ret_type, Val>::value;
-			static const bool is_ret_error = !(is_ret_void || is_ret_ret || is_ret_convertible_to_val);
-
-			using ret = typename std::conditional<is_ret_ret, typename IsRet<ret_type>::errors_type::type, Set<>>::type;
-			using error = typename std::conditional<is_ret_error, Set<ret_type>, Set<>>::type;
-		public:
-			using result = typename Union<ret, error>::type;
+		struct CErrorsPred {
+			using result = typename UnOpsErrors<Val, CError&&, UnOp>::type;
 			static const bool value = !IsEmpty<result>::value;
 		};
 	public:

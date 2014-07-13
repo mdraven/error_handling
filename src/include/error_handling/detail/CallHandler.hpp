@@ -13,9 +13,8 @@ namespace error_handling {
 namespace detail {
 
 class CallHandlerSeal final {
-	template <class OVal, class UnOp, class Val, class Errors>
-	friend
-	Ret<OVal, Errors> repack(Ret<Val, Errors>&& v, UnOp func);
+	template <class>
+	friend class RepacksImpl;
 
 	template <class>
 	friend class IfErrsImpl;
@@ -23,6 +22,20 @@ class CallHandlerSeal final {
 	constexpr CallHandlerSeal() {}
 	constexpr CallHandlerSeal(const CallHandlerSeal&) {}
 	constexpr CallHandlerSeal(CallHandlerSeal&&) {}
+};
+
+template <class Val, class Arg, class UnOp>
+class UnOpsErrors {
+	using ret_type = typename std::result_of<UnOp(Arg)>::type;
+	static const bool is_ret_void = std::is_void<ret_type>::value;
+	static const bool is_ret_ret = IsRet<ret_type>::value;
+	static const bool is_ret_convertible_to_val = std::is_convertible<ret_type, Val>::value;
+	static const bool is_ret_error = !(is_ret_void || is_ret_ret || is_ret_convertible_to_val);
+
+	using ret = typename std::conditional<is_ret_ret, typename IsRet<ret_type>::errors_type::type, Set<>>::type;
+	using error = typename std::conditional<is_ret_error, Set<ret_type>, Set<>>::type;
+public:
+	using type = typename Union<ret, error>::type;
 };
 
 template <class RetType>

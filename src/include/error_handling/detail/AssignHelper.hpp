@@ -13,9 +13,8 @@ namespace error_handling {
 namespace detail {
 
 class AssignHelperSeal final {
-	template <class OVal, class UnOp, class Val, class Errors>
-	friend
-	Ret<OVal, Errors> repack(Ret<Val, Errors>&& v, UnOp func);
+	template <class>
+	friend class RepacksImpl;
 
 	template <class>
 	friend class IfErrsImpl;

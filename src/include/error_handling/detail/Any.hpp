@@ -154,7 +154,7 @@ class Any {
 		ti = TypeInfoHolder<OVal>::getTypeInfo();
 	}
 
-	void callCopyConstructor(void* to) {
+	void callCopyConstructor(void* to) const {
 		assert(ti->copy_constr);
 		ti->copy_constr(storage, to);
 	}
@@ -164,7 +164,7 @@ class Any {
 		ti->move_constr(storage, to);
 	}
 
-	void callCopyAssign(void* to) {
+	void callCopyAssign(void* to) const {
 		assert(ti->copy_assign);
 		ti->copy_assign(storage, to);
 	}
