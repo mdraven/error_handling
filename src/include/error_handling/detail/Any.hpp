@@ -188,7 +188,7 @@ public:
 template <class Val, class Errors>
 class Any {
 	char storage[MaxSize<typename Insert<Errors, Val>::type>::value];
-	const TypeInfo* ti;
+	const std::type_info* ti;
 
 	template <class RVal, class OVal, class OErrors>
 	friend RVal unsafe_cast(Any<OVal, OErrors>& v);
@@ -199,13 +199,13 @@ class Any {
 	template <class OVal>
 	void valCopyConstructor(const OVal& v) {
 		new(storage) OVal(v);
-		ti = TypeInfoHolder<OVal>::getTypeInfo();
+		ti = &typeid(OVal);
 	}
 
 	template <class OVal>
 	void valMoveConstructor(OVal&& v) {
 		new(storage) OVal(std::move(v));
-		ti = TypeInfoHolder<OVal>::getTypeInfo();
+		ti = &typeid(OVal);
 	}
 
 	template <class T>
@@ -216,7 +216,7 @@ class Any {
 	};
 
 	void callCopyConstructor(void* to) const {
-		DoAction<CopyConstructorAction>::template call<Val, Errors>(storage, *ti->ti, to);
+		DoAction<CopyConstructorAction>::template call<Val, Errors>(storage, *ti, to);
 	}
 
 	template <class T>
@@ -227,7 +227,7 @@ class Any {
 	};
 
 	void callMoveConstructor(void* to) {
-		DoAction<MoveConstructorAction>::template call<Val, Errors>(storage, *ti->ti, to);
+		DoAction<MoveConstructorAction>::template call<Val, Errors>(storage, *ti, to);
 	}
 
 	template <class T>
@@ -238,7 +238,7 @@ class Any {
 	};
 
 	void callCopyAssign(void* to) const {
-		DoAction<CopyAssignAction>::template call<Val, Errors>(storage, *ti->ti, to);
+		DoAction<CopyAssignAction>::template call<Val, Errors>(storage, *ti, to);
 	}
 
 	template <class T>
@@ -249,7 +249,7 @@ class Any {
 	};
 
 	void callMoveAssign(void* to) {
-		DoAction<MoveAssignAction>::template call<Val, Errors>(storage, *ti->ti, to);
+		DoAction<MoveAssignAction>::template call<Val, Errors>(storage, *ti, to);
 	}
 
 	template <class T>
@@ -260,7 +260,7 @@ class Any {
 	};
 
 	void destructor() {
-		DoAction<DestructorAction>::template call<Val, Errors>(storage, *ti->ti, nullptr);
+		DoAction<DestructorAction>::template call<Val, Errors>(storage, *ti, nullptr);
 		ti = nullptr;
 	}
 public:
@@ -403,7 +403,7 @@ public:
 	Any<Val, Errors>& operator=(const OVal& v) {
 		if(ti == nullptr)
 			valCopyConstructor(v);
-		else if(*ti->ti == typeid(OVal)) {
+		else if(*ti == typeid(OVal)) {
 			static_cast<OVal*>(storage)->operator=(v);
 		}
 		else {
@@ -419,7 +419,7 @@ public:
 	Any<Val, Errors>& operator=(OVal&& v) noexcept {
 		if(ti == nullptr)
 			valMoveConstructor(v);
-		else if(*ti->ti == typeid(OVal)) {
+		else if(*ti == typeid(OVal)) {
 			static_cast<OVal*>(storage)->operator=(v);
 		}
 		else {
@@ -435,7 +435,7 @@ public:
 	}
 
 	const std::type_info& type() const {
-		return (ti == nullptr) ? typeid(void) : *ti->ti;
+		return (ti == nullptr) ? typeid(void) : *ti;
 	}
 
 	void clear() {

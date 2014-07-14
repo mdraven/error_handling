@@ -300,34 +300,34 @@ int main() {
 #if 0
     {
     	std::vector<int> num{1, 2, 3, 13, 15};
-    	for(size_t i = 0; i < 10000; ++i)
+    	for(size_t i = 0; i < 100000; ++i)
     		num.push_back(i);
 
 //    	VectorIter<int> it(num.begin(), num.end() + 15, num.end());
     	VectorIter<int> it(num.begin(), num.end(), num.end());
 
-    	Ret<std::string, Set<EndSeq>> ret1 = fold_rec(it, LastIter(), Ret<std::string, Set<EndSeq>>(std::string("")),
-    			[](std::string&& str, int&& num) { return str + std::to_string(num); });
-    	Ret<V, Set<EndSeq>> res1 = repack<V>(std::move(ret1),
-    			[](std::string&& str) { std::cout << str << std::endl; return; });
-    	if_err<EndSeq>(std::move(res1), [](EndSeq&&) { std::cout << "EndSeq" << std::endl; });
+//    	Ret<std::string, Set<EndSeq>> ret1 = fold_rec(it, LastIter(), Ret<std::string, Set<EndSeq>>(std::string("")),
+//    			[](std::string&& str, int&& num) { return str + std::to_string(num); });
+//    	Ret<V, Set<EndSeq>> res1 = repack<V>(std::move(ret1),
+//    			[](std::string&& str) { std::cout << str.size() << std::endl; return; });
+//    	if_err<EndSeq>(std::move(res1), [](EndSeq&&) { std::cout << "EndSeq" << std::endl; });
 
-    	Ret<std::string, Set<EndSeq>> ret2 = fold_iter(it, LastIter(), Ret<std::string, Set<EndSeq>>(std::string("")),
-    	    			[](std::string&& str, int&& num) { return str + std::to_string(num); });
-    	Ret<V, Set<EndSeq>> res2 = repack<V>(std::move(ret2),
-    			[](std::string&& str) { std::cout << str << std::endl; return; });
-    	if_err<EndSeq>(std::move(res2), [](EndSeq&&) { std::cout << "EndSeq" << std::endl; });
+//    	Ret<std::string, Set<EndSeq>> ret2 = fold_iter(it, LastIter(), Ret<std::string, Set<EndSeq>>(std::string("")),
+//    	    			[](std::string&& str, int&& num) { return str + std::to_string(num); });
+//    	Ret<V, Set<EndSeq>> res2 = repack<V>(std::move(ret2),
+//    			[](std::string&& str) { std::cout << str.size() << std::endl; return; });
+//    	if_err<EndSeq>(std::move(res2), [](EndSeq&&) { std::cout << "EndSeq" << std::endl; });
 
     	std::string res3 = fold_iter2(num.begin(), num.end(), std::string(""),
     			[](std::string&& str, int&& num) { return str + std::to_string(num); });
-    	std::cout << res3 << std::endl;
+    	std::cout << res3.size() << std::endl;
     }
 #endif
 
 #if 1
     {
     	std::vector<int> num{1, 2, 3, 13, 15};
-    	for(size_t i = 0; i < 1000000; ++i)
+    	for(size_t i = 0; i < 100000000; ++i)
     		num.push_back(i);
 
     	VectorIter<int> it(num.begin(), num.end(), num.end());
@@ -338,9 +338,9 @@ int main() {
     			[](unsigned long&& num) { std::cout << num << std::endl; return; });
     	if_err<EndSeq>(std::move(res2), [](EndSeq&&) { std::cout << "EndSeq" << std::endl; });
 
-    	unsigned long res3 = fold_iter2(num.begin(), num.end(), 0UL,
-    			[](unsigned long&& num1, unsigned long&& num2) { return num1 + num2; });
-    	std::cout << res3 << std::endl;
+//    	unsigned long res3 = fold_iter2(num.begin(), num.end(), 0UL,
+//    			[](unsigned long&& num1, unsigned long&& num2) { return num1 + num2; });
+//    	std::cout << res3 << std::endl;
     }
 #endif
 
