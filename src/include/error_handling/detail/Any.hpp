@@ -131,6 +131,327 @@ Val unsafe_cast(Any<Types...>& v) {
 
 #elif ERROR_HANDLING_ANY == 2
 
+#if 1
+
+template <template <class> class Action>
+class DoAction {
+	template <class Errors, class>
+	class CheckErrors {
+		using Error = typename Front<Errors>::type;
+		using TailErrors = typename Remove<Errors, Error>::type;
+	public:
+		static
+		void call(void* from, const std::type_info& from_ti, void* to) {
+			if(from_ti == typeid(Error))
+				Action<Error>::call(from, to);
+			else
+				CheckErrors<TailErrors, void>::call(from, from_ti, to);
+		}
+
+		static
+		void call(const void* from, const std::type_info& from_ti, void* to) {
+			if(from_ti == typeid(Error))
+				Action<Error>::call(from, to);
+			else
+				CheckErrors<TailErrors, void>::call(from, from_ti, to);
+		}
+	};
+
+	template <class Fake>
+	class CheckErrors<Set<>, Fake> {
+	public:
+		static
+		void call(const void* from, const std::type_info& from_ti, const void* to) {
+			return;
+		}
+	};
+public:
+	template <class Val, class Errors>
+	static
+	void call(void* from, const std::type_info& from_ti, void* to) {
+		if(from_ti == typeid(Val))
+			Action<Val>::call(from, to);
+		else
+			CheckErrors<Errors, void>::call(from, from_ti, to);
+	}
+
+	template <class Val, class Errors>
+	static
+	void call(const void* from, const std::type_info& from_ti, void* to) {
+		if(from_ti == typeid(Val))
+			Action<Val>::call(from, to);
+		else
+			CheckErrors<Errors, void>::call(from, from_ti, to);
+	}
+};
+
+template <class Val, class Errors>
+class Any {
+	char storage[MaxSize<typename Insert<Errors, Val>::type>::value];
+	const TypeInfo* ti;
+
+	template <class RVal, class OVal, class OErrors>
+	friend RVal unsafe_cast(Any<OVal, OErrors>& v);
+
+	template <class OVal, class OErrors>
+	friend class Any;
+
+	template <class OVal>
+	void valCopyConstructor(const OVal& v) {
+		new(storage) OVal(v);
+		ti = TypeInfoHolder<OVal>::getTypeInfo();
+	}
+
+	template <class OVal>
+	void valMoveConstructor(OVal&& v) {
+		new(storage) OVal(std::move(v));
+		ti = TypeInfoHolder<OVal>::getTypeInfo();
+	}
+
+	template <class T>
+	struct CopyConstructorAction {
+		static void call(const void* from, void* to) {
+			new(to) T(*static_cast<const T*>(from));
+		}
+	};
+
+	void callCopyConstructor(void* to) const {
+		DoAction<CopyConstructorAction>::template call<Val, Errors>(storage, *ti->ti, to);
+	}
+
+	template <class T>
+	struct MoveConstructorAction {
+		static void call(void* from, void* to) {
+			new(to) T(std::move(*static_cast<T*>(from)));
+		}
+	};
+
+	void callMoveConstructor(void* to) {
+		DoAction<MoveConstructorAction>::template call<Val, Errors>(storage, *ti->ti, to);
+	}
+
+	template <class T>
+	struct CopyAssignAction {
+		static void call(const void* from, void* to) {
+			*static_cast<T*>(to) = *static_cast<const T*>(from);
+		}
+	};
+
+	void callCopyAssign(void* to) const {
+		DoAction<CopyAssignAction>::template call<Val, Errors>(storage, *ti->ti, to);
+	}
+
+	template <class T>
+	struct MoveAssignAction {
+		static void call(void* from, void* to) {
+			*static_cast<T*>(to) = std::move(*static_cast<T*>(from));
+		}
+	};
+
+	void callMoveAssign(void* to) {
+		DoAction<MoveAssignAction>::template call<Val, Errors>(storage, *ti->ti, to);
+	}
+
+	template <class T>
+	struct DestructorAction {
+		static void call(void* from, void*) {
+			static_cast<T*>(from)->~T();
+		}
+	};
+
+	void destructor() {
+		DoAction<MoveConstructorAction>::template call<Val, Errors>(storage, *ti->ti, nullptr);
+//		ti->destr(storage);
+		ti = nullptr;
+	}
+public:
+	Any() : ti(nullptr) {}
+
+	Any(const Any<Val, Errors>& v) : ti(nullptr) {
+		if(v.ti == nullptr)
+			clear();
+		else {
+			v.callCopyConstructor(storage);
+			ti = v.ti;
+		}
+	}
+
+	Any(Any<Val, Errors>&& v) : ti(nullptr) {
+		if(v.ti == nullptr)
+			clear();
+		else {
+			v.callMoveConstructor(storage);
+			ti = v.ti;
+		}
+	}
+
+	template <class OVal, class OErrors>
+	Any(const Any<OVal, OErrors>& v) : ti(nullptr) {
+		if(v.ti == nullptr)
+			clear();
+		else {
+			v.callCopyConstructor(storage);
+			ti = v.ti;
+		}
+	}
+
+	template <class OVal, class OErrors>
+	Any(Any<OVal, OErrors>&& v) : ti(nullptr) {
+		if(v.ti == nullptr)
+			clear();
+		else {
+			v.callMoveConstructor(storage);
+			ti = v.ti;
+		}
+	}
+
+	template <class OVal>
+	Any(const OVal& v) : ti(nullptr) {
+		valCopyConstructor(v);
+	}
+
+	template <class OVal,
+	class = typename EnableIfNotUniversalRef<OVal>::type::type>
+	Any(OVal&& v) : ti(nullptr) {
+		valMoveConstructor(std::move(v));
+	}
+
+	Any<Val, Errors>& operator=(const Any<Val, Errors>& v) {
+		if(this == &v)
+			return *this;
+
+		if(v.ti == nullptr)
+			clear();
+		else {
+			if(ti == nullptr)
+				v.callCopyConstructor(storage);
+			else if(ti == v.ti)
+				v.callCopyAssign(storage);
+			else {
+				destructor();
+				v.callCopyConstructor(storage);
+			}
+
+			ti = v.ti;
+		}
+
+		return *this;
+	}
+
+	template <class OVal, class OErrors>
+	Any<Val, Errors>& operator=(const Any<OVal, OErrors>& v) {
+		if(v.ti == nullptr)
+			clear();
+		else {
+			if(ti == nullptr)
+				v.callCopyConstructor(storage);
+			else if(ti == v.ti)
+				v.callCopyAssign(storage);
+			else {
+				destructor();
+				v.callCopyConstructor(storage);
+			}
+
+			ti = v.ti;
+		}
+
+		return *this;
+	}
+
+	Any<Val, Errors>& operator=(Any<Val, Errors>&& v) noexcept {
+		if(this == &v)
+			return *this;
+
+		if(v.ti == nullptr)
+			clear();
+		else {
+			if(ti == nullptr)
+				v.callMoveConstructor(storage);
+			else if(ti == v.ti)
+				v.callMoveAssign(storage);
+			else {
+				destructor();
+				v.callMoveConstructor(storage);
+			}
+
+			ti = v.ti;
+		}
+
+		return *this;
+	}
+
+	template <class OVal, class OErrors>
+	Any<Val, Errors>& operator=(Any<OVal, OErrors>&& v) noexcept {
+		if(v.ti == nullptr)
+			clear();
+		else {
+			if(ti == nullptr)
+				v.callMoveConstructor(storage);
+			else if(ti == v.ti)
+				v.callMoveAssign(storage);
+			else {
+				destructor();
+				v.callMoveConstructor(storage);
+			}
+
+			ti = v.ti;
+		}
+
+		return *this;
+	}
+
+	template <class OVal>
+	Any<Val, Errors>& operator=(const OVal& v) {
+		if(ti == nullptr)
+			valCopyConstructor(v);
+		else if(*ti->ti == typeid(OVal)) {
+			static_cast<OVal*>(storage)->operator=(v);
+		}
+		else {
+			destructor();
+			valCopyConstructor(v);
+		}
+
+		return *this;
+	}
+
+	template <class OVal,
+	class = typename EnableIfNotUniversalRef<OVal>::type::type>
+	Any<Val, Errors>& operator=(OVal&& v) noexcept {
+		if(ti == nullptr)
+			valMoveConstructor(v);
+		else if(*ti->ti == typeid(OVal)) {
+			static_cast<OVal*>(storage)->operator=(v);
+		}
+		else {
+			destructor();
+			valMoveConstructor(v);
+		}
+
+		return *this;
+	}
+
+	bool empty() const noexcept {
+		return ti == nullptr;
+	}
+
+	const std::type_info& type() const {
+		return (ti == nullptr) ? typeid(void) : *ti->ti;
+	}
+
+	void clear() {
+		if(ti == nullptr)
+			return;
+		destructor();
+	}
+
+	~Any() {
+		clear();
+	}
+};
+
+#else
+
 template <class Val, class Errors>
 class Any {
 	char storage[MaxSize<typename Insert<Errors, Val>::type>::value];
@@ -363,6 +684,8 @@ public:
 		clear();
 	}
 };
+
+#endif
 
 template <class Val, class OVal, class OErrors>
 Val unsafe_cast(Any<OVal, OErrors>& v) {
