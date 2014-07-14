@@ -96,7 +96,7 @@ public:
 };
 
 template <class FIter, class LIter, class Init, class F>
-Init fold_rec(FIter first, LIter last, Init init, F f) {
+Init fold_rec(FIter first, LIter last, Init&& init, F f) {
 	using Ret = error_handling::detail::IsRet<Init>;
 	using Val = typename Ret::val_type::type;
 
@@ -104,7 +104,7 @@ Init fold_rec(FIter first, LIter last, Init init, F f) {
 	using OVal = typename ORet::val_type::type;
 
 	struct H {
-		static Init call(FIter first, LIter last, Init init, F f) {
+		static Init call(FIter first, LIter last, Init&& init, F f) {
 			Init res = error_handling::detail::repack<Val>(std::move(init), [&](Val&& val) -> Init {
 				if(first == last)
 					return val;
@@ -122,7 +122,7 @@ Init fold_rec(FIter first, LIter last, Init init, F f) {
 }
 
 template <class FIter, class LIter, class Init, class F>
-Init fold_iter(FIter first, LIter last, Init init, F f) {
+Init fold_iter(FIter first, LIter last, Init&& init, F f) {
 	using Ret = error_handling::detail::IsRet<Init>;
 	using Val = typename Ret::val_type::type;
 

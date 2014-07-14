@@ -181,6 +181,24 @@ class Any {
 public:
 	Any() : ti(nullptr) {}
 
+	Any(const Any<Val, Errors>& v) : ti(nullptr) {
+		if(v.ti == nullptr)
+			clear();
+		else {
+			v.callCopyConstructor(storage);
+			ti = v.ti;
+		}
+	}
+
+	Any(Any<Val, Errors>&& v) : ti(nullptr) {
+		if(v.ti == nullptr)
+			clear();
+		else {
+			v.callMoveConstructor(storage);
+			ti = v.ti;
+		}
+	}
+
 	template <class OVal, class OErrors>
 	Any(const Any<OVal, OErrors>& v) : ti(nullptr) {
 		if(v.ti == nullptr)
