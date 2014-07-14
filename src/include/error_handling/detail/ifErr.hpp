@@ -87,7 +87,7 @@ class IfErrsImpl {
 			static
 			RetType
 			call(Ret<Val, Errors>&& v, UnOps ops) {
-				return IfErrsImpl<RetType>::call<CErrors, Val, Errors>(std::move(v), ops, IfErrsSeal());
+				return IfErrsImpl<RetType>::callHandlers<CErrors, Val, Errors>(std::move(v), ops);
 			}
 		};
 
@@ -98,7 +98,7 @@ class IfErrsImpl {
 			static
 			RetType
 			call(Ret<Val, Errors>&& v, UnOps ops) {
-				return IfErrsImpl<RetType>::call<CErrors, Val, Errors>(std::move(v), popFront(ops), IfErrsSeal());
+				return IfErrsImpl<RetType>::callHandlers<CErrors, Val, Errors>(std::move(v), popFront(ops));
 			}
 		};
 	public:
@@ -147,15 +147,29 @@ class IfErrsImpl {
 	class Constraints {
 		static_assert(IsDifferenceEmpty<CErrors, Errors>::value, "`CErrors` isn't contains in `Errors`: Check if_err template's argument.");
 	};
+
+	template <class CErrors,
+	class Val, class Errors,
+	class UnOps>
+	static
+	RetType callHandlers(Ret<Val, Errors>&& v, UnOps ops) {
+		Constraints<CErrors, UnOps, Val, Errors>();
+
+		return WithUnOps<UnOps>::template call<CErrors>(std::move(v), ops);
+	}
 public:
 	template <class CErrors,
 	class Val, class Errors,
 	class UnOps>
 	static
 	RetType call(Ret<Val, Errors>&& v, UnOps ops, const IfErrsSeal) {
-		Constraints<CErrors, UnOps, Val, Errors>();
+		if(unsafe_access_to_internal_data(v).type() == typeid(Val)) {
+			RetType ret;
+			AssignHelper::assign(ret, std::move(v), AssignHelperSeal());
+		    return ret;
+		}
 
-		return WithUnOps<UnOps>::template call<CErrors>(std::move(v), ops);
+		return IfErrsImpl<RetType>::callHandlers<CErrors, Val, Errors>(std::move(v), ops);
 	}
 };
 
