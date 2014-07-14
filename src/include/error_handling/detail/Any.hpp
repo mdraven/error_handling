@@ -260,8 +260,7 @@ class Any {
 	};
 
 	void destructor() {
-		DoAction<MoveConstructorAction>::template call<Val, Errors>(storage, *ti->ti, nullptr);
-//		ti->destr(storage);
+		DoAction<DestructorAction>::template call<Val, Errors>(storage, *ti->ti, nullptr);
 		ti = nullptr;
 	}
 public:

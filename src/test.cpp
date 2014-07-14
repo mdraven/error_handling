@@ -137,7 +137,7 @@ Init fold_iter(FIter first, LIter last, Init&& init, F f) {
 		});
 	}
 
-	return init;
+	return std::forward<Init>(init);
 }
 
 template <class FIter, class LIter, class Init, class F>
@@ -247,13 +247,14 @@ int main() {
 //    Ret<std::string, Set<>> ret36;
 //    if_err<>(std::move(ret36), [](ErrA&&) { return; }); // ERR
 
+#endif
     // тест на множественный вызов if_err для одного Ret<> и для одной ошибки.
 #if 0
     Ret<std::string, Set<ErrA>> ret37{ErrA()};
-    if_err<Set<ErrA>>(std::move(ret37), FSet([](ErrA&&) { return; }));
-    if_err<Set<ErrA>>(std::move(ret37), FSet([](ErrA&&) { return; })); // runtime ERR
-    if_err<Set<ErrA>>(std::move(ret37), FSet([](ErrA&&) { return; })); // runtime ERR
-    if_err<Set<ErrA>>(std::move(ret37), FSet([](ErrA&&) { return; })); // runtime ERR
+    if_err<ErrA>(std::move(ret37), [](ErrA&&) { return; });
+    if_err<ErrA>(std::move(ret37), [](ErrA&&) { return; }); // runtime ERR
+    if_err<ErrA>(std::move(ret37), [](ErrA&&) { return; }); // runtime ERR
+    if_err<ErrA>(std::move(ret37), [](ErrA&&) { return; }); // runtime ERR
 #endif
 
 #if 0
@@ -262,7 +263,7 @@ int main() {
     }
 #endif
 
-#if 1
+#if 0
     {
     	Ret<std::string, Set<ErrA>> ret1{ErrA()};
     	Ret<std::string, Set<ErrB>> ret2 = if_err<ErrA>(std::move(ret1),
@@ -281,7 +282,7 @@ int main() {
     }
 #endif
 
-#if 1
+#if 0
     {
        	Ret<std::string, Set<ErrA>> ret1{std::string()};
        	Ret<int, Set<ErrA>> ret2 = repack<int>(std::move(ret1), [](std::string&& s) {});
@@ -296,7 +297,6 @@ int main() {
     }
 #endif
 
-#endif
 #if 0
     {
     	std::vector<int> num{1, 2, 3, 13, 15};
@@ -328,7 +328,7 @@ int main() {
 #if 1
     {
     	std::vector<int> num{1, 2, 3, 13, 15};
-    	for(size_t i = 0; i < 1000000; ++i)
+    	for(size_t i = 0; i < 1/*000000*/; ++i)
     		num.push_back(i);
 
     	VectorIter<int> it(num.begin(), num.end(), num.end());
