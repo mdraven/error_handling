@@ -107,7 +107,7 @@ Init fold_rec(FIter first, LIter last, Init&& init, F f) {
 		static Init call(FIter first, LIter last, Init&& init, F f) {
 			Init res = error_handling::detail::repack<Val>(std::move(init), [&](Val&& val) -> Init {
 				if(first == last)
-					return val;
+					return std::move(val);
 
 				auto ret(*(first++));
 				Init res = error_handling::detail::repack<Val>(std::move(ret),
