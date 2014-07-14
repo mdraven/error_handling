@@ -223,8 +223,8 @@ public:
 	~Ret() {
 #ifdef ERROR_HANDLING_CHECK_EMPTY_RET
 		if(!any.empty()) {
-			ERROR_HANDLING_CRITICAL_ERROR("Unchecked Ret.");
-//			ERROR_HANDLING_DEBUG_MSG((Ret<Val, Errors>), "Unchecked Ret");
+//			ERROR_HANDLING_CRITICAL_ERROR("Unchecked Ret.");
+			ERROR_HANDLING_DEBUG_MSG((Ret<Val, Errors>), "Unchecked Ret");
 		}
 #endif
 	}
