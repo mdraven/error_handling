@@ -127,7 +127,7 @@ class DoAction {
 	class CheckErrors<Set<>, Fake> {
 	public:
 		static
-		void call(const void* from, const std::type_info& from_ti, const void* to) {
+		void call(const void*, const std::type_info&, const void*) {
 			return;
 		}
 	};
@@ -185,7 +185,7 @@ class Any {
 		template <class T>
 		static
 		typename std::enable_if<!std::is_copy_constructible<T>::value>::type
-		call(const void* from, void* to) {
+		call(const void*, void*) {
 			ERROR_HANDLING_CRITICAL_ERROR("Is not copy constructible.");
 		}
 	};
@@ -206,7 +206,7 @@ class Any {
 		template <class T>
 		static
 		typename std::enable_if<!std::is_move_constructible<T>::value>::type
-		call(void* from, void* to) {
+		call(void*, void*) {
 			ERROR_HANDLING_CRITICAL_ERROR("Is not move constructible.");
 		}
 	};
