@@ -20,19 +20,19 @@ struct Base {};
 struct Derived : public Base {};
 
 struct Ops {
-	error_handling::Ret<std::string, error_handling::Set<>>
+	error_handling::R<std::string>
 	operator()(ErrA&&) {
 		std::cout << "ErrA&&" << std::endl;
 		return std::string();
 	}
 
-	error_handling::Ret<std::string, error_handling::Set<>>
+	error_handling::R<std::string>
 	operator()(ErrB&&) {
 		std::cout << "ErrB&&" << std::endl;
 		return std::string();
 	}
 
-	error_handling::Ret<std::string, error_handling::Set<>>
+	error_handling::R<std::string>
 	operator()(ErrC&&) {
 		std::cout << "ErrC&&" << std::endl;
 		return std::string();
@@ -75,7 +75,7 @@ public:
 		return f != l;
 	}
 
-	error_handling::Ret<T, error_handling::Set<EndSeq>> operator*() {
+	error_handling::R<T, EndSeq> operator*() {
 		if(f == endvec)
 			return EndSeq();
 		return *f;
@@ -152,73 +152,71 @@ Init fold_iter2(FIter first, LIter last, Init&& init, F f) {
 }
 
 int main() {
-	using error_handling::Ret;
+	using error_handling::R;
 	using error_handling::if_err;
 	using error_handling::repack;
 	using error_handling::T;
 	using error_handling::N;
 	using error_handling::V;
-	using error_handling::Set;
-	using error_handling::FSet;
 
 #if 0
 	std::string str("hello");
-	Ret<std::string, Set<>> ret(std::move(str));
+	R<std::string> ret(std::move(str));
 
 	ErrA erra;
 	ErrB errb;
 
-	Ret<std::string, Set<ErrA>> ret2(erra);
+	R<std::string, ErrA> ret2(erra);
 //	Ret<std::string, ErrA> ret3(errb); // ERR
 
-	Ret<std::string, Set<ErrA>> ret4(std::move(erra));
+	R<std::string, ErrA> ret4(std::move(erra));
 //	Ret<std::string, ErrA> ret5(std::move(errb)); // ERR
-	Ret<std::string, Set<ErrA, ErrB>> ret6{Ret<std::string, Set<ErrA>>(std::string())};
+	R<std::string, ErrA, ErrB> ret6{R<std::string, ErrA>(std::string())};
 //	Ret<std::string, ErrA, ErrB> ret7{Ret<std::string, ErrA, ErrC>()}; // ERR
 
-	ret6 = Ret<std::string, Set<ErrB>>(std::string());
+	ret6 = R<std::string, ErrB>(std::string());
 //	ret6 = Ret<std::string, Set<ErrC>>(); // ERR
 //	ret6 = Ret<std::string, ErrC>(); // ERR
 
 //	Ret<N> ret8{Ret<std::string>()}; // ERR
-	Ret<T, Set<>> ret9{Ret<std::string, Set<>>()};
+	R<T> ret9{R<std::string>()};
 
-	Ret<Base, Set<ErrA>> ret10{Ret<Derived, Set<ErrA>>(Derived())};
+	R<Base, ErrA> ret10{R<Derived, ErrA>(Derived())};
 //	Ret<Derived, ErrA> ret11{Ret<Base, ErrA>()}; // ERR
 
-	ret10 = Ret<Derived, Set<ErrA>>(Derived());
+	ret10 = R<Derived, ErrA>(Derived());
 //	Ret<Derived, ErrA> ret12; ret12 = Ret<Base, ErrA>();  //ERR
 
-	Ret<std::string, Set<ErrA, ErrB>> ret13{std::string("hello")};
-	Ret<std::string, Set<ErrA>> ret14 = if_err<ErrB>(std::move(ret13), [](ErrB&&) { return; });
+	R<std::string, ErrA, ErrB> ret13{std::string("hello")};
+	R<std::string, ErrA> ret14 = if_err<ErrB>(std::move(ret13), [](ErrB&&) { return; });
 //	Ret<std::string, ErrA> ret15 = if_err<Set<ErrB>>(std::move(ret14), FSet([](){ return; })); // ERR
-	Ret<std::string, Set<>> ret16 = if_err<ErrA>(std::move(ret14), [](ErrA&&) { return; });
+	R<std::string> ret16 = if_err<ErrA>(std::move(ret14), [](ErrA&&) { return; });
 
 	std::cout << ret16.data() << std::endl;
 
-	Ret<std::string, Set<int>> ret17{int(666)};
-	Ret<std::string, Set<>> ret18 = if_err<int>(std::move(ret17), [](int&& i) { std::cout << i << std::endl; return; });
+	R<std::string, int> ret17{int(666)};
+	R<std::string> ret18 = if_err<int>(std::move(ret17), [](int&& i) { std::cout << i << std::endl; return; });
 
-	Ret<std::string, Set<ErrA, ErrB>> ret19{std::string("hello")}; // N14error_handling6detail3RetIISs4ErrA4ErrBEEE
-	if_err<ErrB>(std::move(ret19), [](ErrB&&) -> Ret<std::string, Set<ErrA>> { return std::string(); }); // N14error_handling6detail3RetIISs4ErrAEEE
+	R<std::string, ErrA, ErrB> ret19{std::string("hello")}; // N14error_handling6detail3RetIISs4ErrA4ErrBEEE
+	if_err<ErrB>(std::move(ret19), [](ErrB&&) -> R<std::string, ErrA> { return std::string(); }); // N14error_handling6detail3RetIISs4ErrAEEE
 
-	Ret<std::string, Set<ErrA, ErrB>> ret20{ErrB()};
-	if_err<ErrB>(std::move(ret20), [](ErrB&&) -> Ret<std::string, Set<ErrA>> { std::cout << "err_b" << std::endl; return std::string(); });
+	R<std::string, ErrA, ErrB> ret20{ErrB()};
+	if_err<ErrB>(std::move(ret20), [](ErrB&&) -> R<std::string, ErrA> { std::cout << "err_b" << std::endl; return std::string(); });
 
 	{
-		Ret<std::string, Set<ErrA, ErrB, ErrC>> ret21{ErrB()};
+		R<std::string, ErrA, ErrB, ErrC> ret21{ErrB()};
 		if_err<ErrA, ErrB, ErrC>(std::move(ret21), Ops());
 	}
 
 	{
-		Ret<std::string, Set<ErrA, ErrB, ErrC>> ret21{ErrB()};
-		Ret<std::string, Set<>> ret22 = if_err<ErrA, ErrB, ErrC>(std::move(ret21), Ops());
+		R<std::string, ErrA, ErrB, ErrC> ret21{ErrB()};
+		R<std::string> ret22 = if_err<ErrA, ErrB, ErrC>(std::move(ret21), Ops());
 	}
 
-	Ret<std::string, Set<ErrA, ErrB, ErrC>> ret22{ErrB()};
+	R<std::string, ErrA, ErrB, ErrC> ret22{ErrB()};
 //	Ret<std::string, Set<ErrC>> ret23 = if_err<Set<ErrA>>(std::move(ret22), boost::fusion::make_list([](ErrA&&) { return; })); // ERR
 
-	Ret<std::string, Set<ErrA, ErrB, ErrC>> ret24{ErrB()};
+	R<std::string, ErrA, ErrB, ErrC> ret24{ErrB()};
 	if_err<ErrA, ErrB, ErrC>(std::move(ret24), [](ErrB&&) {return;},
 			[](ErrC&&) {return;}, [](ErrA&&) {return;});
 
@@ -226,24 +224,24 @@ int main() {
 //	if_err<Set<ErrA, ErrB, ErrC>>(std::move(ret25), FSet([](ErrB&&) {return;},
 //			[](ErrC&&) {return;})); // ERR
 
-	std::string ret26{(std::string)Ret<std::string, Set<>>{std::string("hello")}};
+	std::string ret26{(std::string)R<std::string>{std::string("hello")}};
 
 	{
-		Ret<std::string, Set<ErrA>> ret27{std::string("hello")};
-		Ret<std::string, Set<>> ret28{(std::string)if_err<ErrA>(std::move(ret27), [](ErrA&&) -> Ret<std::string, Set<>> { return std::string("bye"); })};
-		Ret<std::string, Set<ErrA>> ret29{std::string("hello")};
-		Ret<std::string, Set<>> ret30{(std::string)if_err<ErrA>(std::move(ret29), [](ErrA&&) -> std::string { return "bye"; })};
-		Ret<std::string, Set<ErrA>> ret31{std::string("hello")};
+		R<std::string, ErrA> ret27{std::string("hello")};
+		R<std::string> ret28{(std::string)if_err<ErrA>(std::move(ret27), [](ErrA&&) -> R<std::string> { return std::string("bye"); })};
+		R<std::string, ErrA> ret29{std::string("hello")};
+		R<std::string> ret30{(std::string)if_err<ErrA>(std::move(ret29), [](ErrA&&) -> std::string { return "bye"; })};
+		R<std::string, ErrA> ret31{std::string("hello")};
 		std::string ret32{(std::string)if_err<ErrA>(std::move(ret31), [](ErrA&&) -> std::string { return "bye"; })};
-		Ret<std::string, Set<ErrA>> ret33{std::string("hello")};
+		R<std::string, ErrA> ret33{std::string("hello")};
 		std::string ret34{(std::string)if_err<ErrA>(std::move(ret33), [](ErrA&&) { return "bye"; })};
 	}
 
-    Ret<FromString, Set<ErrA>> ret32{ErrA()};
+    R<FromString, ErrA> ret32{ErrA()};
     FromString ret33{(FromString)if_err<ErrA>(std::move(ret32), [](ErrA&&) { return FromString(std::string("bye")); })};
 //    FromString ret34{(FromString)if_err<Set<ErrA>>(std::move(ret32), boost::fusion::make_list([](ErrA&&) { return std::string("bye"); }))}; // ERR
 
-    Ret<std::unique_ptr<int>, Set<ErrA>> ret35{std::unique_ptr<int>(new int)};
+    R<std::unique_ptr<int>, ErrA> ret35{std::unique_ptr<int>(new int)};
 
 //    Ret<std::string, Set<>> ret36;
 //    if_err<>(std::move(ret36), [](ErrA&&) { return; }); // ERR
@@ -333,9 +331,9 @@ int main() {
 
     	VectorIter<int> it(num.begin(), num.end(), num.end());
 
-    	Ret<unsigned long, Set<EndSeq>> ret2 = fold_iter(it, LastIter(), Ret<unsigned long, Set<EndSeq>>(0UL),
+    	R<unsigned long, EndSeq> ret2 = fold_iter(it, LastIter(), R<unsigned long, EndSeq>(0UL),
     			[](unsigned long&& num1, unsigned long&& num2) { return num1 + num2; });
-    	Ret<V, Set<EndSeq>> res2 = repack<V>(std::move(ret2),
+    	R<V, EndSeq> res2 = repack<V>(std::move(ret2),
     			[](unsigned long&& num) { std::cout << num << std::endl; return; });
     	if_err<EndSeq>(std::move(res2), [](EndSeq&&) { std::cout << "EndSeq" << std::endl; });
 
