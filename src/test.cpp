@@ -293,7 +293,7 @@ int main() {
     }
 #endif
 
-#if 1
+#if 0
     {
 //    	R<std::string> v1 = R<N>(); // ERR
 //    	R<std::string, ErrA> v2 = R<N>(); // ERR
@@ -330,9 +330,9 @@ int main() {
 //    	VectorIter<int> it(num.begin(), num.end() + 15, num.end());
     	VectorIter<int> it(num.begin(), num.end(), num.end());
 
-//    	Ret<std::string, Set<EndSeq>> ret1 = fold_rec(it, LastIter(), Ret<std::string, Set<EndSeq>>(std::string("")),
+//    	R<std::string, EndSeq> ret1 = fold_rec(it, LastIter(), R<std::string, EndSeq>(std::string("")),
 //    			[](std::string&& str, int&& num) { return str + std::to_string(num); });
-//    	Ret<V, Set<EndSeq>> res1 = repack<V>(std::move(ret1),
+//    	R<V, EndSeq> res1 = repack<V>(std::move(ret1),
 //    			[](std::string&& str) { std::cout << str.size() << std::endl; return; });
 //    	if_err<EndSeq>(std::move(res1), [](EndSeq&&) { std::cout << "EndSeq" << std::endl; });
 
