@@ -72,10 +72,12 @@ class CallHandler {
 		using type = std::enable_if<is_ret_error>;
 	};
 
-	template <class Arg, class UnOp>
-	struct ConstraintsForReturnsRet {
-		static_assert(std::is_convertible<typename std::result_of<UnOp(Arg&&)>::type,
-				RetType>::value, "Cannot convert from `UnOp(Arg&&) to `RetType`: Maybe your error handler returns too common type?");
+	struct Constraints {
+		template <class Arg, class UnOp>
+		static void returnsRet(const UnOp, const Arg) {
+			static_assert(std::is_convertible<typename std::result_of<UnOp(Arg&&)>::type,
+					RetType>::value, "Cannot convert from `UnOp(Arg&&) to `RetType`: Maybe your error handler returns too common type?");
+		}
 	};
 
 	template <int>
@@ -91,7 +93,7 @@ public:
 	template <class Val, class Err, class UnOp,
 	class = typename EnableForReturnsRet<Err&&, UnOp>::type::type>
 	static RetType call(UnOp op, Err&& err, const CallHandlerSeal, Fake<0>* = nullptr) {
-		ConstraintsForReturnsRet<Err, UnOp>();
+		Constraints::returnsRet(op, err);
 		return op(std::move(err));
 	}
 

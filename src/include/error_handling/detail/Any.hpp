@@ -176,8 +176,17 @@ class Any {
 
 	struct CopyConstructorAction {
 		template <class T>
-		static void call(const void* from, void* to) {
+		static
+		typename std::enable_if<std::is_copy_constructible<T>::value>::type
+		call(const void* from, void* to) {
 			new(to) T(*static_cast<const T*>(from));
+		}
+
+		template <class T>
+		static
+		typename std::enable_if<!std::is_copy_constructible<T>::value>::type
+		call(const void* from, void* to) {
+			ERROR_HANDLING_CRITICAL_ERROR("Is not copy constructible.");
 		}
 	};
 

@@ -31,6 +31,35 @@ class Ret final {
 	template <class OVal, class OErrors>
 	friend const Any<OVal, OErrors>& unsafe_access_to_internal_data(const Ret<OVal, OErrors>& v) noexcept;
 
+	struct Constraints {
+		template <class Err>
+		static void err(const Err) {
+			static const bool is_known_error = IsContains<Errors, Err>::value;
+			static_assert(is_known_error, "Unknown error type");
+		}
+
+		template <class OVal, class OErrors>
+		static void retValErr(const Ret<OVal, OErrors>) {
+			static const bool is_convertible_val = std::is_convertible<OVal, Val>::value;
+			static_assert(is_convertible_val, "Cannot convert `Val` type.");
+
+			static const bool is_more_weak = IsDifferenceEmpty<OErrors, Errors>::value;
+			static_assert(is_more_weak, "Assign to more strong type.");
+		}
+
+		template <class OVal>
+		static void retVal(const Ret<OVal, Set<>>) {
+			static const bool is_convertible_val = std::is_convertible<OVal, Val>::value;
+			static_assert(is_convertible_val, "Cannot convert `Val` type.");
+		}
+
+		template <class OErrors>
+		static void retNErr(const Ret<N, OErrors>) {
+			static const bool is_more_weak = IsDifferenceEmpty<OErrors, Errors>::value;
+			static_assert(is_more_weak, "Assign to more strong type.");
+		}
+	};
+
 public:
 	Ret() noexcept(noexcept(Any<Val, Errors>())) :
 		any() {}
@@ -44,8 +73,7 @@ public:
 	template <class OErr>
 	Ret(const OErr& v) noexcept(noexcept(Any<Val, Errors>(v))) :
 		any(v) {
-		static const bool is_known_error = IsContains<Errors, OErr>::value;
-		static_assert(is_known_error, "Unknown error type");
+		Constraints::err(v);
 
 		ERROR_HANDLING_DEBUG_MSG((Ret<Val, Errors>), "copy constructor Err");
 	}
@@ -54,8 +82,7 @@ public:
 	class = typename EnableIfNotUniversalRef<OErr>::type::type>
 	Ret(OErr&& v) noexcept(noexcept(Any<Val, Errors>(std::move(v)))) :
 		any(std::move(v)) {
-		static const bool is_known_error = IsContains<Errors, OErr>::value;
-		static_assert(is_known_error, "Unknown error type");
+		Constraints::err(v);
 
 		ERROR_HANDLING_DEBUG_MSG((Ret<Val, Errors>), "move constructor Err");
 	}
@@ -63,11 +90,7 @@ public:
 	template <class OVal, class OErrors>
 	Ret(const Ret<OVal, OErrors>& v) noexcept(noexcept(Any<Val, Errors>(unsafe_access_to_internal_data(v)))) :
 		any(unsafe_access_to_internal_data(v)) {
-		static const bool is_convertible_val = std::is_convertible<OVal, Val>::value;
-		static_assert(is_convertible_val, "Cannot convert `Val` type.");
-
-		static const bool is_more_weak = IsDifferenceEmpty<OErrors, Errors>::value;
-		static_assert(is_more_weak, "Assign to more strong type.");
+		Constraints::retValErr(v);
 
 		ERROR_HANDLING_DEBUG_MSG((Ret<Val, Errors>), "copy constructor Ret");
 
@@ -81,8 +104,7 @@ public:
 	template <class OVal>
 	Ret(const Ret<OVal, Set<>>& v) noexcept(noexcept(Any<Val, Errors>(unsafe_access_to_internal_data(v)))) :
 		any(unsafe_access_to_internal_data(v)) {
-		static const bool is_convertible_val = std::is_convertible<OVal, Val>::value;
-		static_assert(is_convertible_val, "Cannot convert `Val` type.");
+		Constraints::retVal(v);
 
 		ERROR_HANDLING_DEBUG_MSG((Ret<Val, Errors>), "copy constructor Ret");
 	}
@@ -90,11 +112,7 @@ public:
 	template <class OVal, class OErrors>
 	Ret(Ret<OVal, OErrors>&& v) noexcept(noexcept(Any<Val, Errors>(std::move(unsafe_access_to_internal_data(v))))) :
 			any() {
-		static const bool is_convertible_val = std::is_convertible<OVal, Val>::value;
-		static_assert(is_convertible_val, "Cannot convert `Val` type.");
-
-		static const bool is_more_weak = IsDifferenceEmpty<OErrors, Errors>::value;
-		static_assert(is_more_weak, "Assign to more strong type.");
+		Constraints::retValErr(v);
 
 		ERROR_HANDLING_DEBUG_MSG((Ret<Val, Errors>), "move constructor Ret");
 
@@ -109,8 +127,7 @@ public:
 	template <class OErrors>
 	Ret(Ret<N, OErrors>&& v) noexcept(noexcept(Any<Val, Errors>(std::move(unsafe_access_to_internal_data(v))))) :
 			any() {
-		static const bool is_more_weak = IsDifferenceEmpty<OErrors, Errors>::value;
-		static_assert(is_more_weak, "Assign to more strong type.");
+		Constraints::retNErr(v);
 
 		ERROR_HANDLING_DEBUG_MSG((Ret<Val, Errors>), "move constructor Ret");
 
@@ -125,8 +142,7 @@ public:
 	template <class OVal>
 	Ret(Ret<OVal, Set<>>&& v) noexcept(noexcept(Any<Val, Errors>(std::move(unsafe_access_to_internal_data(v))))) :
 			any(std::move(unsafe_access_to_internal_data(v))) {
-		static const bool is_convertible_val = std::is_convertible<OVal, Val>::value;
-		static_assert(is_convertible_val, "Cannot convert `Val` type.");
+		Constraints::retVal(v);
 
 		ERROR_HANDLING_DEBUG_MSG((Ret<Val, Errors>), "move constructor Ret");
 	}
@@ -145,8 +161,7 @@ public:
 
 	template <class OErr>
 	Ret<Val, Errors>& operator=(const OErr& v) noexcept(noexcept(any = v)) {
-		static const bool is_known_error = IsContains<Errors, OErr>::value;
-		static_assert(is_known_error, "Unknown error type");
+		Constraints::err(v);
 
 		this->any = v;
 		return *this;
@@ -155,8 +170,7 @@ public:
 	template <class OErr,
 	class = typename EnableIfNotUniversalRef<OErr>::type::type>
 	Ret<Val, Errors>& operator=(OErr&& v) noexcept(noexcept(any = std::move(v))) {
-		static const bool is_known_error = IsContains<Errors, OErr>::value;
-		static_assert(is_known_error, "Unknown error type");
+		Constraints::err(v);
 
 		ERROR_HANDLING_DEBUG_MSG((Ret<Val, Errors>), "move assign Err");
 
@@ -166,11 +180,7 @@ public:
 
 	template <class OVal, class OErrors>
 	Ret<Val, Errors>& operator=(const Ret<OVal, OErrors>& v) noexcept(noexcept(any = unsafe_access_to_internal_data(v))) {
-		static const bool is_convertible_val = std::is_convertible<OVal, Val>::value;
-		static_assert(is_convertible_val, "Cannot convert `Val` type.");
-
-		static const bool is_more_weak = IsDifferenceEmpty<OErrors, Errors>::value;
-		static_assert(is_more_weak, "Assign to more strong type.");
+		Constraints::retValErr(v);
 
 		ERROR_HANDLING_DEBUG_MSG((Ret<Val, Errors>), "copy assign Ret");
 
@@ -187,8 +197,7 @@ public:
 
 	template <class OVal>
 	Ret<Val, Errors>& operator=(const Ret<OVal, Set<>>& v) noexcept(noexcept(any = unsafe_access_to_internal_data(v))) {
-		static const bool is_convertible_val = std::is_convertible<OVal, Val>::value;
-		static_assert(is_convertible_val, "Cannot convert `Val` type.");
+		Constraints::retVal(v);
 
 		ERROR_HANDLING_DEBUG_MSG((Ret<Val, Errors>), "copy assign Ret");
 
@@ -199,11 +208,7 @@ public:
 
 	template <class OVal, class OErrors>
 	Ret<Val, Errors>& operator=(Ret<OVal, OErrors>&& v) noexcept(noexcept(any = std::move(unsafe_access_to_internal_data(v)))) {
-		static const bool is_convertible_val = std::is_convertible<OVal, Val>::value;
-		static_assert(is_convertible_val, "Cannot convert `Val` type.");
-
-		static const bool is_more_weak = IsDifferenceEmpty<OErrors, Errors>::value;
-		static_assert(is_more_weak, "Assign to more strong type.");
+		Constraints::retValErr(v);
 
 		ERROR_HANDLING_DEBUG_MSG((Ret<Val, Errors>), "move assign Ret");
 
@@ -220,8 +225,7 @@ public:
 
 	template <class OErrors>
 	Ret<Val, Errors>& operator=(Ret<N, OErrors>&& v) noexcept(noexcept(any = std::move(unsafe_access_to_internal_data(v)))) {
-		static const bool is_more_weak = IsDifferenceEmpty<OErrors, Errors>::value;
-		static_assert(is_more_weak, "Assign to more strong type.");
+		Constraints::retNErr(v);
 
 		ERROR_HANDLING_DEBUG_MSG((Ret<Val, Errors>), "move assign Ret");
 
@@ -238,8 +242,7 @@ public:
 
 	template <class OVal>
 	Ret<Val, Errors>& operator=(Ret<OVal, Set<>>&& v) noexcept(noexcept(any = std::move(unsafe_access_to_internal_data(v)))) {
-		static const bool is_convertible_val = std::is_convertible<OVal, Val>::value;
-		static_assert(is_convertible_val, "Cannot convert `Val` type.");
+		Constraints::retVal(v);
 
 		ERROR_HANDLING_DEBUG_MSG((Ret<Val, Errors>), "move assign Ret");
 
