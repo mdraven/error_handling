@@ -19,22 +19,22 @@
 
 namespace error_handling {
 
-using error_handling::detail::Ret;
-
 using error_handling::detail::T;
 using error_handling::detail::N;
 using error_handling::detail::V;
 
-using error_handling::detail::Set;
-using error_handling::detail::FSet;
-
 using error_handling::detail::repack;
+
+template <class Val, class... Errors>
+using R = error_handling::detail::Ret<Val, error_handling::detail::Set<Errors...>>;
 
 template <class... CErrors, class Val, class... Errors,
 class... UnOps>
-auto if_err(Ret<Val, Set<Errors...>>&& v, UnOps... ops)
-->decltype(error_handling::detail::ifErr<Set<CErrors...>>(std::move(v), FSet(std::forward<UnOps>(ops)...))) {
-	return error_handling::detail::ifErr<Set<CErrors...>>(std::move(v), FSet(std::forward<UnOps>(ops)...));
+auto if_err(R<Val, Errors...>&& v, UnOps... ops)
+->decltype(error_handling::detail::ifErr<error_handling::detail::Set<CErrors...>>(std::move(v),
+		error_handling::detail::FSet(std::forward<UnOps>(ops)...))) {
+	return error_handling::detail::ifErr<error_handling::detail::Set<CErrors...>>(std::move(v),
+			error_handling::detail::FSet(std::forward<UnOps>(ops)...));
 }
 
 } /* namespace error_handling */
