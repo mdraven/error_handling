@@ -163,6 +163,12 @@ old_err_codes_to_new(int err_code) {
 	return ErrUnk();
 }
 
+const error_handling::ErOp<ErrA, ErrB, ErrC, ErrUnk> ErrX;
+
+decltype(error_handling::R<int>() + ErrX) func() {
+	return 10;
+}
+
 int main() {
 	using error_handling::R;
 	using error_handling::if_err;
@@ -365,6 +371,12 @@ int main() {
 //    	unsigned long res3 = fold_iter2(num.begin(), num.end(), 0UL,
 //    			[](unsigned long&& num1, unsigned long&& num2) { return num1 + num2; });
 //    	std::cout << res3 << std::endl;
+    }
+#endif
+
+#if 1
+    {
+    	R<int, ErrA, ErrB, ErrC, ErrUnk> ret = func();
     }
 #endif
 

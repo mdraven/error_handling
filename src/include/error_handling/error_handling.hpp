@@ -9,6 +9,7 @@
 #define ERROR_HANDLING_HPP_
 
 #include <error_handling/detail/Ret.hpp>
+#include <error_handling/detail/Ret/Ops.hpp>
 #include <error_handling/detail/ifErr.hpp>
 #include <error_handling/detail/repack.hpp>
 #include <error_handling/detail/Set/Set.hpp>
@@ -27,6 +28,12 @@ using error_handling::detail::repack;
 
 template <class Val, class... Errors>
 using R = error_handling::detail::Ret<Val, error_handling::detail::Set<Errors...>>;
+
+template <class... Errors>
+using ErOp = error_handling::detail::ErOp<error_handling::detail::Set<Errors...>>;
+
+template <class Val>
+using ValOp = error_handling::detail::ValOp<Val>;
 
 template <class... CErrors, class Val, class... Errors,
 class... UnOps>
