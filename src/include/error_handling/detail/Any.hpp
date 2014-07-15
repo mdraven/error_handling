@@ -16,8 +16,9 @@
 #if ERROR_HANDLING_ANY == 1
 #include <boost/any.hpp>
 #else
+#include <error_handling/detail/Type.hpp>
+
 #include <cassert>
-#include <typeinfo>
 #endif
 
 namespace error_handling {
@@ -107,19 +108,19 @@ class DoAction {
 		using TailErrors = typename Remove<Errors, Error>::type;
 	public:
 		static
-		void call(void* from, const std::type_info& from_ti, void* to) {
-			if(from_ti == typeid(Error))
+		void call(void* from, const Type& from_t, void* to) {
+			if(from_t == getType<Error>())
 				Action::template call<Error>(from, to);
 			else
-				CheckErrors<TailErrors, void>::call(from, from_ti, to);
+				CheckErrors<TailErrors, void>::call(from, from_t, to);
 		}
 
 		static
-		void call(const void* from, const std::type_info& from_ti, void* to) {
-			if(from_ti == typeid(Error))
+		void call(const void* from, const Type& from_t, void* to) {
+			if(from_t == getType<Error>())
 				Action::template call<Error>(from, to);
 			else
-				CheckErrors<TailErrors, void>::call(from, from_ti, to);
+				CheckErrors<TailErrors, void>::call(from, from_t, to);
 		}
 	};
 
@@ -127,27 +128,27 @@ class DoAction {
 	class CheckErrors<Set<>, Fake> {
 	public:
 		static
-		void call(const void*, const std::type_info&, const void*) {
+		void call(const void*, const Type&, const void*) {
 			return;
 		}
 	};
 public:
 	template <class Val, class Errors>
 	static
-	void call(void* from, const std::type_info& from_ti, void* to) {
-		if(from_ti == typeid(Val))
+	void call(void* from, const Type& from_t, void* to) {
+		if(from_t == getType<Val>())
 			Action::template call<Val>(from, to);
 		else
-			CheckErrors<Errors, void>::call(from, from_ti, to);
+			CheckErrors<Errors, void>::call(from, from_t, to);
 	}
 
 	template <class Val, class Errors>
 	static
-	void call(const void* from, const std::type_info& from_ti, void* to) {
-		if(from_ti == typeid(Val))
+	void call(const void* from, const Type& from_t, void* to) {
+		if(from_t == getType<Val>())
 			Action::template call<Val>(from, to);
 		else
-			CheckErrors<Errors, void>::call(from, from_ti, to);
+			CheckErrors<Errors, void>::call(from, from_t, to);
 	}
 };
 
@@ -157,7 +158,7 @@ class Any {
 	using Storage = typename std::aligned_storage<max_size>::type;
 	Storage storage;
 
-	const std::type_info* ti;
+	Type ti;
 
 	template <class RVal, class OVal, class OErrors>
 	friend RVal unsafe_cast(Any<OVal, OErrors>& v);
@@ -168,13 +169,13 @@ class Any {
 	template <class OVal>
 	void valCopyConstructor(const OVal& v) {
 		new(&storage) OVal(v);
-		ti = &typeid(OVal);
+		ti = getType<OVal>();
 	}
 
 	template <class OVal>
 	void valMoveConstructor(OVal&& v) {
 		new(&storage) OVal(std::move(v));
-		ti = &typeid(OVal);
+		ti = getType<OVal>();
 	}
 
 	struct CopyConstructorAction {
@@ -194,7 +195,7 @@ class Any {
 	};
 
 	void callCopyConstructor(void* to) const {
-		DoAction<CopyConstructorAction>::template call<Val, Errors>(&storage, *ti, to);
+		DoAction<CopyConstructorAction>::template call<Val, Errors>(&storage, ti, to);
 	}
 
 	class MoveConstructorAction {
@@ -215,7 +216,7 @@ class Any {
 	};
 
 	void callMoveConstructor(void* to) {
-		DoAction<MoveConstructorAction>::template call<Val, Errors>(&storage, *ti, to);
+		DoAction<MoveConstructorAction>::template call<Val, Errors>(&storage, ti, to);
 	}
 
 	struct CopyAssignAction {
@@ -226,7 +227,7 @@ class Any {
 	};
 
 	void callCopyAssign(void* to) const {
-		DoAction<CopyAssignAction>::template call<Val, Errors>(&storage, *ti, to);
+		DoAction<CopyAssignAction>::template call<Val, Errors>(&storage, ti, to);
 	}
 
 	struct MoveAssignAction {
@@ -237,7 +238,7 @@ class Any {
 	};
 
 	void callMoveAssign(void* to) {
-		DoAction<MoveAssignAction>::template call<Val, Errors>(&storage, *ti, to);
+		DoAction<MoveAssignAction>::template call<Val, Errors>(&storage, ti, to);
 	}
 
 	struct DestructorAction {
@@ -248,7 +249,7 @@ class Any {
 	};
 
 	void destructor() {
-		DoAction<DestructorAction>::template call<Val, Errors>(&storage, *ti, nullptr);
+		DoAction<DestructorAction>::template call<Val, Errors>(&storage, ti, nullptr);
 		ti = nullptr;
 	}
 
@@ -401,7 +402,7 @@ public:
 	Any<Val, Errors>& operator=(const OVal& v) {
 		if(ti == nullptr)
 			valCopyConstructor(v);
-		else if(*ti == typeid(OVal)) {
+		else if(ti == getType<OVal>()) {
 			static_cast<OVal*>(&storage)->operator=(v);
 		}
 		else {
@@ -417,7 +418,7 @@ public:
 	Any<Val, Errors>& operator=(OVal&& v) noexcept {
 		if(ti == nullptr)
 			valMoveConstructor(v);
-		else if(*ti == typeid(OVal)) {
+		else if(ti == getType<OVal>()) {
 			static_cast<OVal*>(&storage)->operator=(v);
 		}
 		else {
@@ -432,8 +433,8 @@ public:
 		return ti == nullptr;
 	}
 
-	const std::type_info& type() const {
-		return (ti == nullptr) ? typeid(void) : *ti;
+	Type type() const {
+		return (ti == nullptr) ? getType<void>() : ti;
 	}
 
 	~Any() {
@@ -443,7 +444,7 @@ public:
 
 template <class Val, class OVal, class OErrors>
 Val unsafe_cast(Any<OVal, OErrors>& v) {
-	assert(v.type() == typeid(Val));
+	assert(v.type() == getType<Val>());
 	return *static_cast<Val*>(static_cast<void*>(&v.storage));
 }
 

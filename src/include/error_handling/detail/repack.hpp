@@ -47,7 +47,7 @@ public:
 	template <class OVal, class UnOp, class Val, class Errors>
 	static RetType
 	call(Ret<Val, Errors>&& v, UnOp op, const RepacksSeal) {
-	    if(unsafe_access_to_internal_data(v).type() == typeid(Val)) {
+	    if(unsafe_access_to_internal_data(v).type() == getType<Val>()) {
 	    	Val ret;
 	    	AssignHelper::assign(ret, std::move(v), AssignHelperSeal());
 

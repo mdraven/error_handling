@@ -126,7 +126,7 @@ class IfErrsImpl {
 			using CallArg = typename Front<CallArgs>::type;
 			using NewErrors = typename Remove<CErrors, CallArg>::type;
 
-			if(unsafe_access_to_internal_data(v).type() == typeid(CallArg)) {
+			if(unsafe_access_to_internal_data(v).type() == getType<CallArg>()) {
 				CallArg ret;
 		    	AssignHelper::assign(ret, std::move(v), AssignHelperSeal());
 
@@ -174,7 +174,7 @@ public:
 	class UnOps>
 	static
 	RetType call(Ret<Val, Errors>&& v, UnOps ops, const IfErrsSeal) {
-		if(unsafe_access_to_internal_data(v).type() == typeid(Val)) {
+		if(unsafe_access_to_internal_data(v).type() == getType<Val>()) {
 			RetType ret;
 			AssignHelper::assign(ret, std::move(v), AssignHelperSeal());
 		    return ret;
