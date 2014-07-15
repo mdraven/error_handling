@@ -163,7 +163,7 @@ old_err_codes_to_new(int err_code) {
 	return ErrUnk();
 }
 
-const error_handling::ErOp<ErrA, ErrB, ErrC, ErrUnk> ErrX;
+const error_handling::ErOp<ErrA, ErrB, ErrC, ErrUnk> ErrX{};
 
 decltype(error_handling::R<int>() + ErrX) func() {
 	return 10;
@@ -377,8 +377,10 @@ int main() {
 #if 1
     {
     	R<int, ErrA, ErrB, ErrC, ErrUnk> ret = func();
+    	auto z = ErrX;
     }
 #endif
+
 
 //	std::cout << IsUnOp<ErrA, Ops>::value << std::endl;
 //	std::cout << IsUnOp<ErrB, Ops>::value << std::endl;
