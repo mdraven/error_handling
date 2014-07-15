@@ -137,6 +137,9 @@ Init fold_iter(FIter first, LIter last, Init&& init, F f) {
 			return error_handling::repack<Val>(std::move(ret),
 					[&val, f](OVal&& oval) -> Init { return f(std::move(val), std::move(oval)); });
 		});
+
+//		init = error_handling::if_errT(std::move(init),
+//				[&stop](auto&& err) { stop = true; return std::move(err); });
 	}
 
 	return std::forward<Init>(init);
