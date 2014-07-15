@@ -98,20 +98,20 @@ public:
 
 template <class FIter, class LIter, class Init, class F>
 Init fold_rec(FIter first, LIter last, Init&& init, F f) {
-	using Ret = error_handling::detail::IsRet<Init>;
+	using Ret = error_handling::IsRet<Init>;
 	using Val = typename Ret::val_type::type;
 
-	using ORet = error_handling::detail::IsRet<decltype(*std::declval<FIter>())>;
+	using ORet = error_handling::IsRet<decltype(*std::declval<FIter>())>;
 	using OVal = typename ORet::val_type::type;
 
 	struct H {
 		static Init call(FIter first, LIter last, Init&& init, F f) {
-			Init res = error_handling::detail::repack<Val>(std::move(init), [&](Val&& val) -> Init {
+			Init res = error_handling::repack<Val>(std::move(init), [&](Val&& val) -> Init {
 				if(first == last)
 					return std::move(val);
 
 				auto ret(*(first++));
-				Init res = error_handling::detail::repack<Val>(std::move(ret),
+				Init res = error_handling::repack<Val>(std::move(ret),
 						[&val, f](OVal&& oval) -> Init { return f(std::move(val), std::move(oval)); });
 
 				return H::call(first, last, std::forward<Init>(res), f);
@@ -124,17 +124,17 @@ Init fold_rec(FIter first, LIter last, Init&& init, F f) {
 
 template <class FIter, class LIter, class Init, class F>
 Init fold_iter(FIter first, LIter last, Init&& init, F f) {
-	using Ret = error_handling::detail::IsRet<Init>;
+	using Ret = error_handling::IsRet<Init>;
 	using Val = typename Ret::val_type::type;
 
 	using FRet = decltype(*std::declval<FIter>());
-	using ORet = error_handling::detail::IsRet<FRet>;
+	using ORet = error_handling::IsRet<FRet>;
 	using OVal = typename ORet::val_type::type;
 
 	for(; first != last; ++first) {
-		init = error_handling::detail::repack<Val>(std::move(init), [&](Val&& val) -> Init {
+		init = error_handling::repack<Val>(std::move(init), [&](Val&& val) -> Init {
 			FRet ret(*first);
-			return error_handling::detail::repack<Val>(std::move(ret),
+			return error_handling::repack<Val>(std::move(ret),
 					[&val, f](OVal&& oval) -> Init { return f(std::move(val), std::move(oval)); });
 		});
 	}
@@ -172,12 +172,13 @@ decltype(error_handling::R<int>() + ErrX) func() {
 int main() {
 	using error_handling::R;
 	using error_handling::if_err;
+	using error_handling::if_errT;
 	using error_handling::repack;
 	using error_handling::T;
 	using error_handling::N;
 	using error_handling::V;
 
-#if 0
+#if 1
 	std::string str("hello");
 	R<std::string> ret(std::move(str));
 
@@ -381,6 +382,18 @@ int main() {
     }
 #endif
 
+#if 1
+    {
+    	R<int, ErrA, ErrB, ErrC> ret1{ErrA()};
+    	R<int> ret2 = if_errT(std::move(ret1), [](ErrA) {}, [](ErrC) {}, [](ErrB) {});
+
+    	R<int, ErrA, ErrB, ErrC> ret3{ErrA()};
+    	R<int, ErrC> ret4 = if_errT(std::move(ret3), [](ErrA) {}, [](ErrB) {});
+
+//    	R<int, ErrA, ErrB, ErrC> ret5{ErrA()};
+//    	R<int> ret6 = if_errT(std::move(ret5), [](ErrA) {}, [](ErrB) {}); // ERR
+    }
+#endif
 
 //	std::cout << IsUnOp<ErrA, Ops>::value << std::endl;
 //	std::cout << IsUnOp<ErrB, Ops>::value << std::endl;

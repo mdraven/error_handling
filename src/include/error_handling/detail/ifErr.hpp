@@ -20,6 +20,20 @@ namespace error_handling {
 
 namespace detail {
 
+template <class Errors,
+class UnOps>
+class IfErrsHandledErrors {
+	template <class UnOp>
+	struct UnOpsPred {
+		using result = typename UnOpArgSet<Errors, UnOp>::type;
+		static const bool value = true;
+	};
+
+	using HandledErrors = typename AccumulateToSetFromPred<UnOps, UnOpsPred>::type;
+public:
+	using type = HandledErrors;
+};
+
 template <class CErrors, class Val, class Errors>
 class IfErrsStrongRetType {
 	using WithoutErr = typename Difference<Errors, CErrors>::type;
@@ -61,12 +75,8 @@ public:
 };
 
 class IfErrsSeal final {
-	template <class CErrors,
-	class Val, class Errors,
-	class UnOps>
-	friend
-	typename IfErrsRetType<CErrors, Val, Errors, UnOps>::type
-	ifErr(Ret<Val, Errors>&& v, UnOps ops);
+	template <class>
+	friend class IfErr;
 
 	template <class>
 	friend class IfErrsImpl;
@@ -174,20 +184,40 @@ public:
 	}
 };
 
-template <class CErrors,
-class Val, class Errors,
-class UnOps>
-typename IfErrsRetType<CErrors, Val, Errors, UnOps>::type
-ifErr(Ret<Val, Errors>&& v, UnOps ops) {
-#ifdef ERROR_HANDLING_CHECK_EMPTY_RET
-	if(unsafe_access_to_internal_data(v).empty()) {
-		ERROR_HANDLING_CRITICAL_ERROR("Calling `if_err` on an empty `Ret`.");
-	}
-#endif
+template <class CErrors>
+class IfErr {
+	static const bool is_cerrors_t = std::is_same<CErrors, T>::value;
 
-	using RetType = typename IfErrsRetType<CErrors, Val, Errors, UnOps>::type;
-	return IfErrsImpl<RetType>::template call<CErrors>(std::move(v), ops, IfErrsSeal());
-}
+	template <class T>
+	using EnableIfCErrorsIsT = std::enable_if<is_cerrors_t, T>;
+
+	template <class T>
+	using EnableIfCErrorsIsNotT = std::enable_if<!is_cerrors_t, T>;
+public:
+	template <class Val, class Errors,
+	class UnOps>
+	static
+	typename EnableIfCErrorsIsNotT<IfErrsRetType<CErrors, Val, Errors, UnOps>>::type::type
+	call(Ret<Val, Errors>&& v, UnOps ops) {
+	#ifdef ERROR_HANDLING_CHECK_EMPTY_RET
+		if(unsafe_access_to_internal_data(v).empty()) {
+			ERROR_HANDLING_CRITICAL_ERROR("Calling `if_err` on an empty `Ret`.");
+		}
+	#endif
+
+		using RetType = typename IfErrsRetType<CErrors, Val, Errors, UnOps>::type;
+		return IfErrsImpl<RetType>::template call<CErrors>(std::move(v), ops, IfErrsSeal());
+	}
+
+	template <class Val, class Errors,
+	class UnOps>
+	static
+	typename EnableIfCErrorsIsT<IfErrsRetType<typename IfErrsHandledErrors<Errors, UnOps>::type, Val, Errors, UnOps>>::type::type
+	call(Ret<Val, Errors>&& v, UnOps ops) {
+		using NewCErrors = typename IfErrsHandledErrors<Errors, UnOps>::type;
+		return IfErr<NewCErrors>::call(std::move(v), ops);
+	}
+};
 
 } /* namespace detail */
 
