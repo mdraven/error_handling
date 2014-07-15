@@ -31,6 +31,9 @@ using error_handling::detail::IsRet;
 template <class Val, class... Errors>
 using R = error_handling::detail::Ret<Val, error_handling::detail::Set<Errors...>>;
 
+using error_handling::detail::getErOp;
+using error_handling::detail::getValOp;
+
 template <class... Errors>
 using ErOp = error_handling::detail::ErOp<error_handling::detail::Set<Errors...>>;
 

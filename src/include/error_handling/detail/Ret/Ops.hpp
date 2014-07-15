@@ -44,6 +44,15 @@ operator>=(const Ret<Val, Errors>, const ValOp<OVal>) {
 	return std::is_convertible<OVal, Val>::value || std::is_same<OVal, Val>::value;
 }
 
+template <class Val, class Errors>
+ErOp<Errors> getErOp(const Ret<Val, Errors>) {
+	return ErOp<Errors>();
+}
+
+template <class Val, class Errors>
+ValOp<Val> getValOp(const Ret<Val, Errors>) {
+	return ValOp<Errors>();
+}
 
 } /* namespace detail */
 
