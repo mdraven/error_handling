@@ -48,9 +48,11 @@ public:
 	static RetType
 	call(Ret<Val, Errors>&& v, UnOp op, const RepacksSeal) {
 	    if(unsafe_access_to_internal_data(v).type() == typeid(Val)) {
-	    	AutoClearAny<Val, Errors> any(unsafe_access_to_internal_data(v));
+	    	Val ret;
+	    	AssignHelper::assign(ret, std::move(v), AssignHelperSeal());
+
 	    	return CallHandler<RetType>::template call<OVal>(op,
-	    			std::move(unsafe_cast<Val>(any.data())), CallHandlerSeal());
+	    			std::move(ret), CallHandlerSeal());
 	    }
 
 		Ret<OVal, Errors> ret;

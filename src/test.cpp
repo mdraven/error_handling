@@ -126,12 +126,13 @@ Init fold_iter(FIter first, LIter last, Init&& init, F f) {
 	using Ret = error_handling::detail::IsRet<Init>;
 	using Val = typename Ret::val_type::type;
 
-	using ORet = error_handling::detail::IsRet<decltype(*std::declval<FIter>())>;
+	using FRet = decltype(*std::declval<FIter>());
+	using ORet = error_handling::detail::IsRet<FRet>;
 	using OVal = typename ORet::val_type::type;
 
 	for(; first != last; ++first) {
 		init = error_handling::detail::repack<Val>(std::move(init), [&](Val&& val) -> Init {
-			auto ret(*first);
+			FRet ret(*first);
 			return error_handling::detail::repack<Val>(std::move(ret),
 					[&val, f](OVal&& oval) -> Init { return f(std::move(val), std::move(oval)); });
 		});

@@ -29,38 +29,6 @@ class Any;
 template <class Val, class OVal, class OErrors>
 Val unsafe_cast(Any<OVal, OErrors>& v);
 
-template <class Val, class Errors>
-class AutoClearAny {
-	Any<Val, Errors>& any;
-public:
-	AutoClearAny() = delete;
-	AutoClearAny(const AutoClearAny<Val, Errors>&) = delete;
-	AutoClearAny(AutoClearAny<Val, Errors>&&) = delete;
-
-	AutoClearAny(Any<Val, Errors>& any) noexcept : any(any) {}
-
-	operator Any<Val, Errors>&() {
-		return any;
-	}
-
-	operator const Any<Val, Errors>&() const {
-		return any;
-	}
-
-	Any<Val, Errors>& data() {
-		return any;
-	}
-
-	const Any<Val, Errors>& data() const {
-		return any;
-	}
-
-	~AutoClearAny() {
-		any.clear();
-	}
-};
-
-
 #if ERROR_HANDLING_ANY == 1
 
 template <class... Types>
@@ -260,6 +228,12 @@ class Any {
 		DoAction<DestructorAction>::template call<Val, Errors>(storage, *ti, nullptr);
 		ti = nullptr;
 	}
+
+	void clear() {
+		if(ti == nullptr)
+			return;
+		destructor();
+	}
 public:
 	Any() : ti(nullptr) {}
 
@@ -278,6 +252,7 @@ public:
 		else {
 			v.callMoveConstructor(storage);
 			ti = v.ti;
+			v.destructor();
 		}
 	}
 
@@ -298,6 +273,7 @@ public:
 		else {
 			v.callMoveConstructor(storage);
 			ti = v.ti;
+			v.destructor();
 		}
 	}
 
@@ -371,6 +347,7 @@ public:
 			}
 
 			ti = v.ti;
+			v.destructor();
 		}
 
 		return *this;
@@ -391,6 +368,7 @@ public:
 			}
 
 			ti = v.ti;
+			v.destructor();
 		}
 
 		return *this;
@@ -433,12 +411,6 @@ public:
 
 	const std::type_info& type() const {
 		return (ti == nullptr) ? typeid(void) : *ti;
-	}
-
-	void clear() {
-		if(ti == nullptr)
-			return;
-		destructor();
 	}
 
 	~Any() {

@@ -27,18 +27,25 @@ class AssignHelperSeal final {
 struct AssignHelper {
 	template <class Val, class OVal, class OErrors>
 	static void assign(Ret<Val, Set<>>& v, Ret<OVal, OErrors>&& ov, const AssignHelperSeal) {
-		AutoClearAny<OVal, OErrors> oany(unsafe_access_to_internal_data(ov));
+		Any<OVal, OErrors>& oany = unsafe_access_to_internal_data(ov);
 		Val& val = unsafe_access_to_internal_data(v);
 
-		val = std::move(unsafe_cast<OVal>(oany.data()));
+		val = std::move(unsafe_cast<OVal>(oany));
 	}
 
 	template <class Val, class Errors, class OVal, class OErrors>
 	static void assign(Ret<Val, Errors>& v, Ret<OVal, OErrors>&& ov, const AssignHelperSeal) {
 		Any<Val, Errors>& any = unsafe_access_to_internal_data(v);
-		AutoClearAny<OVal, OErrors> oany(unsafe_access_to_internal_data(ov));
+		Any<OVal, OErrors>& oany = unsafe_access_to_internal_data(ov);
 
-		any = std::move(oany.data());
+		any = std::move(oany);
+	}
+
+	template <class T, class OVal, class OErrors>
+	static void assign(T& v, Ret<OVal, OErrors>&& ov, const AssignHelperSeal) {
+		Any<OVal, OErrors>& oany = unsafe_access_to_internal_data(ov);
+
+		v = std::move(unsafe_cast<T>(oany));
 	}
 };
 

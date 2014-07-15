@@ -89,7 +89,7 @@ public:
 
 	template <class OVal, class OErrors>
 	Ret(Ret<OVal, OErrors>&& v) noexcept(noexcept(Any<Val, Errors>(std::move(unsafe_access_to_internal_data(v))))) :
-			any(std::move(unsafe_access_to_internal_data(v))) {
+			any() {
 		static const bool is_convertible_val = std::is_convertible<OVal, Val>::value;
 		static_assert(is_convertible_val, "Cannot convert `Val` type.");
 
@@ -103,8 +103,7 @@ public:
 			ERROR_HANDLING_CRITICAL_ERROR("Moving an empty `Ret`.");
 		}
 #endif
-
-		unsafe_access_to_internal_data(v).clear();
+		any = std::move(unsafe_access_to_internal_data(v));
 	}
 
 	template <class OVal>
@@ -159,9 +158,11 @@ public:
 
 		ERROR_HANDLING_DEBUG_MSG((Ret<Val, Errors>), "copy assign Ret");
 
+#ifdef ERROR_HANDLING_CHECK_EMPTY_RET
 		if(unsafe_access_to_internal_data(v).empty()) {
 			ERROR_HANDLING_CRITICAL_ERROR("Copying an empty `Ret`.");
 		}
+#endif
 
 		this->any = unsafe_access_to_internal_data(v);
 
@@ -190,13 +191,13 @@ public:
 
 		ERROR_HANDLING_DEBUG_MSG((Ret<Val, Errors>), "move assign Ret");
 
+#ifdef ERROR_HANDLING_CHECK_EMPTY_RET
 		if(unsafe_access_to_internal_data(v).empty()) {
 			ERROR_HANDLING_CRITICAL_ERROR("Moving an empty `Ret`.");
 		}
+#endif
 
 		this->any = std::move(unsafe_access_to_internal_data(v));
-
-		unsafe_access_to_internal_data(v).clear();
 
 		return *this;
 	}

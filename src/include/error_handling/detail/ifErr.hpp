@@ -117,10 +117,11 @@ class IfErrsImpl {
 			using NewErrors = typename Remove<CErrors, CallArg>::type;
 
 			if(unsafe_access_to_internal_data(v).type() == typeid(CallArg)) {
-				AutoClearAny<Val, Errors> any(unsafe_access_to_internal_data(v));
+				CallArg ret;
+		    	AssignHelper::assign(ret, std::move(v), AssignHelperSeal());
 
-				return CallHandler<RetType>::template call<Val>(getFront(ops),
-						std::move(unsafe_cast<CallArg>(any.data())), CallHandlerSeal());
+		    	return CallHandler<RetType>::template call<Val>(getFront(ops),
+		    			std::move(ret), CallHandlerSeal());
 			}
 
 			return ItCanBeReused<(Size<CallArgs>::value > 1), void>::template call<NewErrors, Val, Errors>(std::move(v), ops);
