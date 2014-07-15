@@ -15,6 +15,7 @@
 struct ErrA {};
 struct ErrB {};
 struct ErrC {};
+struct ErrUnk {};
 
 struct Base {};
 struct Derived : public Base {};
@@ -151,6 +152,17 @@ Init fold_iter2(FIter first, LIter last, Init&& init, F f) {
 	return init;
 }
 
+error_handling::R<error_handling::N, ErrA, ErrB, ErrC, ErrUnk>
+old_err_codes_to_new(int err_code) {
+	if(err_code == 1)
+		return ErrA();
+	else if(err_code == 2)
+		return ErrB();
+	else if(err_code == 3)
+		return ErrC();
+	return ErrUnk();
+}
+
 int main() {
 	using error_handling::R;
 	using error_handling::if_err;
@@ -281,6 +293,19 @@ int main() {
     }
 #endif
 
+#if 1
+    {
+//    	R<std::string> v1 = R<N>(); // ERR
+//    	R<std::string, ErrA> v2 = R<N>(); // ERR
+//    	R<N> v3 = R<std::string>(); // ERR
+//    	R<N, ErrA> v4 = R<std::string>(); // ERR
+//    	R<N, ErrA> v5 = R<N>(); // ERR
+        R<std::string, ErrA> v6 = R<N, ErrA>(ErrA()); // OK
+        R<N, ErrA, ErrB> v7 = R<N, ErrA>(ErrA()); // OK
+        R<N> v8 = R<N>(); // OK
+    }
+#endif
+
 #if 0
     {
        	Ret<std::string, Set<ErrA>> ret1{std::string()};
@@ -323,7 +348,7 @@ int main() {
     }
 #endif
 
-#if 1
+#if 0
     {
     	std::vector<int> num{1, 2, 3, 13, 15};
     	for(size_t i = 0; i < 100000000; ++i)

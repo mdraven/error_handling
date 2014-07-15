@@ -106,6 +106,22 @@ public:
 		any = std::move(unsafe_access_to_internal_data(v));
 	}
 
+	template <class OErrors>
+	Ret(Ret<N, OErrors>&& v) noexcept(noexcept(Any<Val, Errors>(std::move(unsafe_access_to_internal_data(v))))) :
+			any() {
+		static const bool is_more_weak = IsDifferenceEmpty<OErrors, Errors>::value;
+		static_assert(is_more_weak, "Assign to more strong type.");
+
+		ERROR_HANDLING_DEBUG_MSG((Ret<Val, Errors>), "move constructor Ret");
+
+#ifdef ERROR_HANDLING_CHECK_EMPTY_RET
+		if(unsafe_access_to_internal_data(v).empty()) {
+			ERROR_HANDLING_CRITICAL_ERROR("Moving an empty `Ret`.");
+		}
+#endif
+		any = std::move(unsafe_access_to_internal_data(v));
+	}
+
 	template <class OVal>
 	Ret(Ret<OVal, Set<>>&& v) noexcept(noexcept(Any<Val, Errors>(std::move(unsafe_access_to_internal_data(v))))) :
 			any(std::move(unsafe_access_to_internal_data(v))) {
@@ -186,6 +202,24 @@ public:
 		static const bool is_convertible_val = std::is_convertible<OVal, Val>::value;
 		static_assert(is_convertible_val, "Cannot convert `Val` type.");
 
+		static const bool is_more_weak = IsDifferenceEmpty<OErrors, Errors>::value;
+		static_assert(is_more_weak, "Assign to more strong type.");
+
+		ERROR_HANDLING_DEBUG_MSG((Ret<Val, Errors>), "move assign Ret");
+
+#ifdef ERROR_HANDLING_CHECK_EMPTY_RET
+		if(unsafe_access_to_internal_data(v).empty()) {
+			ERROR_HANDLING_CRITICAL_ERROR("Moving an empty `Ret`.");
+		}
+#endif
+
+		this->any = std::move(unsafe_access_to_internal_data(v));
+
+		return *this;
+	}
+
+	template <class OErrors>
+	Ret<Val, Errors>& operator=(Ret<N, OErrors>&& v) noexcept(noexcept(any = std::move(unsafe_access_to_internal_data(v)))) {
 		static const bool is_more_weak = IsDifferenceEmpty<OErrors, Errors>::value;
 		static_assert(is_more_weak, "Assign to more strong type.");
 

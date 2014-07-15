@@ -9,6 +9,7 @@
 #define ANY_HPP_
 
 #include <error_handling/detail/EnableIfNotUniversalRef.hpp>
+#include <error_handling/detail/config.hpp>
 
 #define ERROR_HANDLING_ANY 2 /* 1 -- boost::any */
 
@@ -98,7 +99,7 @@ Val unsafe_cast(Any<Types...>& v) {
 
 #elif ERROR_HANDLING_ANY == 2
 
-template <template <class> class Action>
+template <class Action>
 class DoAction {
 	template <class Errors, class>
 	class CheckErrors {
@@ -108,7 +109,7 @@ class DoAction {
 		static
 		void call(void* from, const std::type_info& from_ti, void* to) {
 			if(from_ti == typeid(Error))
-				Action<Error>::call(from, to);
+				Action::template call<Error>(from, to);
 			else
 				CheckErrors<TailErrors, void>::call(from, from_ti, to);
 		}
@@ -116,7 +117,7 @@ class DoAction {
 		static
 		void call(const void* from, const std::type_info& from_ti, void* to) {
 			if(from_ti == typeid(Error))
-				Action<Error>::call(from, to);
+				Action::template call<Error>(from, to);
 			else
 				CheckErrors<TailErrors, void>::call(from, from_ti, to);
 		}
@@ -135,7 +136,7 @@ public:
 	static
 	void call(void* from, const std::type_info& from_ti, void* to) {
 		if(from_ti == typeid(Val))
-			Action<Val>::call(from, to);
+			Action::template call<Val>(from, to);
 		else
 			CheckErrors<Errors, void>::call(from, from_ti, to);
 	}
@@ -144,7 +145,7 @@ public:
 	static
 	void call(const void* from, const std::type_info& from_ti, void* to) {
 		if(from_ti == typeid(Val))
-			Action<Val>::call(from, to);
+			Action::template call<Val>(from, to);
 		else
 			CheckErrors<Errors, void>::call(from, from_ti, to);
 	}
@@ -173,8 +174,8 @@ class Any {
 		ti = &typeid(OVal);
 	}
 
-	template <class T>
 	struct CopyConstructorAction {
+		template <class T>
 		static void call(const void* from, void* to) {
 			new(to) T(*static_cast<const T*>(from));
 		}
@@ -184,10 +185,20 @@ class Any {
 		DoAction<CopyConstructorAction>::template call<Val, Errors>(storage, *ti, to);
 	}
 
-	template <class T>
-	struct MoveConstructorAction {
-		static void call(void* from, void* to) {
+	class MoveConstructorAction {
+	public:
+		template <class T>
+		static
+		typename std::enable_if<std::is_move_constructible<T>::value>::type
+		call(void* from, void* to) {
 			new(to) T(std::move(*static_cast<T*>(from)));
+		}
+
+		template <class T>
+		static
+		typename std::enable_if<!std::is_move_constructible<T>::value>::type
+		call(void* from, void* to) {
+			ERROR_HANDLING_CRITICAL_ERROR("Is not move constructible.");
 		}
 	};
 
@@ -195,8 +206,8 @@ class Any {
 		DoAction<MoveConstructorAction>::template call<Val, Errors>(storage, *ti, to);
 	}
 
-	template <class T>
 	struct CopyAssignAction {
+		template <class T>
 		static void call(const void* from, void* to) {
 			*static_cast<T*>(to) = *static_cast<const T*>(from);
 		}
@@ -206,8 +217,8 @@ class Any {
 		DoAction<CopyAssignAction>::template call<Val, Errors>(storage, *ti, to);
 	}
 
-	template <class T>
 	struct MoveAssignAction {
+		template <class T>
 		static void call(void* from, void* to) {
 			*static_cast<T*>(to) = std::move(*static_cast<T*>(from));
 		}
@@ -217,8 +228,8 @@ class Any {
 		DoAction<MoveAssignAction>::template call<Val, Errors>(storage, *ti, to);
 	}
 
-	template <class T>
 	struct DestructorAction {
+		template <class T>
 		static void call(void* from, void*) {
 			static_cast<T*>(from)->~T();
 		}
