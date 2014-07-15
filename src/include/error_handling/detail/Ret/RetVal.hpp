@@ -31,7 +31,7 @@ public:
 	Ret(const Val& v) : v(v) {}
 	Ret(Val&& v) : v(std::move(v)) {}
 
-	Ret(const Ret<Val, Set<>>& v) = default;
+	Ret(const Ret<Val, Set<>>&) = default;
 	Ret(Ret<Val, Set<>>&& v) noexcept(std::is_nothrow_move_constructible<Val>::value) :
 			v(std::move(v.v)) {}
 

@@ -153,7 +153,10 @@ public:
 
 template <class Val, class Errors>
 class Any {
-	char storage[MaxSize<typename Insert<Errors, Val>::type>::value];
+	static const size_t max_size = MaxSize<typename Insert<Errors, Val>::type>::value;
+	using Storage = typename std::aligned_storage<max_size>::type;
+	Storage storage;
+
 	const std::type_info* ti;
 
 	template <class RVal, class OVal, class OErrors>
@@ -164,13 +167,13 @@ class Any {
 
 	template <class OVal>
 	void valCopyConstructor(const OVal& v) {
-		new(storage) OVal(v);
+		new(&storage) OVal(v);
 		ti = &typeid(OVal);
 	}
 
 	template <class OVal>
 	void valMoveConstructor(OVal&& v) {
-		new(storage) OVal(std::move(v));
+		new(&storage) OVal(std::move(v));
 		ti = &typeid(OVal);
 	}
 
@@ -191,7 +194,7 @@ class Any {
 	};
 
 	void callCopyConstructor(void* to) const {
-		DoAction<CopyConstructorAction>::template call<Val, Errors>(storage, *ti, to);
+		DoAction<CopyConstructorAction>::template call<Val, Errors>(&storage, *ti, to);
 	}
 
 	class MoveConstructorAction {
@@ -212,7 +215,7 @@ class Any {
 	};
 
 	void callMoveConstructor(void* to) {
-		DoAction<MoveConstructorAction>::template call<Val, Errors>(storage, *ti, to);
+		DoAction<MoveConstructorAction>::template call<Val, Errors>(&storage, *ti, to);
 	}
 
 	struct CopyAssignAction {
@@ -223,7 +226,7 @@ class Any {
 	};
 
 	void callCopyAssign(void* to) const {
-		DoAction<CopyAssignAction>::template call<Val, Errors>(storage, *ti, to);
+		DoAction<CopyAssignAction>::template call<Val, Errors>(&storage, *ti, to);
 	}
 
 	struct MoveAssignAction {
@@ -234,7 +237,7 @@ class Any {
 	};
 
 	void callMoveAssign(void* to) {
-		DoAction<MoveAssignAction>::template call<Val, Errors>(storage, *ti, to);
+		DoAction<MoveAssignAction>::template call<Val, Errors>(&storage, *ti, to);
 	}
 
 	struct DestructorAction {
@@ -245,7 +248,7 @@ class Any {
 	};
 
 	void destructor() {
-		DoAction<DestructorAction>::template call<Val, Errors>(storage, *ti, nullptr);
+		DoAction<DestructorAction>::template call<Val, Errors>(&storage, *ti, nullptr);
 		ti = nullptr;
 	}
 
@@ -261,7 +264,7 @@ public:
 		if(v.ti == nullptr)
 			clear();
 		else {
-			v.callCopyConstructor(storage);
+			v.callCopyConstructor(&storage);
 			ti = v.ti;
 		}
 	}
@@ -270,7 +273,7 @@ public:
 		if(v.ti == nullptr)
 			clear();
 		else {
-			v.callMoveConstructor(storage);
+			v.callMoveConstructor(&storage);
 			ti = v.ti;
 			v.destructor();
 		}
@@ -281,7 +284,7 @@ public:
 		if(v.ti == nullptr)
 			clear();
 		else {
-			v.callCopyConstructor(storage);
+			v.callCopyConstructor(&storage);
 			ti = v.ti;
 		}
 	}
@@ -291,7 +294,7 @@ public:
 		if(v.ti == nullptr)
 			clear();
 		else {
-			v.callMoveConstructor(storage);
+			v.callMoveConstructor(&storage);
 			ti = v.ti;
 			v.destructor();
 		}
@@ -316,12 +319,12 @@ public:
 			clear();
 		else {
 			if(ti == nullptr)
-				v.callCopyConstructor(storage);
+				v.callCopyConstructor(&storage);
 			else if(ti == v.ti)
-				v.callCopyAssign(storage);
+				v.callCopyAssign(&storage);
 			else {
 				destructor();
-				v.callCopyConstructor(storage);
+				v.callCopyConstructor(&storage);
 			}
 
 			ti = v.ti;
@@ -336,12 +339,12 @@ public:
 			clear();
 		else {
 			if(ti == nullptr)
-				v.callCopyConstructor(storage);
+				v.callCopyConstructor(&storage);
 			else if(ti == v.ti)
-				v.callCopyAssign(storage);
+				v.callCopyAssign(&storage);
 			else {
 				destructor();
-				v.callCopyConstructor(storage);
+				v.callCopyConstructor(&storage);
 			}
 
 			ti = v.ti;
@@ -358,12 +361,12 @@ public:
 			clear();
 		else {
 			if(ti == nullptr)
-				v.callMoveConstructor(storage);
+				v.callMoveConstructor(&storage);
 			else if(ti == v.ti)
-				v.callMoveAssign(storage);
+				v.callMoveAssign(&storage);
 			else {
 				destructor();
-				v.callMoveConstructor(storage);
+				v.callMoveConstructor(&storage);
 			}
 
 			ti = v.ti;
@@ -379,12 +382,12 @@ public:
 			clear();
 		else {
 			if(ti == nullptr)
-				v.callMoveConstructor(storage);
+				v.callMoveConstructor(&storage);
 			else if(ti == v.ti)
-				v.callMoveAssign(storage);
+				v.callMoveAssign(&storage);
 			else {
 				destructor();
-				v.callMoveConstructor(storage);
+				v.callMoveConstructor(&storage);
 			}
 
 			ti = v.ti;
@@ -399,7 +402,7 @@ public:
 		if(ti == nullptr)
 			valCopyConstructor(v);
 		else if(*ti == typeid(OVal)) {
-			static_cast<OVal*>(storage)->operator=(v);
+			static_cast<OVal*>(&storage)->operator=(v);
 		}
 		else {
 			destructor();
@@ -415,7 +418,7 @@ public:
 		if(ti == nullptr)
 			valMoveConstructor(v);
 		else if(*ti == typeid(OVal)) {
-			static_cast<OVal*>(storage)->operator=(v);
+			static_cast<OVal*>(&storage)->operator=(v);
 		}
 		else {
 			destructor();
@@ -441,7 +444,7 @@ public:
 template <class Val, class OVal, class OErrors>
 Val unsafe_cast(Any<OVal, OErrors>& v) {
 	assert(v.type() == typeid(Val));
-	return *static_cast<Val*>(static_cast<void*>(v.storage));
+	return *static_cast<Val*>(static_cast<void*>(&v.storage));
 }
 
 #endif
