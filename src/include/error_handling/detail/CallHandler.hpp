@@ -77,6 +77,9 @@ class CallHandler {
 		static_assert(std::is_convertible<typename std::result_of<UnOp(Arg&&)>::type,
 				RetType>::value, "Cannot convert from `UnOp(Arg&&) to `RetType`: Maybe your error handler returns too common type?");
 	};
+
+	template <int>
+	struct Fake;
 public:
 	template <class Val, class Err, class UnOp,
 	class = typename EnableForReturnsVoid<Err&&, UnOp>::type::type>
@@ -87,20 +90,20 @@ public:
 
 	template <class Val, class Err, class UnOp,
 	class = typename EnableForReturnsRet<Err&&, UnOp>::type::type>
-	static RetType call(UnOp op, Err&& err, const CallHandlerSeal, void* fake = nullptr) {
+	static RetType call(UnOp op, Err&& err, const CallHandlerSeal, Fake<0>* = nullptr) {
 		ConstraintsForReturnsRet<Err, UnOp>();
 		return op(std::move(err));
 	}
 
 	template <class Val, class Err, class UnOp,
 	class = typename EnableForReturnsConvertibleToVal<Err&&, UnOp, Val>::type::type>
-	static RetType call(UnOp op, Err&& err, const CallHandlerSeal, char* fake = nullptr) {
+	static RetType call(UnOp op, Err&& err, const CallHandlerSeal, Fake<1>* = nullptr) {
 		return Val(op(std::move(err)));
 	}
 
 	template <class Val, class Err, class UnOp,
 	class = typename EnableForReturnsError<Err&&, UnOp, Val>::type::type>
-	static RetType call(UnOp op, Err&& err, const CallHandlerSeal, int* fake = nullptr) {
+	static RetType call(UnOp op, Err&& err, const CallHandlerSeal, Fake<2>* = nullptr) {
 		return op(std::move(err));
 	}
 };
