@@ -75,7 +75,10 @@ namespace detail {
 template <>
 struct TypeUUID<::other::FEof> {
 	static
-	constexpr const UUID id{{10, 10, 10, 10}};
+	const UUID* get() {
+		static UUID uuid{{10, 10, 10, 10}};
+		return &uuid;
+	}
 };
 
 }
@@ -135,8 +138,6 @@ int main() {
 	write();
 
 	read();
-
-	printf("%d\n", error_handling::detail::HasTypeUUID<other::FEof>::value);
 
 	return 0;
 }

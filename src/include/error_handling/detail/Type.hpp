@@ -31,7 +31,7 @@ class HasTypeUUID {
 	template <class W>
 	struct Wrapper {};
 
-	template <class W, const UUID* = &TypeUUID<W>::id>
+	template <class W, class = decltype(TypeUUID<W>::get())>
 	static
 	std::true_type check(const Wrapper<W>&);
 
@@ -46,17 +46,23 @@ class GetUUIDPointer {
 	template <bool has_uuid, class>
 	struct H {
 		static
-		constexpr const UUID* value = &TypeUUID<T>::id;
+		const UUID* call() {
+			return TypeUUID<T>::get();
+		}
 	};
 
 	template <class Fake>
 	struct H<false, Fake> {
 		static
-		constexpr const UUID* value = nullptr;
+		const UUID* call() {
+			return nullptr;
+		}
 	};
 public:
 	static
-	constexpr const UUID* value = H<HasTypeUUID<T>::value, void>::value;
+	const UUID* call() {
+		return H<HasTypeUUID<T>::value, void>::call();
+	}
 };
 
 class Type {
@@ -69,7 +75,7 @@ class Type {
 	friend Type getType();
 
 	static
-	bool cmp(const UUID* a, const UUID* b) {printf("xxx\n");
+	bool cmp(const UUID* a, const UUID* b) {
 		return std::equal(std::begin(*a), std::end(*a), std::begin(*b));
 	}
 public:
@@ -97,7 +103,7 @@ public:
 		if(uuid == nullptr)
 			return false;
 		else
-			return cmp(uuid, &TypeUUID<T>::id);
+			return cmp(uuid, TypeUUID<T>::get());
 	}
 
 	template <class T>
@@ -136,7 +142,7 @@ Type
 getType() {
 	Type t;
 	t.ti = &typeid(T);
-	t.uuid = GetUUIDPointer<T>::value;
+	t.uuid = GetUUIDPointer<T>::call();
 	return t;
 }
 
