@@ -43,15 +43,18 @@ template <class T>
 class GetUUIDPointer {
 	template <bool has_uuid, class>
 	struct H {
-		static const UUID* value = &TypeUUID<T>::id;
+		static
+		constexpr const UUID* value = &TypeUUID<T>::id;
 	};
 
 	template <class Fake>
 	struct H<false, Fake> {
-		static const UUID* value = nullptr;
+		static
+		constexpr const UUID* value = nullptr;
 	};
 public:
-	static const UUID* value = H<HasTypeUUID<T>::value, void>::value;
+	static
+	constexpr const UUID* value = H<HasTypeUUID<T>::value, void>::value;
 };
 
 class Type {
@@ -113,17 +116,17 @@ public:
 			return false;
 	}
 
-//	bool operator==(std::nullptr_t) const {
-//		return ti == nullptr;
-//	}
+	bool operator==(std::nullptr_t) const {
+		return ti == nullptr;
+	}
 
 	bool operator!=(const Type& t) const {
 		return !(*this == t);
 	}
 
-//	bool operator!=(std::nullptr_t) const {
-//		return !(*this == nullptr);
-//	}
+	bool operator!=(std::nullptr_t) const {
+		return !(*this == nullptr);
+	}
 };
 
 template <class T>
