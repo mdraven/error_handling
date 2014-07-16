@@ -74,10 +74,6 @@ class Type {
 	template <class T>
 	friend Type getType();
 
-	static
-	bool cmp(const UUID* a, const UUID* b) {
-		return std::equal(std::begin(*a), std::end(*a), std::begin(*b));
-	}
 public:
 	Type() :
 		ti(nullptr),
@@ -103,7 +99,7 @@ public:
 		if(uuid == nullptr)
 			return false;
 		else
-			return cmp(uuid, TypeUUID<T>::get());
+			return *uuid == *TypeUUID<T>::get();
 	}
 
 	template <class T>
@@ -119,7 +115,7 @@ public:
 		if(uuid == nullptr && t.uuid == nullptr)
 			return *t.ti == *ti;
 		else if(uuid != nullptr && t.uuid != nullptr)
-			return cmp(uuid, t.uuid);
+			return *uuid == *t.uuid;
 		else
 			return false;
 	}
