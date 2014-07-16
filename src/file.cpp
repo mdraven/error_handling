@@ -69,6 +69,17 @@ R<V, FErr> fclose(FILE* stream) noexcept {
 
 } /* namespace other */
 
+namespace error_handling {
+namespace detail {
+
+template <>
+struct TypeUUID<::other::FEof> {
+	static
+	constexpr const UUID id{{10, 10, 10, 10}};
+};
+
+}
+}
 
 void write() {
 	namespace o = other;
@@ -124,6 +135,8 @@ int main() {
 	write();
 
 	read();
+
+	printf("%d\n", error_handling::detail::HasTypeUUID<other::FEof>::value);
 
 	return 0;
 }

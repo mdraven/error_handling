@@ -109,7 +109,7 @@ class DoAction {
 	public:
 		static
 		void call(void* from, const Type& from_t, void* to) {
-			if(from_t == getType<Error>())
+			if(from_t.template equal<Error>())
 				Action::template call<Error>(from, to);
 			else
 				CheckErrors<TailErrors, void>::call(from, from_t, to);
@@ -117,7 +117,7 @@ class DoAction {
 
 		static
 		void call(const void* from, const Type& from_t, void* to) {
-			if(from_t == getType<Error>())
+			if(from_t.template equal<Error>())
 				Action::template call<Error>(from, to);
 			else
 				CheckErrors<TailErrors, void>::call(from, from_t, to);
@@ -136,7 +136,7 @@ public:
 	template <class Val, class Errors>
 	static
 	void call(void* from, const Type& from_t, void* to) {
-		if(from_t == getType<Val>())
+		if(from_t.template equal<Val>())
 			Action::template call<Val>(from, to);
 		else
 			CheckErrors<Errors, void>::call(from, from_t, to);
@@ -145,7 +145,7 @@ public:
 	template <class Val, class Errors>
 	static
 	void call(const void* from, const Type& from_t, void* to) {
-		if(from_t == getType<Val>())
+		if(from_t.template equal<Val>())
 			Action::template call<Val>(from, to);
 		else
 			CheckErrors<Errors, void>::call(from, from_t, to);
@@ -402,7 +402,7 @@ public:
 	Any<Val, Errors>& operator=(const OVal& v) {
 		if(ti == nullptr)
 			valCopyConstructor(v);
-		else if(ti == getType<OVal>()) {
+		else if(ti.template equal<OVal>()) {
 			static_cast<OVal*>(&storage)->operator=(v);
 		}
 		else {
@@ -418,7 +418,7 @@ public:
 	Any<Val, Errors>& operator=(OVal&& v) noexcept {
 		if(ti == nullptr)
 			valMoveConstructor(v);
-		else if(ti == getType<OVal>()) {
+		else if(ti.template equal<OVal>()) {
 			static_cast<OVal*>(&storage)->operator=(v);
 		}
 		else {
@@ -444,7 +444,7 @@ public:
 
 template <class Val, class OVal, class OErrors>
 Val unsafe_cast(Any<OVal, OErrors>& v) {
-	assert(v.type() == getType<Val>());
+	assert(v.type().template equal<Val>());
 
 	Val ret = std::move(*static_cast<Val*>(static_cast<void*>(&v.storage)));
 	v.destructor();

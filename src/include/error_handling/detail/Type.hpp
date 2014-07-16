@@ -21,7 +21,9 @@ using UUID = std::array<std::uint32_t, 4>;
 
 template <class T>
 struct TypeUUID {
-	/* static const UUID id = {0, 0, 0, 0}; */
+	/*
+	static
+	constexpr const UUID id{{0, 0, 0, 0}}; */
 };
 
 template <class T>
@@ -29,9 +31,9 @@ class HasTypeUUID {
 	template <class W>
 	struct Wrapper {};
 
-	template <class W>
+	template <class W, const UUID* = &TypeUUID<W>::id>
 	static
-	std::true_type check(Wrapper<W>&, void* = &TypeUUID<W>::id);
+	std::true_type check(const Wrapper<W>&);
 
 	static
 	std::false_type check(...);
@@ -67,7 +69,7 @@ class Type {
 	friend Type getType();
 
 	static
-	bool cmp(const UUID* a, const UUID* b) {
+	bool cmp(const UUID* a, const UUID* b) {printf("xxx\n");
 		return std::equal(std::begin(*a), std::end(*a), std::begin(*b));
 	}
 public:
@@ -95,7 +97,7 @@ public:
 		if(uuid == nullptr)
 			return false;
 		else
-			return cmp(uuid, TypeUUID<T>::id);
+			return cmp(uuid, &TypeUUID<T>::id);
 	}
 
 	template <class T>
