@@ -70,7 +70,7 @@ R<V, FErr> fclose(FILE* stream) noexcept {
 } /* namespace other */
 
 namespace error_handling {
-namespace detail {
+namespace uuids {
 
 template <>
 struct TypeUUID<::other::FEof> {

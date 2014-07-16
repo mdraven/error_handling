@@ -15,7 +15,7 @@
 
 namespace error_handling {
 
-namespace detail {
+namespace uuids {
 
 using UUID = std::array<std::uint32_t, 4>;
 
@@ -23,15 +23,25 @@ template <class T>
 struct TypeUUID {
 	/*
 	static
-	constexpr const UUID id{{0, 0, 0, 0}}; */
+	const UUID* get() {
+		static UUID uuid{{10, 10, 10, 10}};
+		return &uuid;
+	}
+	*/
 };
+
+} /* namespace uuids */
+
+namespace detail {
+
+namespace u = error_handling::uuids;
 
 template <class T>
 class HasTypeUUID {
 	template <class W>
 	struct Wrapper {};
 
-	template <class W, class = decltype(TypeUUID<W>::get())>
+	template <class W, class = decltype(u::TypeUUID<W>::get())>
 	static
 	std::true_type check(const Wrapper<W>&);
 
@@ -46,21 +56,21 @@ class GetUUIDPointer {
 	template <bool has_uuid, class>
 	struct H {
 		static
-		const UUID* call() {
-			return TypeUUID<T>::get();
+		const u::UUID* call() {
+			return u::TypeUUID<T>::get();
 		}
 	};
 
 	template <class Fake>
 	struct H<false, Fake> {
 		static
-		const UUID* call() {
+		const u::UUID* call() {
 			return nullptr;
 		}
 	};
 public:
 	static
-	const UUID* call() {
+	const u::UUID* call() {
 		return H<HasTypeUUID<T>::value, void>::call();
 	}
 };
@@ -68,7 +78,7 @@ public:
 class Type {
 	const std::type_info* ti;
 #ifdef ERROR_HANDLING_UUID_SUPPORT
-	const UUID* uuid;
+	const u::UUID* uuid;
 #endif
 
 	template <class T>
@@ -99,7 +109,7 @@ public:
 		if(uuid == nullptr)
 			return false;
 		else
-			return *uuid == *TypeUUID<T>::get();
+			return *uuid == *u::TypeUUID<T>::get();
 	}
 
 	template <class T>
