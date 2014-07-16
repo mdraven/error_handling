@@ -445,7 +445,11 @@ public:
 template <class Val, class OVal, class OErrors>
 Val unsafe_cast(Any<OVal, OErrors>& v) {
 	assert(v.type() == getType<Val>());
-	return *static_cast<Val*>(static_cast<void*>(&v.storage));
+
+	Val ret = std::move(*static_cast<Val*>(static_cast<void*>(&v.storage)));
+	v.destructor();
+
+	return ret;
 }
 
 #endif

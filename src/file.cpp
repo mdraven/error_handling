@@ -1,0 +1,114 @@
+/*
+ * file.cpp
+ *
+ *  Created on: Jul 16, 2014
+ *      Author: mdraven
+ */
+
+#include <error_handling/error_handling.hpp>
+
+#include <cstdio>
+#include <cerrno>
+#include <cstring>
+
+namespace e = error_handling;
+
+using e::R;
+using e::V;
+using e::repack;
+using e::if_err;
+
+namespace other {
+
+struct FErr {
+	int err;
+
+	FErr() = default;
+	FErr(int err) : err(err) {}
+};
+
+R<FILE*, FErr> fopen(const char* path, const char* mode) noexcept {
+	FILE* handle = std::fopen(path, mode);
+	if(handle == NULL)
+		return FErr{errno};
+	return handle;
+}
+
+R<size_t, FErr> fread(void* ptr, size_t size, size_t nmemb, FILE* stream) noexcept {
+	size_t sz = std::fread(ptr, size, nmemb, stream);
+	if(sz < nmemb) {
+		int err = ferror(stream);
+		if(err != 0)
+			return FErr{err};
+	}
+	return sz;
+}
+
+R<size_t, FErr> fwrite(const void* ptr, size_t size, size_t nmemb, FILE* stream) noexcept {
+	size_t sz = std::fwrite(ptr, size, nmemb, stream);
+	if(sz < nmemb)
+		return FErr{errno};
+	return sz;
+}
+
+R<V, FErr> fclose(FILE* stream) noexcept {
+	int r = std::fclose(stream);
+	if(r == EOF)
+		return FErr{errno};
+	return V();
+}
+
+} /* namespace other */
+
+
+void write() {
+	namespace o = other;
+	using o::FErr;
+
+	R<FILE*, FErr> r1 = o::fopen("/tmp/error_handling", "w");
+
+	R<V, FErr> r2 = repack<V>(std::move(r1), [](FILE* handle) {
+		const char txt[] = "hello, world!";
+		R<size_t, FErr> r1 = o::fwrite(txt, 1, sizeof(txt), handle);
+
+		return repack<V>(std::move(r1), [handle](size_t i) {
+			printf("Was written %lu elements\n", i);
+			return o::fclose(handle);
+		});
+	});
+
+	if_err<FErr>(std::move(r2), [](FErr&& err) {
+		printf("Error: %s\n", std::strerror(err.err));
+		return;
+	});
+}
+
+void read() {
+	namespace o = other;
+	using o::FErr;
+
+	R<FILE*, FErr> r1 = o::fopen("/tmp/error_handling", "r");
+
+	R<V, FErr> r2 = repack<V>(std::move(r1), [](FILE* handle) {
+		char buf[20];
+		R<size_t, FErr> r1 = o::fread(buf, 1, sizeof(buf), handle);
+
+		return repack<V>(std::move(r1), [buf](int i) {
+			printf("%.*s\n", i, buf);
+			return;
+		});
+	});
+
+	if_err<FErr>(std::move(r2), [](FErr&& err) {
+		printf("Error: %s\n", std::strerror(err.err));
+		return;
+	});
+}
+
+int main() {
+	write();
+
+	read();
+
+	return 0;
+}

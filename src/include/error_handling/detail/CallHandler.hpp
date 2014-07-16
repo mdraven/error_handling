@@ -74,7 +74,7 @@ class CallHandler {
 
 	struct Constraints {
 		template <class Arg, class UnOp>
-		static void returnsRet(const UnOp, const Arg) {
+		static void returnsRet(const UnOp&, const Arg&) {
 			static_assert(std::is_convertible<typename std::result_of<UnOp(Arg&&)>::type,
 					RetType>::value, "Cannot convert from `UnOp(Arg&&) to `RetType`: Maybe your error handler returns too common type?");
 		}
