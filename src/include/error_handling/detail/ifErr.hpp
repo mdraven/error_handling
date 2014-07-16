@@ -127,8 +127,7 @@ class IfErrsImpl {
 			using NewErrors = typename Remove<CErrors, CallArg>::type;
 
 			if(unsafe_access_to_internal_data(v).type() == getType<CallArg>()) {
-				CallArg ret;
-		    	AssignHelper::assign(ret, std::move(v), AssignHelperSeal());
+				CallArg ret = AssignHelper::assign<CallArg>(std::move(v), AssignHelperSeal());
 
 		    	return CallHandler<RetType>::template call<Val>(getFront(ops),
 		    			std::move(ret), CallHandlerSeal());

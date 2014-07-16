@@ -48,8 +48,7 @@ public:
 	static RetType
 	call(Ret<Val, Errors>&& v, UnOp op, const RepacksSeal) {
 	    if(unsafe_access_to_internal_data(v).type() == getType<Val>()) {
-	    	Val ret;
-	    	AssignHelper::assign(ret, std::move(v), AssignHelperSeal());
+	    	Val ret = AssignHelper::assign<Val>(std::move(v), AssignHelperSeal());
 
 	    	return CallHandler<RetType>::template call<OVal>(op,
 	    			std::move(ret), CallHandlerSeal());

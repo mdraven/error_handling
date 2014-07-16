@@ -23,8 +23,13 @@ namespace other {
 struct FErr {
 	int err;
 
-	FErr() = default;
 	FErr(int err) : err(err) {}
+};
+
+struct FEof {
+	size_t sz;
+
+	FEof(size_t sz) : sz(sz) {}
 };
 
 R<FILE*, FErr> fopen(const char* path, const char* mode) noexcept {
@@ -34,12 +39,16 @@ R<FILE*, FErr> fopen(const char* path, const char* mode) noexcept {
 	return handle;
 }
 
-R<size_t, FErr> fread(void* ptr, size_t size, size_t nmemb, FILE* stream) noexcept {
+R<size_t, FErr, FEof> fread(void* ptr, size_t size, size_t nmemb, FILE* stream) noexcept {
 	size_t sz = std::fread(ptr, size, nmemb, stream);
 	if(sz < nmemb) {
 		int err = ferror(stream);
-		if(err != 0)
+		if(err)
 			return FErr{err};
+
+		int eof = feof(stream);
+		if(eof)
+			return FEof{sz};
 	}
 	return sz;
 }
@@ -86,14 +95,20 @@ void write() {
 void read() {
 	namespace o = other;
 	using o::FErr;
+	using o::FEof;
 
 	R<FILE*, FErr> r1 = o::fopen("/tmp/error_handling", "r");
 
 	R<V, FErr> r2 = repack<V>(std::move(r1), [](FILE* handle) {
 		char buf[20];
-		R<size_t, FErr> r1 = o::fread(buf, 1, sizeof(buf), handle);
+		R<size_t, FErr, FEof> r1 = o::fread(buf, 1, sizeof(buf), handle);
 
-		return repack<V>(std::move(r1), [buf](int i) {
+		R<size_t, FErr> r2 = if_err<FEof>(std::move(r1), [](FEof&& eof) {
+			printf("EOF: %lu bytes were read\n", eof.sz);
+			return eof.sz;
+		});
+
+		return repack<V>(std::move(r2), [buf](int i) {
 			printf("%.*s\n", i, buf);
 			return;
 		});

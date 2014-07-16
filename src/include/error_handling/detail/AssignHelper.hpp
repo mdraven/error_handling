@@ -42,10 +42,10 @@ struct AssignHelper {
 	}
 
 	template <class T, class OVal, class OErrors>
-	static void assign(T& v, Ret<OVal, OErrors>&& ov, const AssignHelperSeal) {
+	static T assign(Ret<OVal, OErrors>&& ov, const AssignHelperSeal) {
 		Any<OVal, OErrors>& oany = unsafe_access_to_internal_data(ov);
 
-		v = std::move(unsafe_cast<T>(oany));
+		return unsafe_cast<T>(oany);
 	}
 };
 
