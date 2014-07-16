@@ -172,6 +172,19 @@ decltype(error_handling::R<int>() + ErrX) func() {
 	return 10;
 }
 
+struct NumberWithVeeeeeeryLongNaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame {
+	unsigned long v;
+
+	NumberWithVeeeeeeryLongNaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame() {}
+	NumberWithVeeeeeeryLongNaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame(unsigned long v) : v(v) {}
+	NumberWithVeeeeeeryLongNaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame(const NumberWithVeeeeeeryLongNaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame& v) : v(v.v) {};
+};
+
+NumberWithVeeeeeeryLongNaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame operator+(const NumberWithVeeeeeeryLongNaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame& a,
+		const NumberWithVeeeeeeryLongNaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame& b) {
+	return a.v + b.v;
+}
+
 int main() {
 	using error_handling::R;
 	using error_handling::if_err;
@@ -181,7 +194,7 @@ int main() {
 	using error_handling::N;
 	using error_handling::V;
 
-#if 1
+#if 0
 	std::string str("hello");
 	R<std::string> ret(std::move(str));
 
@@ -361,7 +374,9 @@ int main() {
 #if 0
     {
     	std::vector<int> num{1, 2, 3, 13, 15};
-    	for(size_t i = 0; i < 100000000; ++i)
+    	size_t sz = 200000000;
+    	num.reserve(sz);
+    	for(size_t i = 0; i < sz; ++i)
     		num.push_back(i);
 
     	VectorIter<int> it(num.begin(), num.end(), num.end());
@@ -378,14 +393,41 @@ int main() {
     }
 #endif
 
-#if 1
+#if 0
+    {
+    	std::vector<NumberWithVeeeeeeryLongNaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame> num{1, 2, 3, 13, 15};
+    	size_t sz = 200000000;
+    	num.reserve(sz);
+    	for(size_t i = 0; i < sz; ++i)
+    		num.push_back(NumberWithVeeeeeeryLongNaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame(i));
+
+    	VectorIter<NumberWithVeeeeeeryLongNaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame> it(num.begin(), num.end(), num.end());
+
+    	R<NumberWithVeeeeeeryLongNaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame, EndSeq> ret2 = fold_iter(it, LastIter(),
+    			R<NumberWithVeeeeeeryLongNaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame, EndSeq>(
+    					NumberWithVeeeeeeryLongNaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame(0)),
+    			[](NumberWithVeeeeeeryLongNaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame&& num1,
+    					NumberWithVeeeeeeryLongNaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame&& num2) { return num1 + num2; });
+    	R<V, EndSeq> res2 = repack<V>(std::move(ret2),
+    			[](NumberWithVeeeeeeryLongNaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame&& num) { std::cout << num.v << std::endl; return; });
+    	if_err<EndSeq>(std::move(res2), [](EndSeq&&) { std::cout << "EndSeq" << std::endl; });
+
+//    	NumberWithVeeeeeeryLongNaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame res3 = fold_iter2(num.begin(), num.end(),
+//    			NumberWithVeeeeeeryLongNaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame(0),
+//    			[](NumberWithVeeeeeeryLongNaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame&& num1,
+//    					NumberWithVeeeeeeryLongNaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame&& num2) { return num1 + num2; });
+//    	std::cout << res3.v << std::endl;
+    }
+#endif
+
+#if 0
     {
     	R<int, ErrA, ErrB, ErrC, ErrUnk> ret = func();
     	auto z = ErrX;
     }
 #endif
 
-#if 1
+#if 0
     {
     	R<int, ErrA, ErrB, ErrC> ret1{ErrA()};
     	R<int> ret2 = if_errT(std::move(ret1), [](ErrA) {}, [](ErrC) {}, [](ErrB) {});
