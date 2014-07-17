@@ -69,8 +69,8 @@ public:
 	static
 	TypeIndex
 	call(TypeIndex ti) {
-		if(ti == 1)
-			return 1;
+		if(ti == GetTypeIndex<Val, FromErrors>::template call<Val>())
+			return GetTypeIndex<Val, FromErrors>::template call<Val>();
 		else
 			return errors<ToErrors>(ti);
 	}
@@ -238,7 +238,6 @@ class Any {
 		static void anyOValOErr(const Any<OVal, OErrors>& v) {
 			static const bool is_convertible_val = std::is_convertible<OVal, Val>::value;
 			assert((is_convertible_val || v.ti != val_ti));
-			// TODO проверка на возможность map errors
 		}
 	};
 public:
@@ -277,6 +276,8 @@ public:
 
 	template <class OVal, class OErrors>
 	Any(Any<OVal, OErrors>&& v) : ti(0) {
+		Constraints::anyOValOErr(v);
+
 		if(v.ti == 0)
 			clear();
 		else {
@@ -320,6 +321,8 @@ public:
 
 	template <class OVal, class OErrors>
 	Any<Val, Errors>& operator=(const Any<OVal, OErrors>& v) {
+		Constraints::anyOValOErr(v);
+
 		if(v.ti == 0)
 			clear();
 		else {
@@ -339,6 +342,8 @@ public:
 	}
 
 	Any<Val, Errors>& operator=(Any<Val, Errors>&& v) noexcept {
+		Constraints::anyOValOErr(v);
+
 		if(this == &v)
 			return *this;
 
@@ -363,6 +368,8 @@ public:
 
 	template <class OVal, class OErrors>
 	Any<Val, Errors>& operator=(Any<OVal, OErrors>&& v) noexcept {
+		Constraints::anyOValOErr(v);
+
 		if(v.ti == 0)
 			clear();
 		else {
