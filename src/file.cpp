@@ -107,9 +107,9 @@ void read() {
 			return eof.sz;
 		});
 
-		return repack<V>(std::move(r2), [buf](int i) {
+		return repack<V>(std::move(r2), [buf, handle](int i) {
 			printf("%.*s\n", i, buf);
-			return;
+			return o::fclose(handle);
 		});
 	});
 
