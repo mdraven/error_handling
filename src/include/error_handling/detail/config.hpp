@@ -18,6 +18,7 @@
 
 #ifndef NDEBUG
   #include <iostream>
+  #include <typeinfo>
   #define ERROR_HANDLING_DEBUG_MSG(TYPE, MSG) \
 	  std::cerr << (MSG) << typeid TYPE .name() << std::endl;
 #else

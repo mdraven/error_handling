@@ -69,21 +69,6 @@ R<V, FErr> fclose(FILE* stream) noexcept {
 
 } /* namespace other */
 
-namespace error_handling {
-namespace uuids {
-
-template <>
-struct TypeUUID<::other::FEof> {
-	static
-	const UUID* get() {
-		static UUID uuid{{10, 10, 10, 10}};
-		return &uuid;
-	}
-};
-
-}
-}
-
 void write() {
 	namespace o = other;
 	using o::FErr;

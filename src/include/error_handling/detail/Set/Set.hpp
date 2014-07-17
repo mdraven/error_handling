@@ -21,6 +21,7 @@
 #include <boost/mpl/remove_if.hpp>
 #include <boost/mpl/is_sequence.hpp>
 #include <boost/mpl/size_t.hpp>
+#include <boost/mpl/pair.hpp>
 
 namespace error_handling {
 
@@ -125,6 +126,13 @@ struct AccumulateToSetFromPred {
 		};
 	};
 	using type = typename m::fold<Seq, m::set<>, m::if_<Pred<m::_2>, m::bind<Helper, m::_1, m::_2>, m::_1>>::type;
+};
+
+template <class Set, class Elem>
+class Index {
+	using Iter = typename m::find<Set, Elem>::type;
+public:
+	static const std::size_t value = m::distance<typename m::begin<Set>::type, Iter>::value;
 };
 
 } /* namespace detail */
