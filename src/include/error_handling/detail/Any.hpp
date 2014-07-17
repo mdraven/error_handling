@@ -218,7 +218,7 @@ class Any {
 		template <class OVal, class OErrors>
 		static void anyOValOErr(const Any<OVal, OErrors>& v) {
 			static const bool is_convertible_val = std::is_convertible<OVal, Val>::value;
-			assert((!is_convertible_val && v.ti == val_ti));
+			assert((is_convertible_val || v.ti != val_ti));
 			// TODO проверка на возможность map errors
 		}
 	};
