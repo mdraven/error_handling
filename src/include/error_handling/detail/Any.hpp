@@ -46,16 +46,35 @@ public:
 	}
 };
 
-//template <class Val, class FromErrors, class ToErrors>
-//class MapTypeIndex {
-//public:
-//	static
-//	TypeIndex
-//	call(TypeIndex ti) {
-//		return ;
-//	}
-//
-//};
+template <class Val, class FromErrors, class ToErrors>
+class MapTypeIndex {
+	template <class Errors>
+	static
+	typename std::enable_if<!IsEmpty<Errors>::value, TypeIndex>::type
+	errors(TypeIndex ti) {
+		using Error = typename Front<Errors>::type;
+		if(ti == GetTypeIndex<Val, FromErrors>::template call<Error>())
+			return GetTypeIndex<Val, ToErrors>::template call<Error>();
+		else
+			return errors<typename Remove<Errors, Error>::type>(ti);
+	}
+
+	template <class Errors>
+	static
+	typename std::enable_if<IsEmpty<Errors>::value, TypeIndex>::type
+	errors(TypeIndex ti) {
+		ERROR_HANDLING_CRITICAL_ERROR("Cannot map type.");
+	}
+public:
+	static
+	TypeIndex
+	call(TypeIndex ti) {
+		if(ti == 1)
+			return 1;
+		else
+			return errors<ToErrors>(ti);
+	}
+};
 
 template <class Action, class Val, class Errors>
 class DoAction {
@@ -205,11 +224,11 @@ class Any {
 
 	void destructor() {
 		DoAction<DestructorAction, Val, Errors>::call(&storage, ti, nullptr);
-		ti = 0;
+		ti = empty_ti;
 	}
 
 	void clear() {
-		if(ti == 0)
+		if(ti == empty_ti)
 			return;
 		destructor();
 	}
@@ -252,7 +271,7 @@ public:
 			clear();
 		else {
 			v.callCopyConstructor(&storage);
-			ti = v.ti;
+			ti = MapTypeIndex<Val, OErrors, Errors>::call(v.ti);
 		}
 	}
 
@@ -262,7 +281,7 @@ public:
 			clear();
 		else {
 			v.callMoveConstructor(&storage);
-			ti = v.ti;
+			ti = MapTypeIndex<Val, OErrors, Errors>::call(v.ti);
 			v.destructor();
 		}
 	}
@@ -313,7 +332,7 @@ public:
 				v.callCopyConstructor(&storage);
 			}
 
-			ti = v.ti;
+			ti = MapTypeIndex<Val, OErrors, Errors>::call(v.ti);
 		}
 
 		return *this;
@@ -356,7 +375,7 @@ public:
 				v.callMoveConstructor(&storage);
 			}
 
-			ti = v.ti;
+			ti = MapTypeIndex<Val, OErrors, Errors>::call(v.ti);
 			v.destructor();
 		}
 

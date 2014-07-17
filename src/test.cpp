@@ -504,6 +504,19 @@ int main() {
     }
 #endif
 
+#if 1
+    {   // must print: "ErrA"
+    	R<int, ErrA, ErrB> r1{ErrA()};
+    	R<int, ErrB, ErrA> r2 = std::move(r1);
+    	R<int, ErrA> r3 = if_err<ErrB>(std::move(r2), [](ErrB&&) {
+    		std::cout << "ErrB but is ErrA" << std::endl;
+    	});
+    	if_err<ErrA>(std::move(r3), [](ErrA&&) {
+    		std::cout << "ErrA" << std::endl;
+    	});
+    }
+#endif
+
 //	std::cout << IsUnOp<ErrA, Ops>::value << std::endl;
 //	std::cout << IsUnOp<ErrB, Ops>::value << std::endl;
 //	std::cout << IsUnOp<ErrC, Ops>::value << std::endl;
