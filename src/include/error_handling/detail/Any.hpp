@@ -23,6 +23,11 @@ class Any;
 template <class Val, class OVal, class OErrors>
 Val unsafe_cast(Any<OVal, OErrors>& v);
 
+using TypeIndex = unsigned char;
+static const TypeIndex empty_ti = 0;
+static const TypeIndex val_ti = 1;
+static const TypeIndex errs_ti_base = 2;
+
 template <class Val, class Errors>
 class GetTypeIndex {
 public:
@@ -30,16 +35,27 @@ public:
 	static
 	typename std::enable_if<std::is_same<T, Val>::value, size_t>::type
 	call() {
-		return 1;
+		return val_ti;
 	}
 
 	template <class T>
 	static
 	typename std::enable_if<IsContains<Errors, T>::value, size_t>::type
 	call() {
-		return Index<Errors, T>::value + 2;
+		return Index<Errors, T>::value + errs_ti_base;
 	}
 };
+
+//template <class Val, class FromErrors, class ToErrors>
+//class MapTypeIndex {
+//public:
+//	static
+//	TypeIndex
+//	call(TypeIndex ti) {
+//		return ;
+//	}
+//
+//};
 
 template <class Action, class Val, class Errors>
 class DoAction {
@@ -93,7 +109,7 @@ public:
 
 template <class Val, class Errors>
 class Any {
-	size_t ti; // 0 - empty; 1 - Val; 2... - Errors
+	TypeIndex ti; // 0 - empty; 1 - Val; 2... - Errors
 
 	static const size_t max_size = MaxSize<typename Insert<Errors, Val>::type>::value;
 	using Storage = typename std::aligned_storage<max_size>::type;
@@ -198,11 +214,19 @@ class Any {
 		destructor();
 	}
 
+	struct Constraints {
+		template <class OVal, class OErrors>
+		static void anyOValOErr(const Any<OVal, OErrors>& v) {
+			static const bool is_convertible_val = std::is_convertible<OVal, Val>::value;
+			assert((!is_convertible_val && v.ti == val_ti));
+			// TODO проверка на возможность map errors
+		}
+	};
 public:
-	Any() : ti(0) {}
+	Any() : ti(empty_ti) {}
 
-	Any(const Any<Val, Errors>& v) : ti(0) {
-		if(v.ti == 0)
+	Any(const Any<Val, Errors>& v) : ti(empty_ti) {
+		if(v.ti == empty_ti)
 			clear();
 		else {
 			v.callCopyConstructor(&storage);
@@ -222,6 +246,8 @@ public:
 
 	template <class OVal, class OErrors>
 	Any(const Any<OVal, OErrors>& v) : ti(0) {
+		Constraints::anyOValOErr(v);
+
 		if(v.ti == 0)
 			clear();
 		else {

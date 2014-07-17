@@ -96,6 +96,74 @@ public:
 	}
 };
 
+template <class T>
+class NumIter {
+	T i;
+	T end;
+public:
+	NumIter(T i, T end) : i(i), end(end) {}
+
+	bool operator==(const LastIter&) const {
+		return i == end;
+	}
+
+	bool operator!=(const LastIter&) const {
+		return i != end;
+	}
+
+	error_handling::R<T, EndSeq> operator*() {
+		if(i == end)
+			return EndSeq();
+		return i;
+	}
+
+	NumIter operator++(int) {
+		NumIter ret(i, end);
+		if(i != end)
+			++i;
+		return ret;
+	}
+
+	NumIter& operator++() {
+		if(i != end)
+			++i;
+		return *this;
+	}
+};
+
+template <class T>
+class NumIterO {
+	T i;
+	T end;
+public:
+	NumIterO(T i, T end) : i(i), end(end) {}
+
+	bool operator==(const LastIter&) const {
+		return i == end;
+	}
+
+	bool operator!=(const LastIter&) const {
+		return i != end;
+	}
+
+	T operator*() {
+		return i;
+	}
+
+	NumIterO operator++(int) {
+		NumIterO ret(i, end);
+		if(i != end)
+			++i;
+		return ret;
+	}
+
+	NumIterO& operator++() {
+		if(i != end)
+			++i;
+		return *this;
+	}
+};
+
 template <class FIter, class LIter, class Init, class F>
 Init fold_rec(FIter first, LIter last, Init&& init, F f) {
 	using Ret = error_handling::IsRet<Init>;
@@ -371,25 +439,21 @@ int main() {
     }
 #endif
 
-#if 0
+#if 1
     {
-    	std::vector<int> num{1, 2, 3, 13, 15};
-    	size_t sz = 200000000;
-    	num.reserve(sz);
-    	for(size_t i = 0; i < sz; ++i)
-    		num.push_back(i);
+    	const unsigned long sz = 2000000000;
+    	NumIter<unsigned long> it(0, sz);
+    	NumIterO<unsigned long> ito(0, sz);
 
-    	VectorIter<int> it(num.begin(), num.end(), num.end());
-
-    	R<unsigned long, EndSeq> ret2 = fold_iter(it, LastIter(), R<unsigned long, EndSeq>(0UL),
-    			[](unsigned long&& num1, unsigned long&& num2) { return num1 + num2; });
-    	R<V, EndSeq> res2 = repack<V>(std::move(ret2),
-    			[](unsigned long&& num) { std::cout << num << std::endl; return; });
-    	if_err<EndSeq>(std::move(res2), [](EndSeq&&) { std::cout << "EndSeq" << std::endl; });
-
-//    	unsigned long res3 = fold_iter2(num.begin(), num.end(), 0UL,
+//    	R<unsigned long, EndSeq> ret2 = fold_iter(it, LastIter(), R<unsigned long, EndSeq>(0UL),
 //    			[](unsigned long&& num1, unsigned long&& num2) { return num1 + num2; });
-//    	std::cout << res3 << std::endl;
+//    	R<V, EndSeq> res2 = repack<V>(std::move(ret2),
+//    			[](unsigned long&& num) { std::cout << num << std::endl; return; });
+//    	if_err<EndSeq>(std::move(res2), [](EndSeq&&) { std::cout << "EndSeq" << std::endl; });
+
+    	unsigned long res3 = fold_iter2(ito, LastIter(), 0UL,
+    			[](unsigned long&& num1, unsigned long&& num2) { return num1 + num2; });
+    	std::cout << res3 << std::endl;
     }
 #endif
 
