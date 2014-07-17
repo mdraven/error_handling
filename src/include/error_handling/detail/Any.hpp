@@ -252,8 +252,8 @@ public:
 		}
 	}
 
-	Any(Any<Val, Errors>&& v) : ti(0) {
-		if(v.ti == 0)
+	Any(Any<Val, Errors>&& v) : ti(empty_ti) {
+		if(v.ti == empty_ti)
 			clear();
 		else {
 			v.callMoveConstructor(&storage);
@@ -263,10 +263,10 @@ public:
 	}
 
 	template <class OVal, class OErrors>
-	Any(const Any<OVal, OErrors>& v) : ti(0) {
+	Any(const Any<OVal, OErrors>& v) : ti(empty_ti) {
 		Constraints::anyOValOErr(v);
 
-		if(v.ti == 0)
+		if(v.ti == empty_ti)
 			clear();
 		else {
 			v.callCopyConstructor(&storage);
@@ -275,10 +275,10 @@ public:
 	}
 
 	template <class OVal, class OErrors>
-	Any(Any<OVal, OErrors>&& v) : ti(0) {
+	Any(Any<OVal, OErrors>&& v) : ti(empty_ti) {
 		Constraints::anyOValOErr(v);
 
-		if(v.ti == 0)
+		if(v.ti == empty_ti)
 			clear();
 		else {
 			v.callMoveConstructor(&storage);
@@ -288,12 +288,12 @@ public:
 	}
 
 	template <class OVal>
-	Any(const OVal& v) : ti(0) {
+	Any(const OVal& v) : ti(empty_ti) {
 		valCopyConstructor(v);
 	}
 
 	template <class OVal>
-	Any(OVal&& v) : ti(0) {
+	Any(OVal&& v) : ti(empty_ti) {
 		valMoveConstructor(std::move(v));
 	}
 
@@ -301,10 +301,10 @@ public:
 		if(this == &v)
 			return *this;
 
-		if(v.ti == 0)
+		if(v.ti == empty_ti)
 			clear();
 		else {
-			if(ti == 0)
+			if(ti == empty_ti)
 				v.callCopyConstructor(&storage);
 			else if(ti == v.ti)
 				v.callCopyAssign(&storage);
@@ -323,10 +323,10 @@ public:
 	Any<Val, Errors>& operator=(const Any<OVal, OErrors>& v) {
 		Constraints::anyOValOErr(v);
 
-		if(v.ti == 0)
+		if(v.ti == empty_ti)
 			clear();
 		else {
-			if(ti == 0)
+			if(ti == empty_ti)
 				v.callCopyConstructor(&storage);
 			else if(ti == v.ti)
 				v.callCopyAssign(&storage);
@@ -347,10 +347,10 @@ public:
 		if(this == &v)
 			return *this;
 
-		if(v.ti == 0)
+		if(v.ti == empty_ti)
 			clear();
 		else {
-			if(ti == 0)
+			if(ti == empty_ti)
 				v.callMoveConstructor(&storage);
 			else if(ti == v.ti)
 				v.callMoveAssign(&storage);
@@ -370,10 +370,10 @@ public:
 	Any<Val, Errors>& operator=(Any<OVal, OErrors>&& v) noexcept {
 		Constraints::anyOValOErr(v);
 
-		if(v.ti == 0)
+		if(v.ti == empty_ti)
 			clear();
 		else {
-			if(ti == 0)
+			if(ti == empty_ti)
 				v.callMoveConstructor(&storage);
 			else if(ti == v.ti)
 				v.callMoveAssign(&storage);
@@ -391,7 +391,7 @@ public:
 
 	template <class OVal>
 	Any<Val, Errors>& operator=(const OVal& v) {
-		if(ti == 0)
+		if(ti == empty_ti)
 			valCopyConstructor(v);
 		else if(ti == GetTypeIndex<Val, Errors>::template call<OVal>()) {
 			static_cast<OVal*>(&storage)->operator=(v);
@@ -406,7 +406,7 @@ public:
 
 	template <class OVal>
 	Any<Val, Errors>& operator=(OVal&& v) noexcept {
-		if(ti == 0)
+		if(ti == empty_ti)
 			valMoveConstructor(v);
 		else if(ti == GetTypeIndex<Val, Errors>::template call<OVal>()) {
 			static_cast<OVal*>(&storage)->operator=(v);
@@ -420,7 +420,7 @@ public:
 	}
 
 	bool empty() const noexcept {
-		return ti == 0;
+		return ti == empty_ti;
 	}
 
 	template <class T>
