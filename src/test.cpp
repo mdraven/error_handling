@@ -439,7 +439,7 @@ int main() {
     }
 #endif
 
-#if 1
+#if 0
     {
     	const unsigned long sz = 2000000000;
     	NumIter<unsigned long> it(0, sz);
