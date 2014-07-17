@@ -131,7 +131,8 @@ class Any {
 	TypeIndex ti; // 0 - empty; 1 - Val; 2... - Errors
 
 	static const size_t max_size = MaxSize<typename Insert<Errors, Val>::type>::value;
-	using Storage = typename std::aligned_storage<max_size>::type;
+	static const size_t max_align = MaxAlign<typename Insert<Errors, Val>::type>::value;
+	using Storage = typename std::aligned_storage<max_size, max_align>::type;
 	Storage storage;
 
 	template <class RVal, class OVal, class OErrors>

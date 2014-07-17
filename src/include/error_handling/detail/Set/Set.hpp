@@ -91,6 +91,15 @@ public:
 	static const std::size_t value = type::value;
 };
 
+template <class Set>
+class MaxAlign {
+	using First = typename m::front<Set>::type;
+	using type = typename m::fold<Set, m::size_t<alignof(First)>,
+			m::if_<m::less<m::_1, m::size_t<alignof(m::_2)>>, m::size_t<alignof(m::_2)>, m::_1>>::type;
+public:
+	static const std::size_t value = type::value;
+};
+
 template <class Seq, template <class...> class Builder>
 class SeqToVariadicType {
 	template <size_t i = m::size<Seq>::value, class... Acc>
