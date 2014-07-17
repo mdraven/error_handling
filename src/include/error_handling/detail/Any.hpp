@@ -62,7 +62,7 @@ class MapTypeIndex {
 	template <class Errors>
 	static
 	typename std::enable_if<IsEmpty<Errors>::value, TypeIndex>::type
-	errors(TypeIndex ti) {
+	errors(TypeIndex) {
 		ERROR_HANDLING_CRITICAL_ERROR("Cannot map type.");
 	}
 public:
