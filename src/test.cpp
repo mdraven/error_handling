@@ -518,6 +518,22 @@ int main() {
 #endif
 
 #if 1
+    {   // must print: "ErrA"
+    	R<int, ErrA, ErrB, ErrC> r1{ErrA()};
+    	R<int, ErrB, ErrA, ErrC> r2 = std::move(r1);
+    	R<int, ErrC, ErrA> r3 = if_err<ErrB>(std::move(r2), [](ErrB&&) {
+    		std::cout << "ErrB but is ErrA" << std::endl;
+    	});
+    	R<int, ErrA> r4 = if_err<ErrC>(std::move(r3), [](ErrC&&) {
+    		std::cout << "ErrC but is ErrA" << std::endl;
+    	});
+    	if_err<ErrA>(std::move(r4), [](ErrA&&) {
+    		std::cout << "ErrA" << std::endl;
+    	});
+    }
+#endif
+
+#if 0
     {
     	const unsigned long sz = 8000000000;
     	NumIterO<unsigned long> ito(0, sz);
