@@ -1,8 +1,8 @@
 /*
- * error_handling.hpp
+ * Copyright (C) 2014 Ramil Iljasov
  *
- *  Created on: Jul 7, 2014
- *      Author: mdraven
+ * Distributed under the Boost Software License, Version 1.0.
+ *
  */
 
 #ifndef ERROR_HANDLING_HPP_

@@ -1,8 +1,8 @@
 /*
- * RetVal.hpp
+ * Copyright (C) 2014 Ramil Iljasov
  *
- *  Created on: Jul 8, 2014
- *      Author: mdraven
+ * Distributed under the Boost Software License, Version 1.0.
+ *
  */
 
 #ifndef RETVAL_HPP_

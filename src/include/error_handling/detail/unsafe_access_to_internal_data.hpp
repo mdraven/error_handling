@@ -1,8 +1,8 @@
 /*
- * unsafe_access_to_internal_data.hpp
+ * Copyright (C) 2014 Ramil Iljasov
  *
- *  Created on: Jul 8, 2014
- *      Author: mdraven
+ * Distributed under the Boost Software License, Version 1.0.
+ *
  */
 
 #ifndef UNSAFE_ACCESS_TO_INTERNAL_DATA_HPP_

@@ -1,8 +1,8 @@
 /*
- * config.hpp
+ * Copyright (C) 2014 Ramil Iljasov
  *
- *  Created on: Jul 11, 2014
- *      Author: mdraven
+ * Distributed under the Boost Software License, Version 1.0.
+ *
  */
 
 #ifndef CONFIG_HPP_
