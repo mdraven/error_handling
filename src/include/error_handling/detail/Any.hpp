@@ -49,67 +49,59 @@ public:
 
 template <class Val, class FromErrors, class ToErrors>
 class MapTypeIndex {
-	template <class Errors>
-	static
-	typename std::enable_if<!IsEmpty<Errors>::value, TypeIndex>::type
-	errors(TypeIndex ti) {
-		using Error = typename Front<Errors>::type;
-		if(ti == GetTypeIndex<Val, FromErrors>::template call<Error>())
-			return GetTypeIndex<Val, ToErrors>::template call<Error>();
-		else
-			return errors<typename Remove<Errors, Error>::type>(ti);
-	}
+	class Table {
+		using Types = typename Union<FromErrors, ToErrors>::type;
 
-	template <class Errors>
-	static
-	typename std::enable_if<IsEmpty<Errors>::value, TypeIndex>::type
-	errors(TypeIndex) {
-		ERROR_HANDLING_CRITICAL_ERROR("Cannot map type.");
-	}
+		template <class Errors>
+		static
+		typename std::enable_if<!IsEmpty<Errors>::value>::type
+		fill(TypeIndex* map) {
+			using Error = typename Front<Errors>::type;
 
-	template <class Errors>
-	static
-	typename std::enable_if<!IsEmpty<Errors>::value>::type
-	fill(TypeIndex* map) {
-		using Error = typename Front<Errors>::type;
+			const TypeIndex ind_from = GetTypeIndex<Val, FromErrors>::template call<Error>();
+			const TypeIndex ind_to = GetTypeIndex<Val, ToErrors>::template call<Error>();
+			map[ind_from] = ind_to;
 
-		const TypeIndex ind_from = GetTypeIndex<Val, FromErrors>::template call<Error>();
-		const TypeIndex ind_to = GetTypeIndex<Val, ToErrors>::template call<Error>();
-		map[ind_from] = ind_to;
+			fill<typename Remove<Errors, Error>::type>(map);
+		}
 
-		fill<typename Remove<Errors, Error>::type>(map);
-	}
+		template <class Errors>
+		static
+		typename std::enable_if<IsEmpty<Errors>::value>::type
+		fill(TypeIndex*) {}
 
-	template <class Errors>
-	static
-	typename std::enable_if<IsEmpty<Errors>::value>::type
-	fill(TypeIndex*) {}
+		TypeIndex map[Size<Types>::value + 2]; // errors + val + empty
+	public:
+		Table() {
+#ifndef NDEBUG
+			static const auto max = std::numeric_limits<TypeIndex>::max();
+			std::fill(std::begin(map), std::end(map), max);
+#endif
+			map[empty_ti] = empty_ti;
+			map[val_ti] = val_ti;
+
+			fill<typename Intersection<FromErrors, ToErrors>::type>(map);
+		}
+
+		TypeIndex operator[](TypeIndex i) const {
+#ifndef NDEBUG
+			static const auto max = std::numeric_limits<TypeIndex>::max();
+			if(map[i] == max) {
+				ERROR_HANDLING_CRITICAL_ERROR("Cannot map type.");
+			}
+#endif
+
+			return map[i];
+		}
+	};
+
 public:
 	static
 	TypeIndex
 	call(TypeIndex ti) {
-		const auto max = std::numeric_limits<TypeIndex>::max();
-		(void)max;
+		static const Table table;
 
-		using Types = typename Union<FromErrors, ToErrors>::type;
-		TypeIndex map[Size<Types>::value + 2]; // errors + val + empty
-
-#ifndef NDEBUG
-		std::fill(std::begin(map), std::end(map), max);
-#endif
-
-		map[empty_ti] = empty_ti;
-		map[val_ti] = val_ti;
-
-		fill<typename Intersection<FromErrors, ToErrors>::type>(map);
-
-#ifndef NDEBUG
-		if(map[ti] == max) {
-			ERROR_HANDLING_CRITICAL_ERROR("Cannot map type.");
-		}
-#endif
-
-		return map[ti];
+		return table[ti];
 	}
 };
 
