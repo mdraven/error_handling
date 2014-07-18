@@ -1171,7 +1171,13 @@ public:
    ----------+-------+---------|
    without EH| 5.09s | 10.35s  |
    with EH   | 7.63s | 128s    |
+   with EH-br| 5.10s | 128.4s  |
    ----------+-------+---------|
+
+   Вначале сделал два первых теста, потом взглянул на asm-листинг(ниже) и обнаружил,
+   что в версии "with EH" компилятор не догадался, что я под f_break я имел ввиду break :(
+   Тогда я написал версию "with EH" где f_break явно делал break(with EH-br) -- оно заработало.
+   Впрочем до clang++ намёк, как всегда, недошёл.
 
    without EH:
      400c34:       31 c0                   xor    %eax,%eax
@@ -1180,7 +1186,7 @@ public:
      400c3f:       00 00 00 
      400c42:       eb 07                   jmp    400c4b <main+0x1b>
      400c44:       0f 1f 40 00             nopl   0x0(%rax)
-     400c48:       48 89 d6                mov    %rdx,%rsi
+     400c48:       48 89 d6                mov    %rdx,%rsi         ; sumo = sumo + ito
      400c4b:       48 83 c0 01             add    $0x1,%rax         ; ++ito
      400c4f:       48 39 c8                cmp    %rcx,%rax         ; ito != li
      400c52:       74 08                   je     400c5c <main+0x2c>
@@ -1188,7 +1194,7 @@ public:
      400c57:       48 01 c2                add    %rax,%rdx         ; sumo + ito
      400c5a:       73 ec                   jae    400c48 <main+0x18>; if overflow -> end for
      400c5c:       bf 60 20 60 00          mov    $0x602060,%edi    ; end for
-  with EH:
+   with EH:
      400d74:       31 c0                   xor    %eax,%eax
      400d76:       31 f6                   xor    %esi,%esi
      400d78:       48 b9 ff 4f d6 dc 01    movabs $0x1dcd64fff,%rcx ; 7999999999
@@ -1206,6 +1212,24 @@ public:
      400da3:       84 d2                   test   %dl,%dl           ; !f_break
      400da5:       74 e1                   je     400d88 <main+0x18>
      400da7:       bf c0 20 60 00          mov    $0x6020c0,%edi    ; end for
+   with EH-br:
+     400d70:       48 83 ec 08             sub    $0x8,%rsp
+     400d74:       31 c0                   xor    %eax,%eax
+     400d76:       31 f6                   xor    %esi,%esi
+     400d78:       48 b9 00 50 d6 dc 01    movabs $0x1dcd65000,%rcx ; 8000000000
+     400d7f:       00 00 00 
+     400d82:       66 0f 1f 44 00 00       nopw   0x0(%rax,%rax,1)
+     400d88:       48 89 c2                mov    %rax,%rdx         ; ito -> b
+     400d8b:       48 01 f2                add    %rsi,%rdx         ; a + b
+     400d8e:       73 20                   jae    400db0 <main+0x40>
+     400d90:       bf c0 20 60 00          mov    $0x6020c0,%edi    ; end for
+     400d##:   --- тут что-то было, но я это выкинул, так как не нужно ---
+     400da9:       0f 1f 80 00 00 00 00    nopl   0x0(%rax)
+     400db0:       48 83 c0 01             add    $0x1,%rax         ; ++ito
+     400db4:       48 89 d6                mov    %rdx,%rsi         ; sum = res
+     400db7:       48 39 c8                cmp    %rcx,%rax         ; ito != li
+     400dba:       75 cc                   jne    400d88 <main+0x18>
+     400dbc:       eb d2                   jmp    400d90 <main+0x20>
 */
 
 /* с -flto намного лучше компилирует */

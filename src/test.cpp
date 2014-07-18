@@ -530,13 +530,27 @@ int main() {
     		return a + b;
     	};
 
-#if 1
+#if 0
     	unsigned long sum = 0;
     	bool f_break = false;
     	for(; ito != li && !f_break; ++ito) {
     		auto r1 = add(sum, *ito);
     		auto r2 = repack<V>(std::move(r1), [&sum](unsigned long res) { sum = res; });
     		if_err<ErrA>(std::move(r2), [&f_break](ErrA) { f_break = true; });
+    	}
+    	std::cout << sum << std::endl;
+#endif
+
+#if 1
+    	unsigned long sum = 0;
+    	bool f_break = false;
+    	for(; ito != li; ++ito) {
+    		auto r1 = add(sum, *ito);
+    		auto r2 = repack<V>(std::move(r1), [&sum](unsigned long res) { sum = res; });
+
+    		if_err<ErrA>(std::move(r2), [&f_break](ErrA) { f_break = true; });
+    		if(f_break)
+    			break;
     	}
     	std::cout << sum << std::endl;
 #endif
