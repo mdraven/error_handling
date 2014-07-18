@@ -533,6 +533,14 @@ int main() {
     }
 #endif
 
+#if 1
+    {
+    	R<int, ErrA, ErrA, ErrC, ErrA, ErrA, ErrC> r1{ErrA()}; // duplicates
+    	R<int, ErrA, ErrC> r2 = std::move(r1);
+    	if_errT(std::move(r2), [](ErrA) {}, [](ErrC) {});
+    }
+#endif
+
 #if 0
     {
     	const unsigned long sz = 8000000000;

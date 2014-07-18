@@ -40,17 +40,17 @@ using ErOp = error_handling::detail::ErOp<error_handling::detail::Set<Errors...>
 template <class Val>
 using ValOp = error_handling::detail::ValOp<Val>;
 
-template <class... CErrors, class Val, class... Errors,
+template <class... CErrors, class Val, class Errors,
 class... UnOps>
-auto if_err(R<Val, Errors...>&& v, UnOps... ops)
+auto if_err(error_handling::detail::Ret<Val, Errors>&& v, UnOps... ops)
 ->decltype(error_handling::detail::IfErr<error_handling::detail::Set<CErrors...>>::template call(std::move(v),
 		error_handling::detail::FSet(std::forward<UnOps>(ops)...))) {
 	return error_handling::detail::IfErr<error_handling::detail::Set<CErrors...>>::call(std::move(v),
 			error_handling::detail::FSet(std::forward<UnOps>(ops)...));
 }
 
-template <class Val, class... Errors, class... UnOps>
-auto if_errT(R<Val, Errors...>&& v, UnOps... ops)
+template <class Val, class Errors, class... UnOps>
+auto if_errT(error_handling::detail::Ret<Val, Errors>&& v, UnOps... ops)
 ->decltype(error_handling::detail::IfErr<T>::template call(std::move(v),
 		error_handling::detail::FSet(std::forward<UnOps>(ops)...))) {
 	return error_handling::detail::IfErr<T>::call(std::move(v),

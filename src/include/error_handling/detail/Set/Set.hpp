@@ -30,8 +30,18 @@ namespace detail {
 
 namespace m = boost::mpl;
 
+template <class Seq, class Elem>
+struct IsContains {
+	static const bool value = m::contains<Seq, Elem>::value;
+};
+
+template <class Set>
+struct RemoveDuplicates {
+	using type = typename m::fold<Set, m::set<>, m::if_<IsContains<m::_1, m::_2>, m::_1, m::insert<m::_1, m::_2>>>::type;
+};
+
 template <class... Args>
-using Set = m::set<Args...>;
+using Set = typename RemoveDuplicates<m::set<Args...>>::type;
 
 struct SetInserter {
 	using state = m::set<>;
@@ -40,6 +50,7 @@ struct SetInserter {
 
 template <class Set, class Elem>
 struct Insert {
+	// TODO: insert without duplicates
 	using type = typename m::insert<Set, Elem>::type;
 };
 
@@ -61,16 +72,6 @@ struct Size {
 template <class Seq>
 struct Front {
 	using type = typename m::front<Seq>::type;
-};
-
-template <class Seq, class Elem>
-struct IsContains {
-	static const bool value = m::contains<Seq, Elem>::value;
-};
-
-template <class Set>
-struct RemoveDuplicates {
-	using type = typename m::fold<Set, m::set<>, m::if_<IsContains<m::_1, m::_2>, m::_1, m::insert<m::_1, m::_2>>>::type;
 };
 
 template <class Seq1, class Seq2>
