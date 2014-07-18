@@ -1194,7 +1194,7 @@ public:
      400d78:       48 b9 ff 4f d6 dc 01    movabs $0x1dcd64fff,%rcx ; 7999999999
      400d7f:       00 00 00 
      400d82:       66 0f 1f 44 00 00       nopw   0x0(%rax,%rax,1)
-     400d88:       48 89 c7                mov    %rax,%rdi
+     400d88:       48 89 c7                mov    %rax,%rdi         ; ito -> b
      400d8b:       ba 01 00 00 00          mov    $0x1,%edx         ; f_break = true
      400d90:       48 01 f7                add    %rsi,%rdi         ; a + b
      400d93:       72 05                   jb     400d9a <main+0x2a>
