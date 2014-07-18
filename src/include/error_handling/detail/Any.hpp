@@ -11,6 +11,7 @@
 #include <error_handling/detail/EnableIfNotUniversalRef.hpp>
 #include <error_handling/detail/config.hpp>
 
+#include <limits>
 #include <cassert>
 
 namespace error_handling {
@@ -65,14 +66,50 @@ class MapTypeIndex {
 	errors(TypeIndex) {
 		ERROR_HANDLING_CRITICAL_ERROR("Cannot map type.");
 	}
+
+	template <class Errors>
+	static
+	typename std::enable_if<!IsEmpty<Errors>::value>::type
+	fill(TypeIndex* map) {
+		using Error = typename Front<Errors>::type;
+
+		const TypeIndex ind_from = GetTypeIndex<Val, FromErrors>::template call<Error>();
+		const TypeIndex ind_to = GetTypeIndex<Val, ToErrors>::template call<Error>();
+		map[ind_from] = ind_to;
+
+		fill<typename Remove<Errors, Error>::type>(map);
+	}
+
+	template <class Errors>
+	static
+	typename std::enable_if<IsEmpty<Errors>::value>::type
+	fill(TypeIndex*) {}
 public:
 	static
 	TypeIndex
 	call(TypeIndex ti) {
-		if(ti == GetTypeIndex<Val, FromErrors>::template call<Val>())
-			return GetTypeIndex<Val, FromErrors>::template call<Val>();
-		else
-			return errors<typename Intersection<FromErrors, ToErrors>::type>(ti);
+		const auto max = std::numeric_limits<TypeIndex>::max();
+		(void)max;
+
+		using Types = typename Union<FromErrors, ToErrors>::type;
+		TypeIndex map[Size<Types>::value + 2]; // errors + val + empty
+
+#ifndef NDEBUG
+		std::fill(std::begin(map), std::end(map), max);
+#endif
+
+		map[empty_ti] = empty_ti;
+		map[val_ti] = val_ti;
+
+		fill<typename Intersection<FromErrors, ToErrors>::type>(map);
+
+#ifndef NDEBUG
+		if(map[ti] == max) {
+			ERROR_HANDLING_CRITICAL_ERROR("Cannot map type.");
+		}
+#endif
+
+		return map[ti];
 	}
 };
 
