@@ -20,7 +20,7 @@
   #include <iostream>
   #include <typeinfo>
   #define ERROR_HANDLING_DEBUG_MSG(TYPE, MSG) \
-	  std::cerr << (MSG) << typeid TYPE .name() << std::endl;
+	  std::cerr << (MSG) << ' ' << typeid TYPE .name() << std::endl;
 #else
   #define ERROR_HANDLING_DEBUG_MSG(TYPE, MSG)
 #endif
