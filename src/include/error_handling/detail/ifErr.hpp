@@ -95,9 +95,9 @@ class IfErrsImpl {
 			template <class CErrors,
 			class Val, class Errors>
 			static
-			RetType
-			call(Ret<Val, Errors>&& v, UnOps ops) {
-				return IfErrsImpl<RetType>::callHandlers<CErrors, Val, Errors>(std::move(v), ops);
+			void
+			call(RetType& ret, Ret<Val, Errors>&& v, UnOps ops) {
+				return IfErrsImpl<RetType>::callHandlers<CErrors, Val, Errors>(ret, std::move(v), ops);
 			}
 		};
 
@@ -106,17 +106,17 @@ class IfErrsImpl {
 			template <class CErrors,
 			class Val, class Errors>
 			static
-			RetType
-			call(Ret<Val, Errors>&& v, UnOps ops) {
-				return IfErrsImpl<RetType>::callHandlers<CErrors, Val, Errors>(std::move(v), popFront(ops));
+			void
+			call(RetType& ret, Ret<Val, Errors>&& v, UnOps ops) {
+				return IfErrsImpl<RetType>::callHandlers<CErrors, Val, Errors>(ret, std::move(v), popFront(ops));
 			}
 		};
 	public:
 		template <class CErrors,
 		class Val, class Errors>
 		static
-		RetType
-		call(Ret<Val, Errors>&& v, UnOps ops) {
+		void
+		call(RetType& ret, Ret<Val, Errors>&& v, UnOps ops) {
 			using UnOp = typename Front<UnOps>::type;
 
 			static_assert(!IsEmpty<typename UnOpArgSet<CErrors, UnOp>::type>::value,
@@ -127,13 +127,13 @@ class IfErrsImpl {
 			using NewErrors = typename Remove<CErrors, CallArg>::type;
 
 			if(unsafe_access_to_internal_data(v).template isType<CallArg>()) {
-				CallArg ret = AssignHelper::assign<CallArg>(std::move(v), AssignHelperSeal());
+				CallArg arg = AssignHelper::assign<CallArg>(std::move(v), AssignHelperSeal());
 
-		    	return CallHandler<RetType>::template call<Val>(getFront(ops),
-		    			std::move(ret), CallHandlerSeal());
+		    	CallHandler<RetType>::template call<Val>(ret, getFront(ops),
+		    			std::move(arg), CallHandlerSeal());
 			}
-
-			return ItCanBeReused<(Size<CallArgs>::value > 1), void>::template call<NewErrors, Val, Errors>(std::move(v), ops);
+			else
+				ItCanBeReused<(Size<CallArgs>::value > 1), void>::template call<NewErrors, Val, Errors>(ret, std::move(v), ops);
 		}
 	};
 
@@ -143,13 +143,11 @@ class IfErrsImpl {
 		template <class CErrors,
 		class Val, class Errors>
 		static
-		RetType
-		call(Ret<Val, Errors>&& v, UnOps) {
+		void
+		call(RetType& ret, Ret<Val, Errors>&& v, UnOps) {
 			static_assert(IsEmpty<CErrors>::value, "`CErrors` is not empty: Not enough error handlers.");
 
-			RetType ret;
 			AssignHelper::assign(ret, std::move(v), AssignHelperSeal());
-		    return ret;
 		}
 	};
 
@@ -162,24 +160,22 @@ class IfErrsImpl {
 	class Val, class Errors,
 	class UnOps>
 	static
-	RetType callHandlers(Ret<Val, Errors>&& v, UnOps ops) {
+	void callHandlers(RetType& ret, Ret<Val, Errors>&& v, UnOps ops) {
 		Constraints<CErrors, UnOps, Val, Errors>();
 
-		return WithUnOps<UnOps>::template call<CErrors>(std::move(v), ops);
+		WithUnOps<UnOps>::template call<CErrors>(ret, std::move(v), ops);
 	}
 public:
 	template <class CErrors,
 	class Val, class Errors,
 	class UnOps>
 	static
-	RetType call(Ret<Val, Errors>&& v, UnOps ops, const IfErrsSeal) {
+	void call(RetType& ret, Ret<Val, Errors>&& v, UnOps ops, const IfErrsSeal) {
 		if(unsafe_access_to_internal_data(v).template isType<Val>()) {
-			RetType ret;
 			AssignHelper::assign(ret, std::move(v), AssignHelperSeal());
-		    return ret;
 		}
-
-		return IfErrsImpl<RetType>::callHandlers<CErrors, Val, Errors>(std::move(v), ops);
+		else
+			IfErrsImpl<RetType>::callHandlers<CErrors, Val, Errors>(ret, std::move(v), ops);
 	}
 };
 
@@ -205,7 +201,9 @@ public:
 	#endif
 
 		using RetType = typename IfErrsRetType<CErrors, Val, Errors, UnOps>::type;
-		return IfErrsImpl<RetType>::template call<CErrors>(std::move(v), ops, IfErrsSeal());
+		RetType ret;
+		IfErrsImpl<RetType>::template call<CErrors>(ret, std::move(v), ops, IfErrsSeal());
+		return ret;
 	}
 
 	template <class Val, class Errors,

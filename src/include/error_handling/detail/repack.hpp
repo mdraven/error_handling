@@ -45,18 +45,16 @@ template <class RetType>
 class RepacksImpl {
 public:
 	template <class OVal, class UnOp, class Val, class Errors>
-	static RetType
-	call(Ret<Val, Errors>&& v, UnOp op, const RepacksSeal) {
+	static void
+	call(RetType& ret, Ret<Val, Errors>&& v, UnOp op, const RepacksSeal) {
 	    if(unsafe_access_to_internal_data(v).template isType<Val>()) {
-	    	Val ret = AssignHelper::assign<Val>(std::move(v), AssignHelperSeal());
+	    	Val arg = AssignHelper::assign<Val>(std::move(v), AssignHelperSeal());
 
-	    	return CallHandler<RetType>::template call<OVal>(op,
-	    			std::move(ret), CallHandlerSeal());
+	    	CallHandler<RetType>::template call<OVal>(ret, op,
+	    			std::move(arg), CallHandlerSeal());
 	    }
-
-		Ret<OVal, Errors> ret;
-		AssignHelper::assign(ret, std::move(v), AssignHelperSeal());
-		return ret;
+	    else
+	    	AssignHelper::assign(ret, std::move(v), AssignHelperSeal());
 	}
 };
 
@@ -70,8 +68,9 @@ repack(Ret<Val, Errors>&& v, UnOp op) {
 #endif
 
 	using RetType = typename RepacksRetType<OVal, UnOp, Val, Errors>::type;
-
-	return RepacksImpl<RetType>::template call<OVal>(std::move(v), op, RepacksSeal());
+	RetType ret;
+	RepacksImpl<RetType>::template call<OVal>(ret, std::move(v), op, RepacksSeal());
+	return ret;
 }
 
 } /* namespace detail */

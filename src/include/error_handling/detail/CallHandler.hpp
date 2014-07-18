@@ -85,28 +85,28 @@ class CallHandler {
 public:
 	template <class Val, class Err, class UnOp,
 	class = typename EnableForReturnsVoid<Err&&, UnOp>::type::type>
-	static RetType call(UnOp op, Err&& err, const CallHandlerSeal) {
+	static void call(RetType& ret, UnOp op, Err&& err, const CallHandlerSeal) {
 		op(std::move(err));
-		return Ret<Val, Set<>>();
+		ret = Ret<Val, Set<>>();
 	}
 
 	template <class Val, class Err, class UnOp,
 	class = typename EnableForReturnsRet<Err&&, UnOp>::type::type>
-	static RetType call(UnOp op, Err&& err, const CallHandlerSeal, Fake<0>* = nullptr) {
+	static void call(RetType& ret, UnOp op, Err&& err, const CallHandlerSeal, Fake<0>* = nullptr) {
 		Constraints::returnsRet(op, err);
-		return op(std::move(err));
+		ret = op(std::move(err));
 	}
 
 	template <class Val, class Err, class UnOp,
 	class = typename EnableForReturnsConvertibleToVal<Err&&, UnOp, Val>::type::type>
-	static RetType call(UnOp op, Err&& err, const CallHandlerSeal, Fake<1>* = nullptr) {
-		return Val(op(std::move(err)));
+	static void call(RetType& ret, UnOp op, Err&& err, const CallHandlerSeal, Fake<1>* = nullptr) {
+		ret = Val(op(std::move(err)));
 	}
 
 	template <class Val, class Err, class UnOp,
 	class = typename EnableForReturnsError<Err&&, UnOp, Val>::type::type>
-	static RetType call(UnOp op, Err&& err, const CallHandlerSeal, Fake<2>* = nullptr) {
-		return op(std::move(err));
+	static void call(RetType& ret, UnOp op, Err&& err, const CallHandlerSeal, Fake<2>* = nullptr) {
+		ret = op(std::move(err));
 	}
 };
 

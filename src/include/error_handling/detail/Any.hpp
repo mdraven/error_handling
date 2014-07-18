@@ -147,7 +147,8 @@ class Any {
 		ti = GetTypeIndex<Val, Errors>::template call<OVal>();
 	}
 
-	template <class OVal>
+	template <class OVal,
+	class = typename EnableIfNotUniversalRef<OVal>::type::type>
 	void valMoveConstructor(OVal&& v) {
 		new(&storage) OVal(std::move(v));
 		ti = GetTypeIndex<Val, Errors>::template call<OVal>();
@@ -408,13 +409,13 @@ public:
 	template <class OVal>
 	Any<Val, Errors>& operator=(OVal&& v) noexcept {
 		if(ti == empty_ti)
-			valMoveConstructor(v);
+			valMoveConstructor(std::move(v));
 		else if(ti == GetTypeIndex<Val, Errors>::template call<OVal>()) {
-			static_cast<OVal*>(&storage)->operator=(v);
+			*static_cast<OVal*>(static_cast<void*>(&storage)) = std::move(v);
 		}
 		else {
 			destructor();
-			valMoveConstructor(v);
+			valMoveConstructor(std::move(v));
 		}
 
 		return *this;
