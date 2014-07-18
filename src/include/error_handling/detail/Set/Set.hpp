@@ -68,9 +68,16 @@ struct IsContains {
 	static const bool value = m::contains<Seq, Elem>::value;
 };
 
+template <class Set>
+struct RemoveDuplicates {
+	using type = typename m::fold<Set, m::set<>, m::if_<IsContains<m::_1, m::_2>, m::_1, m::insert<m::_1, m::_2>>>::type;
+};
+
 template <class Seq1, class Seq2>
-struct Union {
-	using type = typename m::fold<Seq2, Seq1, m::insert<m::_1, m::_2>>::type;
+class Union {
+	using WithDupl = typename m::fold<Seq2, Seq1, m::insert<m::_1, m::_2>>::type;
+public:
+	using type = typename RemoveDuplicates<WithDupl>::type;
 };
 
 template <class Seq1, class Seq2>
