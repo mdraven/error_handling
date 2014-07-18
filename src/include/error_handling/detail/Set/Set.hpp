@@ -50,8 +50,7 @@ struct SetInserter {
 
 template <class Set, class Elem>
 struct Insert {
-	// TODO: insert without duplicates
-	using type = typename m::insert<Set, Elem>::type;
+	using type = typename m::if_<IsContains<Set, Elem>, Set, typename m::insert<Set, Elem>::type>::type;
 };
 
 template <class Set, class Elem>
