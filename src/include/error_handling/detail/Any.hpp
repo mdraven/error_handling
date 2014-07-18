@@ -99,7 +99,7 @@ public:
 	static
 	TypeIndex
 	call(TypeIndex ti) {
-		static const Table table;
+		const Table table;
 
 		return table[ti];
 	}
