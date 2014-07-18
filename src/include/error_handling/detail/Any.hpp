@@ -240,6 +240,7 @@ class Any {
 		static void anyOValOErr(const Any<OVal, OErrors>& v) {
 			static const bool is_convertible_val = std::is_convertible<OVal, Val>::value;
 			assert((is_convertible_val || v.ti != val_ti));
+			(void)v; (void)is_convertible_val;
 		}
 	};
 public:

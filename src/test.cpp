@@ -504,7 +504,7 @@ int main() {
     }
 #endif
 
-#if 1
+#if 0
     {   // must print: "ErrA"
     	R<int, ErrA, ErrB> r1{ErrA()};
     	R<int, ErrB, ErrA> r2 = std::move(r1);
@@ -514,6 +514,42 @@ int main() {
     	if_err<ErrA>(std::move(r3), [](ErrA&&) {
     		std::cout << "ErrA" << std::endl;
     	});
+    }
+#endif
+
+#if 1
+    {
+    	const unsigned long sz = 8000000000;
+    	NumIterO<unsigned long> ito(0, sz);
+
+    	LastIter li;
+
+    	auto add = [](unsigned long a, unsigned long b) -> R<unsigned long, ErrA> {
+    		if(a + b < a)
+    			return ErrA();
+    		return a + b;
+    	};
+
+#if 1
+    	unsigned long sum = 0;
+    	bool f_break = false;
+    	for(; ito != li && !f_break; ++ito) {
+    		auto r1 = add(sum, *ito);
+    		auto r2 = repack<V>(std::move(r1), [&sum](unsigned long res) { sum = res; });
+    		if_err<ErrA>(std::move(r2), [&f_break](ErrA) { f_break = true; });
+    	}
+    	std::cout << sum << std::endl;
+#endif
+
+#if 0
+    	unsigned long sumo = 0;
+    	for(; ito != li; ++ito) {
+    		if(sumo + *ito < sumo)
+    			break;
+    		sumo += *ito;
+    	}
+    	std::cout << sumo << std::endl;
+#endif
     }
 #endif
 

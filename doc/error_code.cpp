@@ -1164,6 +1164,48 @@ public:
    g++ стал медленнее(5.63), но clang++ ускорился в два раза(75.49s).
    g++ медленнее скорее всего из-за проверок на empty в присваивании Ret.
 
- */
+   ------------------------------
+   Сделал новый тест. В нём у примера без error_handling есть проверка ошибок.
+
+             | g++   | clang++ |
+   ----------+-------+---------|
+   without EH| 5.09s | 10.35s  |
+   with EH   | 7.63s | 128s    |
+   ----------+-------+---------|
+
+   without EH:
+     400c34:       31 c0                   xor    %eax,%eax
+     400c36:       31 f6                   xor    %esi,%esi
+     400c38:       48 b9 00 50 d6 dc 01    movabs $0x1dcd65000,%rcx ; 8000000000
+     400c3f:       00 00 00 
+     400c42:       eb 07                   jmp    400c4b <main+0x1b>
+     400c44:       0f 1f 40 00             nopl   0x0(%rax)
+     400c48:       48 89 d6                mov    %rdx,%rsi
+     400c4b:       48 83 c0 01             add    $0x1,%rax         ; ++ito
+     400c4f:       48 39 c8                cmp    %rcx,%rax         ; ito != li
+     400c52:       74 08                   je     400c5c <main+0x2c>
+     400c54:       48 89 f2                mov    %rsi,%rdx
+     400c57:       48 01 c2                add    %rax,%rdx         ; sumo + ito
+     400c5a:       73 ec                   jae    400c48 <main+0x18>; if overflow -> end for
+     400c5c:       bf 60 20 60 00          mov    $0x602060,%edi    ; end for
+  with EH:
+     400d74:       31 c0                   xor    %eax,%eax
+     400d76:       31 f6                   xor    %esi,%esi
+     400d78:       48 b9 ff 4f d6 dc 01    movabs $0x1dcd64fff,%rcx ; 7999999999
+     400d7f:       00 00 00 
+     400d82:       66 0f 1f 44 00 00       nopw   0x0(%rax,%rax,1)
+     400d88:       48 89 c7                mov    %rax,%rdi
+     400d8b:       ba 01 00 00 00          mov    $0x1,%edx         ; f_break = true
+     400d90:       48 01 f7                add    %rsi,%rdi         ; a + b
+     400d93:       72 05                   jb     400d9a <main+0x2a>
+     400d95:       48 89 fe                mov    %rdi,%rsi         ; sum = res
+     400d98:       31 d2                   xor    %edx,%edx         ; f_break = false
+     400d9a:       48 39 c8                cmp    %rcx,%rax         ; ito != li
+     400d9d:       74 08                   je     400da7 <main+0x37>
+     400d9f:       48 83 c0 01             add    $0x1,%rax         ; ++ito
+     400da3:       84 d2                   test   %dl,%dl           ; !f_break
+     400da5:       74 e1                   je     400d88 <main+0x18>
+     400da7:       bf c0 20 60 00          mov    $0x6020c0,%edi    ; end for
+*/
 
 /* с -flto намного лучше компилирует */
