@@ -72,7 +72,7 @@ public:
 		if(ti == GetTypeIndex<Val, FromErrors>::template call<Val>())
 			return GetTypeIndex<Val, FromErrors>::template call<Val>();
 		else
-			return errors<ToErrors>(ti);
+			return errors<typename Intersection<FromErrors, ToErrors>::type>(ti);
 	}
 };
 

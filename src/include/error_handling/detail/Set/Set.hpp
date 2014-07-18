@@ -22,6 +22,7 @@
 #include <boost/mpl/is_sequence.hpp>
 #include <boost/mpl/size_t.hpp>
 #include <boost/mpl/pair.hpp>
+#include <boost/mpl/not.hpp>
 
 namespace error_handling {
 
@@ -80,6 +81,11 @@ struct Difference {
 template <class Seq1, class Seq2>
 struct IsDifferenceEmpty {
 	static const bool value = m::empty<typename Difference<Seq1, Seq2>::type>::value;
+};
+
+template <class Set1, class Set2>
+struct Intersection {
+	using type = typename m::remove_if<Set1, m::not_<m::contains<Set2, m::_>>, SetInserter>::type;
 };
 
 template <class Set>
