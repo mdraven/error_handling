@@ -171,16 +171,31 @@ class Any {
 	friend class Any;
 
 	template <class OVal>
-	void valCopyConstructor(const OVal& v) {
+	typename std::enable_if<std::is_copy_constructible<OVal>::value>::type
+	valCopyConstructor(const OVal& v) {
 		new(&storage) OVal(v);
+		ti = GetTypeIndex<Val, Errors>::template call<OVal>();
+	}
+
+	template <class OVal>
+	typename std::enable_if<!std::is_copy_constructible<OVal>::value>::type
+	valCopyConstructor(const OVal&) {
+		ERROR_HANDLING_CRITICAL_ERROR("Is not copy constructible.");
+	}
+
+	template <class OVal,
+	class = typename EnableIfNotUniversalRef<OVal>::type::type>
+	typename std::enable_if<std::is_move_constructible<OVal>::value>::type
+	valMoveConstructor(OVal&& v) {
+		new(&storage) OVal(std::move(v));
 		ti = GetTypeIndex<Val, Errors>::template call<OVal>();
 	}
 
 	template <class OVal,
 	class = typename EnableIfNotUniversalRef<OVal>::type::type>
-	void valMoveConstructor(OVal&& v) {
-		new(&storage) OVal(std::move(v));
-		ti = GetTypeIndex<Val, Errors>::template call<OVal>();
+	typename std::enable_if<!std::is_move_constructible<OVal>::value>::type
+	valMoveConstructor(OVal&&) {
+		ERROR_HANDLING_CRITICAL_ERROR("Is not move constructible.");
 	}
 
 	struct CopyConstructorAction {
