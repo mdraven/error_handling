@@ -26,48 +26,40 @@ public:
 
 template <class CErrors, class F, class Args>
 class ExceptionsWrapperRetType {
-	template <class Ret, bool = std::is_same<Ret, void>::value>
-	class IsVoid {
-	public:
+	template <class FRet,
+	bool is_void = std::is_same<FRet, void>::value,
+	bool is_ret = IsRet<FRet>::value,
+	bool is_error = IsContains<CErrors, FRet>::value>
+	struct Dispatcher {};
+
+	template <class FRet> // is_void
+	struct Dispatcher<FRet, true, false, false> {
 		using OVal = V;
 		using OErrors = CErrors;
 	};
 
-	template <class Ret>
-	class IsVoid<Ret, false> {
-		template <class ORet, bool = IsRet<ORet>::value>
-		class OIsRet {
-		public:
-			using OVal = typename IsRet<ORet>::val_type::type;
-			using OErrors = typename Union<typename IsRet<ORet>::errors_type::type, CErrors>::type;
-		};
+	template <class FRet> // is_ret
+	struct Dispatcher<FRet, false, true, false> {
+		using OVal = typename IsRet<FRet>::val_type::type;
+		using OErrors = typename Union<typename IsRet<FRet>::errors_type::type, CErrors>::type;
+	};
 
-		template <class ORet>
-		class OIsRet<ORet, false> {
-			template <class TRet, bool = IsContains<CErrors, TRet>::value>
-			struct TIsErrors {
-				using OVal = V;
-				using OErrors = CErrors;
-			};
+	template <class FRet> // is_error
+	struct Dispatcher<FRet, false, false, true> {
+		using OVal = V;
+		using OErrors = CErrors;
+	};
 
-			template <class TRet>
-			struct TIsErrors<TRet, false> {
-				using OVal = ORet;
-				using OErrors = CErrors;
-			};
-		public:
-			using OVal = typename TIsErrors<Ret>::OVal;
-			using OErrors = typename TIsErrors<Ret>::OErrors;
-		};
-
-	public:
-		using OVal = typename OIsRet<Ret>::OVal;
-		using OErrors = typename OIsRet<Ret>::OErrors;
+	template <class FRet> // is_val
+	struct Dispatcher<FRet, false, false, false> {
+		using OVal = FRet;
+		using OErrors = CErrors;
 	};
 
 	using FRet = typename ExceptionsWrapperFRetType<F, Args>::type;
+	using Disp = Dispatcher<FRet>;
 public:
-	using type = Ret<typename IsVoid<FRet>::OVal, typename IsVoid<FRet>::OErrors>;
+	using type = Ret<typename Disp::OVal, typename Disp::OErrors>;
 };
 
 template <class RetType>
