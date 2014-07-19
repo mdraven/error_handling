@@ -263,7 +263,7 @@ int main() {
 	using error_handling::N;
 	using error_handling::V;
 
-#if 0
+#if 1
 	std::string str("hello");
 	R<std::string> ret(std::move(str));
 
@@ -352,8 +352,8 @@ int main() {
 
 #endif
     // тест на множественный вызов if_err для одного Ret<> и для одной ошибки.
-#if 0
-    Ret<std::string, Set<ErrA>> ret37{ErrA()};
+#if 1
+    R<std::string, ErrA> ret37{ErrA()};
     if_err<ErrA>(std::move(ret37), [](ErrA&&) { return; });
     if_err<ErrA>(std::move(ret37), [](ErrA&&) { return; }); // runtime ERR
     if_err<ErrA>(std::move(ret37), [](ErrA&&) { return; }); // runtime ERR
@@ -366,13 +366,13 @@ int main() {
     }
 #endif
 
-#if 0
+#if 1
     {
-    	Ret<std::string, Set<ErrA>> ret1{ErrA()};
-    	Ret<std::string, Set<ErrB>> ret2 = if_err<ErrA>(std::move(ret1),
-    			[](ErrA&&) { return Ret<std::string, Set<ErrB>>(ErrB()); });
-    	Ret<std::string, Set<ErrA>> ret3{ErrA()};
-    	Ret<std::string, Set<ErrB>> ret4 = if_err<ErrA>(std::move(ret3),
+    	R<std::string, ErrA> ret1{ErrA()};
+    	R<std::string, ErrB> ret2 = if_err<ErrA>(std::move(ret1),
+    			[](ErrA&&) { return R<std::string, ErrB>(ErrB()); });
+    	R<std::string, ErrA> ret3{ErrA()};
+    	R<std::string, ErrB> ret4 = if_err<ErrA>(std::move(ret3),
     			[](ErrA&&) { return ErrB(); });
     }
 #endif
@@ -385,7 +385,7 @@ int main() {
     }
 #endif
 
-#if 0
+#if 1
     {
 //    	R<std::string> v1 = R<N>(); // ERR
 //    	R<std::string, ErrA> v2 = R<N>(); // ERR
@@ -398,18 +398,18 @@ int main() {
     }
 #endif
 
-#if 0
+#if 1
     {
-       	Ret<std::string, Set<ErrA>> ret1{std::string()};
-       	Ret<int, Set<ErrA>> ret2 = repack<int>(std::move(ret1), [](std::string&& s) {});
-       	Ret<std::string, Set<ErrA>> ret3{std::string()};
-       	Ret<int, Set<ErrA>> ret4 = repack<int>(std::move(ret3), [](std::string&& s) { return 13; });
-       	Ret<std::string, Set<ErrA>> ret5{std::string()};
-       	Ret<int, Set<ErrA>> ret6 = repack<int>(std::move(ret5), [](std::string&& s) { return Ret<int, Set<ErrA>>(ErrA()); });
-       	Ret<std::string, Set<ErrA>> ret7{std::string()};
-       	Ret<int, Set<ErrA>> ret8 = repack<int>(std::move(ret7), [](std::string&& s) { return ErrA(); });
-       	Ret<std::string, Set<ErrA>> ret9{std::string()};
-       	Ret<int, Set<ErrA, ErrC>> ret10 = repack<int>(std::move(ret9), [](std::string&& s) { return ErrC(); });
+       	R<std::string, ErrA> ret1{std::string()};
+       	R<int, ErrA> ret2 = repack<int>(std::move(ret1), [](std::string&& s) {});
+       	R<std::string, ErrA> ret3{std::string()};
+       	R<int, ErrA> ret4 = repack<int>(std::move(ret3), [](std::string&& s) { return 13; });
+       	R<std::string, ErrA> ret5{std::string()};
+       	R<int, ErrA> ret6 = repack<int>(std::move(ret5), [](std::string&& s) { return R<int, ErrA>(ErrA()); });
+       	R<std::string, ErrA> ret7{std::string()};
+       	R<int, ErrA> ret8 = repack<int>(std::move(ret7), [](std::string&& s) { return ErrA(); });
+       	R<std::string, ErrA> ret9{std::string()};
+       	R<int, ErrA, ErrC> ret10 = repack<int>(std::move(ret9), [](std::string&& s) { return ErrC(); });
     }
 #endif
 
@@ -485,14 +485,14 @@ int main() {
     }
 #endif
 
-#if 0
+#if 1
     {
     	R<int, ErrA, ErrB, ErrC, ErrUnk> ret = func();
     	auto z = ErrX;
     }
 #endif
 
-#if 0
+#if 1
     {
     	R<int, ErrA, ErrB, ErrC> ret1{ErrA()};
     	R<int> ret2 = if_errT(std::move(ret1), [](ErrA) {}, [](ErrC) {}, [](ErrB) {});
@@ -505,7 +505,7 @@ int main() {
     }
 #endif
 
-#if 0
+#if 1
     {   // must print: "ErrA"
     	R<int, ErrA, ErrB> r1{ErrA()};
     	R<int, ErrB, ErrA> r2 = std::move(r1);
@@ -518,7 +518,7 @@ int main() {
     }
 #endif
 
-#if 0
+#if 1
     {   // must print: "ErrA"
     	R<int, ErrA, ErrB, ErrC> r1{ErrA()};
     	R<int, ErrB, ErrA, ErrC> r2 = std::move(r1);
@@ -534,7 +534,7 @@ int main() {
     }
 #endif
 
-#if 0
+#if 1
     {
     	R<int, ErrA, ErrA, ErrC, ErrA, ErrA, ErrC> r1{ErrA()}; // duplicates
     	R<int, ErrA, ErrC> r2 = std::move(r1);
@@ -542,7 +542,7 @@ int main() {
     }
 #endif
 
-#if 0
+#if 1
     {
     	const unsigned long sz = 8000000000;
     	NumIterO<unsigned long> ito(0, sz);
