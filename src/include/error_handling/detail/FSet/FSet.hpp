@@ -11,6 +11,7 @@
 #include <boost/fusion/container.hpp>
 #include <boost/fusion/algorithm.hpp>
 #include <boost/fusion/include/front.hpp>
+#include <boost/fusion/functional/invocation.hpp>
 
 namespace error_handling {
 
@@ -31,6 +32,11 @@ auto popFront(FSet fset) -> decltype(f::pop_front(std::forward<FSet>(fset))) {
 template <class FSet>
 auto getFront(FSet fset) -> decltype(f::front(std::forward<FSet>(fset))) {
 	return f::front(std::forward<FSet>(fset));
+}
+
+template <class F, class FSet>
+auto invoke(F f, FSet& fset) -> decltype(f::invoke(f, fset)) {
+	return f::invoke(f, fset);
 }
 
 } /* namespace detail */

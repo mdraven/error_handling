@@ -14,6 +14,7 @@
 #include <error_handling/detail/repack.hpp>
 #include <error_handling/detail/Set/Set.hpp>
 #include <error_handling/detail/FSet/FSet.hpp>
+#include <error_handling/detail/ExceptionsWrapper.hpp>
 #include <error_handling/detail/T.hpp>
 #include <error_handling/detail/N.hpp>
 #include <error_handling/detail/V.hpp>
@@ -55,6 +56,14 @@ auto if_errT(error_handling::detail::Ret<Val, Errors>&& v, UnOps... ops)
 		error_handling::detail::FSet(std::forward<UnOps>(ops)...))) {
 	return error_handling::detail::IfErr<T>::call(std::move(v),
 			error_handling::detail::FSet(std::forward<UnOps>(ops)...));
+}
+
+template <class... CErrors, class F, class... Args>
+auto wrapper(F f, Args... args)
+-> decltype(error_handling::detail::exceptionsWrapper<error_handling::detail::Set<CErrors...>>(f,
+		error_handling::detail::FSet(std::forward<Args>(args)...))) {
+	return error_handling::detail::exceptionsWrapper<error_handling::detail::Set<CErrors...>>(f,
+			error_handling::detail::FSet(std::forward<Args>(args)...));
 }
 
 } /* namespace error_handling */

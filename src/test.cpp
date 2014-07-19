@@ -258,6 +258,7 @@ int main() {
 	using error_handling::if_err;
 	using error_handling::if_errT;
 	using error_handling::repack;
+	using error_handling::wrapper;
 	using error_handling::T;
 	using error_handling::N;
 	using error_handling::V;
@@ -517,7 +518,7 @@ int main() {
     }
 #endif
 
-#if 1
+#if 0
     {   // must print: "ErrA"
     	R<int, ErrA, ErrB, ErrC> r1{ErrA()};
     	R<int, ErrB, ErrA, ErrC> r2 = std::move(r1);
@@ -533,7 +534,7 @@ int main() {
     }
 #endif
 
-#if 1
+#if 0
     {
     	R<int, ErrA, ErrA, ErrC, ErrA, ErrA, ErrC> r1{ErrA()}; // duplicates
     	R<int, ErrA, ErrC> r2 = std::move(r1);
@@ -588,6 +589,22 @@ int main() {
     	}
     	std::cout << sumo << std::endl;
 #endif
+    }
+#endif
+
+#if 1
+    {
+    	R<int, ErrA, ErrB, ErrC> r1 = wrapper<ErrA, ErrB, ErrC>([]() -> int { throw ErrC(); });
+    	if_err<ErrA, ErrB, ErrC>(std::move(r1),
+    			[](ErrA) { std::cout << "ErrA" << std::endl; },
+    			[](ErrB) { std::cout << "ErrB" << std::endl; },
+    			[](ErrC) { std::cout << "ErrC" << std::endl; });
+
+    	R<V, ErrA, ErrB, ErrC> r2 = wrapper<ErrA, ErrB, ErrC>([] { throw ErrA(); });
+    	if_err<ErrA, ErrB, ErrC>(std::move(r2),
+    			[](ErrA) { std::cout << "ErrA" << std::endl; },
+    			[](ErrB) { std::cout << "ErrB" << std::endl; },
+    			[](ErrC) { std::cout << "ErrC" << std::endl; });
     }
 #endif
 

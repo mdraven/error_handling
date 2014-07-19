@@ -426,7 +426,7 @@ public:
 		if(ti == empty_ti)
 			valCopyConstructor(v);
 		else if(ti == GetTypeIndex<Val, Errors>::template call<OVal>()) {
-			static_cast<OVal*>(&storage)->operator=(v);
+			*static_cast<OVal*>(static_cast<void*>(&storage)) = v;
 		}
 		else {
 			destructor();

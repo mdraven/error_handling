@@ -12,6 +12,7 @@ namespace error_handling {
 
 namespace detail {
 
+/*! Void type */
 struct V {};
 
 } /* namespace detail */
