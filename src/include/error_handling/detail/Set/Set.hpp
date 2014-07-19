@@ -140,13 +140,14 @@ struct AccumulateToSet {
 };
 
 template <class Seq, template <class> class Pred>
-struct AccumulateToSetFromPred {
+class AccumulateToSetFromPred {
 	struct Helper {
 		template <class T1, class T2>
 		struct apply {
 			using type = typename Union<T1, typename Pred<T2>::result>::type;
 		};
 	};
+public:
 	using type = typename m::fold<Seq, m::set<>, m::if_<Pred<m::_2>, m::bind<Helper, m::_1, m::_2>, m::_1>>::type;
 };
 
