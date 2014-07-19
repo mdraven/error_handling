@@ -605,6 +605,33 @@ int main() {
     			[](ErrA) { std::cout << "ErrA" << std::endl; },
     			[](ErrB) { std::cout << "ErrB" << std::endl; },
     			[](ErrC) { std::cout << "ErrC" << std::endl; });
+
+    	R<V, ErrA, ErrB, ErrC, ErrUnk> r3 = wrapper<ErrA, ErrB, ErrC>([]() -> R<V, ErrUnk> {
+    			try {
+    				throw ErrA();
+    			}
+    			catch(...) {
+    				return ErrUnk();
+    			}
+    	});
+    	if_err<ErrA, ErrB, ErrC, ErrUnk>(std::move(r3),
+    			[](ErrA) { std::cout << "ErrA" << std::endl; },
+    			[](ErrB) { std::cout << "ErrB" << std::endl; },
+    			[](ErrC) { std::cout << "ErrC" << std::endl; },
+    			[](ErrUnk) { std::cout << "ErrUnk" << std::endl; });
+
+    	R<V, ErrA, ErrB, ErrC> r4 = wrapper<ErrA, ErrB, ErrC>([] {
+    			try {
+    				throw ErrA();
+    			}
+    			catch(...) {
+    				return ErrC();
+    			}
+    	});
+    	if_err<ErrA, ErrB, ErrC>(std::move(r4),
+    			[](ErrA) { std::cout << "ErrA" << std::endl; },
+    			[](ErrB) { std::cout << "ErrB" << std::endl; },
+    			[](ErrC) { std::cout << "ErrC" << std::endl; });
     }
 #endif
 
