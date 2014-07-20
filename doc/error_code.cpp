@@ -1237,3 +1237,23 @@ public:
 /* убрал static у const Table table; в MapTypeIndex и у g++ оптимизация стала
    работать лучше. Но как это отразится в целом(а не на тестовом примере) я не
    знаю :( */
+
+/*
+  g++ -Wall -Wextra -std=c++11 -I ../src/include -S ../src/test.cpp -O0 -DNDEBUG
+  Время компиляции: 5.61s
+  С precompiled-headers 3.92s
+  extern template не помогает :( видимо надо темплейтить не Ret<...>, а if_err. Но в нем не
+    понятно как писать типы для лямбд.
+
+  Если использовать -fno-implicit-templates -fno-implicit-inline-templates: <1s - 7s.
+     Как делается:
+       1) создаётся файл xx.cpp в котором содержится функция, которую никто никогда не вызовет,
+          но в этой функции используются все нужные шаблоны.
+       2) xx.cpp компилируется: g++ -Wall -Wextra -std=c++11 -I ../src/include -c ./xx.cpp -O0 -DNDEBUG
+          Время компиляции очень странное: иногда 0.04s, а иногда 6.55s.
+       3) основной файл компилируется так: g++ -Wall -Wextra -std=c++11 -I ../src/include -c ../src/test.cpp \
+                                              -O0 -DNDEBUG -fno-implicit-templates -fno-implicit-inline-templates
+          Время компиляции так же колеблется как у xx.cpp.
+       4) Линкуем всё вместе: g++ test.o xx.o
+          Время более-менее стабильно: 0.10s.
+*/
